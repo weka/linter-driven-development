@@ -89,7 +89,9 @@ rather than validation or logic; a telling variable name when the proposal wraps
 flat container of primitives that lives inside one function and crosses no boundary
 (R1, "Containers of primitives", tier 1). A nested container never takes that
 alternative: the inner shape is a type with no name, and a variable name cannot
-name it. The case file you read is the template for what a
+name it. A test-only door to a private name is never the cheaper alternative. R4 Q2
+lists its forms. When the need is a direct test of a private leaf, the cheaper move is
+R4 rung 2, not a door. The case file you read is the template for what a
 correct refutation looks like.
 
 **Verdict schema — one line per finding, the literal word first:**
