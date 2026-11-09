@@ -230,17 +230,19 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
 7. **Does a mutant survive a leaf type's tests?**
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*[Ll]en\b)|\b[Ll]en\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)cmd/,(^|/)main\.go$,(^|/)handlers/
    Detection: for each new or changed leaf package,
-   `gremlins unleash ./path/to/leaf | grep -E '^\s*LIVED'`; skip orchestrators, the
-   top rung and any package that does I/O. Judge a pure leaf inside such a package
-   with Q4. Do not skip it. `gremlins` not on `PATH`: propose the
-   install the mechanics bullet describes before hunting; an empty `LIVED` list from
-   a run that did not execute, or whose mutants all timed out, is not a pass. In a
+   `gremlins unleash ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|TIMED OUT)|Killed:|Timed out:'`;
+   skip orchestrators, the top rung and any package that does I/O. Judge a pure leaf
+   inside such a package with Q4. Do not skip it. `gremlins` not on `PATH`: propose
+   the install the mechanics bullet describes before hunting; an empty `LIVED` list from
+   a run that did not execute, or whose mutants all timed out, is not a pass. No
+   summary line, or `Killed: 0` and `Lived: 0`, means the run did not execute. In a
    read-only review, where no tests may run, take the hand check instead: list the
    leaf's comparisons and boolean conditions, check the table for a row at each
    boundary value and on each side of each condition, and name the row that is
    missing.
-   When the tool run did not execute for a leaf, also when the hand check then judged
-   it, the receipt says so on its own line: `R7 Q7: mutation run did not execute — <leaf>`.
+   When the tool run did not execute for a leaf, the receipt says so on its own line:
+   `R7 Q7: mutation run did not execute — <leaf>`. A hand check alone runs no tool
+   and writes no such line.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,
