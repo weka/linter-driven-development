@@ -203,8 +203,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    `grep -rn '<Method>' --include='*_test.go' .` — is it exercised directly, or only
    through an orchestrator's test? Then list the new or changed unexported functions,
    methods and types: `grep -nE '^func (\([^)]*\) )?[a-z]|^type [a-z]'` in the changed
-   files. Score each one with R1's scorecard, in the same Bash call:
-   `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
+   files. Score each one with R1's scorecard. Read the scorecard in the same Bash call
+   as the grep: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
    `R1-primitive-obsession.md` in this rule file's directory. Do not judge or report
    a helper with a score of 3 or less. An in-package test that calls it is a Q2
    finding, not a direct test.
@@ -212,9 +212,9 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    applies to a public method of a leaf type and to an unexported function, method or
    type with a score of 4 or more. The usual test above it builds a server, files or
    a database. Fix a public method: add the rung-0 test; the orchestrator test keeps
-   only the seam. Fix an unexported leaf with R4's "Split the pure leaf out of an I/O
-   package", or "Promote to feature sub-package (rung 2)" when its package does no
-   I/O. Then add the rung-0 test.
+   only the seam. Fix an unexported leaf in a package that does I/O with R4's "Split
+   the pure leaf out of an I/O package". Fix one in a package with no I/O with
+   "Promote to feature sub-package (rung 2)". Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `AssertExpectations|AssertCalled|\.calls\b` files=test

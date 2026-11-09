@@ -36,8 +36,8 @@
    is it exercised directly, or only through a page's render test? Then list the new
    or changed non-exported functions and classes:
    `grep -nE '^((async )?function|class) [a-zA-Z]|^const [a-zA-Z]\w* = '` in the
-   changed `.ts` and `.tsx` files. Score each one with R1's scorecard, in the same
-   Bash call: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
+   changed `.ts` and `.tsx` files. Score each one with R1's scorecard. Read the scorecard
+   in the same Bash call as the grep: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
    over `R1-primitive-obsession.md` in this rule file's directory. Do not judge or
    report a helper with a score of 3 or less. An `export` added only for the test is a
    Q2 finding, not a direct test.
@@ -45,9 +45,10 @@
    applies to an exported function of a leaf module and to a non-exported function or
    class with a score of 4 or more. The usual test above it renders a tree, registers
    `server.use` handlers or builds a `QueryClient`. Fix an exported function: add the
-   rung-0 test; the page test keeps only the seam. Fix a non-exported leaf with R4's
-   "Split the pure leaf out of an I/O package", or "Promote to feature sub-package
-   (rung 2)" when its module does no I/O. Then add the rung-0 test in a `.ts` module.
+   rung-0 test; the page test keeps only the seam. Fix a non-exported leaf in a module that
+   does I/O with R4's "Split the pure leaf out of an I/O package". Fix one in a module
+   with no I/O with "Promote to feature sub-package (rung 2)". Then add the rung-0 test
+   in a `.ts` module.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `toHaveBeenCalled(Times|With|Once)?\(|toHaveBeen(Last|Nth)CalledWith|\.mock\.(calls|results|lastCall)` files=test

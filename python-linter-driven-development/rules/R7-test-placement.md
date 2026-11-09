@@ -224,7 +224,7 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    exercised directly, or only through an orchestrator's test? Then list the new or
    changed underscore-prefixed functions and classes:
    `grep -nE '^\s*(async def|def|class) _[a-zA-Z]'` in the changed files. Score each
-   one with R1's scorecard, in the same Bash call:
+   one with R1's scorecard. Read the scorecard in the same Bash call as the grep:
    `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
    `R1-primitive-obsession.md` in this rule file's directory. Do not judge or report
    a helper with a score of 3 or less. A test that imports it is a Q2 finding, not a
@@ -233,9 +233,9 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    applies to a public method of a leaf type and to an underscore-prefixed function or
    class with a score of 4 or more. The usual test above it builds a server, files or
    a database. Fix a public method: add the rung-0 test; the orchestrator test keeps
-   only the seam. Fix an underscore-prefixed leaf with R4's "Split the pure leaf out
-   of an I/O package", or "Promote to feature sub-package (rung 2)" when its module
-   does no I/O. Then add the rung-0 test.
+   only the seam. Fix an underscore-prefixed leaf in a module that does I/O with R4's
+   "Split the pure leaf out of an I/O package". Fix one in a module with no I/O with
+   "Promote to feature sub-package (rung 2)". Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `assert_called|assert_any_call|assert_has_calls|\.call_count|\.call_args|\.mock_calls|\.calls\b` files=test

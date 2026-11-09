@@ -7,10 +7,11 @@ description: how to write an eval case: prompt frontmatter, case.yaml, the five 
 A case is a directory under `<lang>/cases/` in the evals repository (`go/cases/`,
 `py/cases/`) with three parts. The file format is `claude plugin eval`'s, so a case
 needs no change when that command becomes available; only `case.yaml` and the
-suite-level `suite.yaml` are ours. The Python suite is the Go suite's cases
-translated one for one: prompts invoke `/{{cmd_prefix}}-*` exactly as the Go ones
-do, so either suite runs under its own plugin or under the generic one, file graders
-match Python shapes, and every grader that reads the report contract is unchanged.
+suite-level `suite.yaml` are ours. The Python suite translates every Go case except
+the two Go-only mutation cases, `mutation-leaf-kill` and `mutation-leaf-review`. Its
+prompts invoke `/{{cmd_prefix}}-*` exactly as the Go ones do, so either suite runs
+under its own plugin or under the generic one, file graders match Python shapes, and
+every grader that reads the report contract is unchanged.
 
 ## prompt.md
 YAML frontmatter, then the prompt the agent receives.

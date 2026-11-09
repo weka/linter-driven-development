@@ -30,8 +30,8 @@ Test files are the ones the repository's test runner picks up (`*{{.TestGlob}}`,
    Detection: for each new public method on a leaf type, search the test files for
    its name — is it exercised directly, or only through an orchestrator's test?
    Then search the changed source for new or changed {{.Unexported}} functions and
-   types. Score each one with R1's scorecard, in the same Bash call:
-   `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
+   types. Score each one with R1's scorecard. Read the scorecard in the same Bash call
+   as the search: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
    `R1-primitive-obsession.md` in this rule file's directory. Do not judge or report
    a helper with a score of 3 or less. A test that calls an {{.Unexported}} name is a
    Q2 finding, not a direct test.
@@ -39,9 +39,9 @@ Test files are the ones the repository's test runner picks up (`*{{.TestGlob}}`,
    applies to a public method of a leaf type and to an {{.Unexported}} function or type
    with a score of 4 or more. The usual test above it builds a server, files, a
    database or a rendered tree. Fix a public method: add the rung-0 test; the
-   orchestrator test keeps only the seam. Fix an {{.Unexported}} leaf with R4's "Split
-   the pure leaf out of an I/O package", or "Promote to feature sub-package (rung 2)"
-   when its package does no I/O. Then add the rung-0 test.
+   orchestrator test keeps only the seam. Fix an {{.Unexported}} leaf in a package that
+   does I/O with R4's "Split the pure leaf out of an I/O package". Fix one in a package
+   with no I/O with "Promote to feature sub-package (rung 2)". Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `[Aa]ssert(_?[Cc]alled|_?[Ee]xpectations|_?[Aa]ny_?[Cc]all|_?[Hh]as_?[Cc]alls)|\.call_count|\.mock_calls|\.calls\b` files=test
