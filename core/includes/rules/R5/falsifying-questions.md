@@ -39,9 +39,12 @@
    Detect-script: ldd-lint file-length
    Detection: the gap linter counts the code lines of each source file in the scope.
    The limit is the repository's file-length rule where its linter sets one, else
-   {{.FileMaxLines}} code lines. When the repository's linter holds the rule, the row
-   count is 0 and the `ldd-lint:` line names the rule: the linter's own report is the
-   lead, and the limit is its to enforce.
+   {{.FileMaxLines}} code lines. When the repository's linter holds the rule, the
+   script measures nothing: the row count is 0 and the `ldd-lint:` line names the
+   rule. Then list the longest files of the scope with
+   `xargs wc -l < files.txt | sort -n | tail -6`
+   and check each against the limit that rule sets in the repository's linter
+   configuration.
    Violation: a file over the limit standing in for the whole slice, or a
    `{{.Nolint}}` directive silencing the limit (the suppression row carries
    directives) — split it by role inside the slice.

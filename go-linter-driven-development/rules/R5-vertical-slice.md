@@ -159,9 +159,12 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect-script: ldd-lint file-length
    Detection: the gap linter counts the code lines of each Go file in the scope. The
    limit is revive's `file-length-limit` where the repository sets it, else
-   450 code lines. When the repository's linter holds the rule, the row
-   count is 0 and the `ldd-lint:` line names the rule: the linter's own report is the
-   lead, and the limit is its to enforce.
+   450 code lines. When the repository's linter holds the rule, the
+   script measures nothing: the row count is 0 and the `ldd-lint:` line names the
+   rule. Then list the longest files of the scope with
+   `xargs wc -l < files.txt | sort -n | tail -6`
+   and check each against the limit that rule sets in the repository's linter
+   configuration.
    Violation: a file over the limit standing in for the whole slice, or a `//nolint`
    silencing the limit (the suppression row carries directives) — split it by role
    (file-per-type) inside the package.

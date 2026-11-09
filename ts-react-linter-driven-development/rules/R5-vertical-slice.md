@@ -173,9 +173,12 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect-script: ldd-lint file-length
    Detection: the gap linter counts the code lines of each source file in the scope.
    The limit is the repository's `sonarjs/max-lines` where it sets one, else
-   450 code lines. When the repository's linter holds the rule, the row
-   count is 0 and the `ldd-lint:` line names the rule: the linter's own report is the
-   lead, and the limit is its to enforce.
+   450 code lines. When the repository's linter holds the rule, the
+   script measures nothing: the row count is 0 and the `ldd-lint:` line names the
+   rule. Then list the longest files of the scope with
+   `xargs wc -l < files.txt | sort -n | tail -6`
+   and check each against the limit that rule sets in the repository's linter
+   configuration.
    Violation: a file over the limit standing in for the whole slice, or a
    `max-lines` directive silencing the rule (the suppression row carries
    directives) — a `Performance.tsx` of 1,199 lines holding the page, its hooks, its
