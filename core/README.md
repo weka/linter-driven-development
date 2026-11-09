@@ -210,6 +210,12 @@ differently from the other bindings:
   a fourth include, `scripts/ldd-lint-fakes.sh`, also `residue-exempt:`: a fake of
   each language's linter that prints the real one's output, so the cases run where
   no linter is installed; where one is, a case checks the doctor against it.
+- `scripts/ldd-ledger.sh` and `scripts/ldd-ledger_test.sh`, the deferral ledger and
+  its fixture matrix, are core templates with no includes. The ledger is one file per
+  checkout at `git rev-parse --git-path ldd/ledger.md`, so it survives context
+  compaction. The workflow adds rows (a deferred finding, a deferred prep move, a
+  mutation run that did not execute), every closing report prints it, and only the
+  user clears it.
 - `setup/golangci.yaml`, `setup/ruff.toml` and `setup/eslint.config.ldd.mjs`, the
   recommended linter configurations, are core templates rendered into every plugin,
   so the generic plugin carries all three for the languages it reviews. Each enables
