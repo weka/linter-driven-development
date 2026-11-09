@@ -51,7 +51,7 @@ baselines is in [eval-baseline.md](eval-baseline.md).
 |---|---|
 | `runner/` | `ldd-eval`, the stop-gap runner, language-neutral; deleted the day the gate opens |
 | `<lang>/fixture/<lang>-mini/` | the fixture (`go/fixture/go-mini/`, `py/fixture/py-mini/`, `ts-react/fixture/ts-react-mini/`): a device-fleet service, and its frontend, planted with every rule's violations and a control per rule; no hints in the tree |
-| `<lang>/violations.yaml` | the answer key: every plant and control, anchored by file + regex, with what each mode must do about it; the same 156 ids in every suite, plus the ts-react suite's eight React-only ids |
+| `<lang>/violations.yaml` | the answer key: every plant and control, anchored by file + regex, with what each mode must do about it; the same 158 ids in every suite, plus the ts-react suite's eight React-only ids |
 | `<lang>/check-manifest.sh` | keeps the manifest honest: anchors match, no hint words, every rule has plants and controls |
 | `go/gen-review-graders.sh` | generates the whole-repo review's recall, cluster and precision graders from either manifest |
 | `<lang>/scaffold/` | `default.sh` copies the fixture into a fresh git repo (and installs its dependencies for ts-react-mini); `red-lint.sh` also strips every suppression (`//nolint`; `# noqa`, `# type: ignore` and `# ty: ignore`; `eslint-disable`, `@ts-expect-error` and the `/* eslint … */` configuration comment); `gate-failed.sh` builds a small repository, not from the fixture, with one orphan doc, one unresolved symbol and an unwired root; its case sets `CHECK_REPO_BRAIN_FAULT`, so the review must find the three by reading |
@@ -71,8 +71,8 @@ Tiers are tags in each case's frontmatter, selected with `--tag`.
 
 | Tier | Agent may | Cases | Runs | Cost per run |
 |---|---|---|---|---|
-| cheap | read only, write a report | two trigger cases (the workflow fires on the suite's language and stays quiet on the other), the whole-repo review, six scoped reviews (Cases A–F), the centerpiece review, two clean-tree controls (review and quickfix say "nothing in scope" and touch nothing) | 2–3 | $0.06 (trigger) to $15 (whole-repo review) |
-| medium | edit code | quickfix over two packages of the red-lint scaffold, prepare, wire-repo-brain, six refactors (A–F), the centerpiece refactor | 1 | $1–8 |
+| cheap | read only, write a report | two trigger cases (the workflow fires on the suite's language and stays quiet on the other), the whole-repo review, six scoped reviews (Cases A–F), the centerpiece review, the private-leaf review (Case H) and design case, two clean-tree controls (review and quickfix say "nothing in scope" and touch nothing) | 2–3 | $0.06 (trigger) to $15 (whole-repo review) |
+| medium | edit code | quickfix over two packages of the red-lint scaffold, prepare, wire-repo-brain, six refactors (A–F), the centerpiece refactor, the private-leaf promotion | 1 | $1–8 |
 | expensive | run the whole workflow unattended | autopilot on an SMS-channel spec | 1 | $30 or more; runs only on explicit approval |
 
 Cheap answers "does the plugin see the problems"; medium answers "does it fix them
