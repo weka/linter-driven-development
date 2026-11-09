@@ -180,10 +180,11 @@ def upsert_iface_addr_host(self, iface: Interface) -> None:
 
 Every extraction raises a second question: where does the helper live? The answer is
 decided by two axes — juiciness (the scorecard in R1; cite
-it, never re-derive it) and scope (feature-specific versus domain-generic). Three
-rungs: underscore-prefixed in place, a sub-package nested under the feature, and a shared
-domain package when a second package imports it. Never test privates, and never
-export a helper into its parent package just so a test can reach it.
+it, never re-derive it) and scope (does a second package import it?). Three rungs:
+underscore-prefixed in place, a sub-package nested under the feature, and a shared domain
+package when a second package imports it or a fitting one exists. Never test
+privates, and never export a helper into its parent package just so a test can reach
+it.
 
 ```python
 # ❌ imported by the test through its private name, so it stays where it should not

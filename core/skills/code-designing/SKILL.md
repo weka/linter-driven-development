@@ -94,7 +94,7 @@ For each concept in the design, open the rule that owns the question and apply i
 | `../../rules/R1-primitive-obsession.md` | Which primitives become types — score every candidate with R1's juiciness scorecard; reject ceremony wrappers (over-abstraction trap). |
 | `../../rules/R2-self-validating-types.md` | Constructor-only entry, validation ownership, trusting composed values, {{.Nil}} is not a value, no defensive checks in methods. |
 | `../../rules/R3-storifying.md` | Plan orchestration functions as 3–5 named steps at one conceptual level; honest names for mutators. |
-| `../../rules/R4-helper-placement.md` | WHERE each helper/type lands — the placement ladder ({{.Unexported}} → feature sub-package → shared domain package). |
+| `../../rules/R4-helper-placement.md` | WHERE each helper/type lands — the placement ladder ({{.Unexported}} helper → nested feature package → shared domain package when a second package imports it). |
 | `../../rules/R5-vertical-slice.md` | Package structure and naming: feature slices with roles inside, flatcase domain vocabulary, migration template. |
 | `../../rules/R6-test-only-interfaces.md` | Default dependencies to concrete types; an interface must be earned by a second production implementation or a grep-verified import cycle. |
 | `../../rules/R7-test-placement.md` | The test plan per type: leaf types 100% unit coverage via public constructors, checked by a mutation run over the leaf's package; orchestrators integration-tested over real collaborators, never mutated. |

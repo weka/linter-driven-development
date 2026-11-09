@@ -105,7 +105,8 @@ spells a `Port` literal — R2 Q1 greps for the others.
 ### Stage 2 — placement (R4 rung 3)
 
 `Port`, `Ports`, `firstNamed`, `first` say nothing about Kubernetes or Weka — they
-are generic networking vocabulary, so they move to a shared `src/networking/` module
+are generic networking vocabulary, and a second page imports them, so they move to a
+shared `src/networking/` module
 (rung 3 of `R4-helper-placement.md`). The wire adapter `parsePorts` knows the
 Kubernetes DTO, so it stays with the feature. The feature policy stays home as a
 two-line storified function beside the hook that uses it:

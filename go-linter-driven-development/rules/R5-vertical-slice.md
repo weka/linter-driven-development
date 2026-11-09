@@ -76,8 +76,9 @@ roles.
 Separate by role and responsibility within the feature package: `parser.go`,
 `handler.go`, `repository.go`. Types with logic get their own file named after the
 type. When a slice grows a juicy sub-concern, it becomes a feature sub-package
-(rung 2 of `R4-helper-placement.md`); when a concern turns out to be domain-generic,
-it promotes to a shared domain package (rung 3) — placement is R4's decision.
+(rung 2 of `R4-helper-placement.md`). When a second package imports a concern, or a
+fitting domain package exists, the concern moves to a shared domain package (rung 3)
+— placement is R4's decision.
 
 ### Migration template
 

@@ -19,7 +19,7 @@ from there, never from memory:
 | Extract Function (named after the comment), Early Returns, Honest Rename, Extract Leaf Type | `../../rules/R3-storifying.md` |
 | Replace Primitive with Domain Type, Extract Collection Type, Replace Sentinel with Declared Absence, Name enum strings, Introduce Parameter Object, Name the Container, Over-abstraction rejection | `../../rules/R1-primitive-obsession.md` |
 | Add validating constructor, Hoist method checks, Delete re-validation, Separate Failure from Absence, Introduce Null Object (optional collaborator) | `../../rules/R2-self-validating-types.md` |
-| Demote helper (rung 1), Promote to feature/domain package (rungs 2–3), Split policy from vocabulary | `../../rules/R4-helper-placement.md` |
+| Demote helper (rung 1), Promote to feature/domain package (rungs 2–3), Split the pure leaf out of an I/O package, Split policy from vocabulary | `../../rules/R4-helper-placement.md` |
 | Slice out a feature, Rename layer files by role, Split a generic package by owner | `../../rules/R5-vertical-slice.md` |
 | Delete the Test Seam, Rewrite test around real collaborators, Delete the double | `../../rules/R6-test-only-interfaces.md` |
 | Move test down a rung, Split Success and Error Tables, Kill the surviving mutant, Replace sleep with synchronization | `../../rules/R7-test-placement.md` |
@@ -214,7 +214,8 @@ Spans R3 × R1 × R2 × R4. Apply least-invasive first; re-run the linter after 
    R1's scorecard *before* creating it; the new type gets a validating constructor
    per R2. Worked pair of moves 1+4: `../../examples/storify-leaf-type.md`.
 5. **Place it** (R4) — the ladder decides where the extraction lands: {{.Unexported}}
-   helper, feature sub-package, or shared domain package.
+   helper, nested feature package, or shared domain package when a second package
+   imports it.
 
 **When to stop**: the six ordered steps of `<stopping_criteria>` (SKILL.md, in full above) — linter
 green is step 1 of 6, never the finish; the detection re-run, the noun check and the

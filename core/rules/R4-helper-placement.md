@@ -4,10 +4,11 @@
 
 Every extraction raises a second question: where does the helper live? The answer is
 decided by two axes — juiciness (the scorecard in `R1-primitive-obsession.md`; cite
-it, never re-derive it) and scope (feature-specific versus domain-generic). Three
-rungs: {{.Unexported}} in place, a sub-package nested under the feature, and a shared
-domain package when a second package imports it. Never test privates, and never
-export a helper into its parent package just so a test can reach it.
+it, never re-derive it) and scope (does a second package import it?). Three rungs:
+{{.Unexported}} in place, a sub-package nested under the feature, and a shared domain
+package when a second package imports it or a fitting one exists. Never test
+privates, and never export a helper into its parent package just so a test can reach
+it.
 
 ## Why
 
@@ -31,14 +32,15 @@ unit tests against a legitimate public API.
 1. **Trivial helper** (R1 score 0–3) → {{.Unexported}}, same package, tested only
    through the parent's public API. A helper (function or type) with a score of 4 or
    more stays here only with a reason written in the design.
-2. **Juicy + feature-scoped** → a package nested under the feature package
-   (`internal/<feature>/<leaf>`), or a module with public names inside the feature
-   package. This is the default home of a juicy helper. The feature needs no
-   minimum size for it. See `R5-vertical-slice.md`.
-3. **Juicy + domain-generic, and a second package imports it** → a top-level shared
-   package: `internal/pkg/<domain>` (default) or `pkg/<domain>` (public).
+2. **Juicy, and no second package imports it** → a package nested under the feature
+   package, or a module with public names inside the feature package. The feature
+   needs no minimum size for it. See `R5-vertical-slice.md`.
+3. **Juicy, and a second package imports it or a fitting domain package exists** → a
+   top-level shared package: extend the domain package that fits it, or create one.
    Granularity: a package is a domain *vocabulary* (`networking`), not a single noun
    (`kubeport`), never a role (`util`/`helpers`/`common`).
+
+{{include "rules/R4/rung-paths.md"}}
 
 "Juicy" is an R1 score of 4 or more — `R1-primitive-obsession.md` is the scorecard's
 only home.
@@ -47,10 +49,10 @@ only home.
 
 **The urge to unit-test a helper directly means it deserves its own package.** Never
 act on that urge by testing privates, and never by exporting the helper into the
-parent. The urge is data: it says the helper has enough behavior to be a unit of its
-own — so give it a real home where its exported API is legitimately testable with
-literal inputs: rung 2 by default, rung 3 when a second package imports it. An R1
-score of 4 or more is the same signal, with or without the urge.
+parent. The urge is data: it says that the helper has enough behavior to be a unit
+of its own. Give it a real home where a test can call its exported API with literal
+inputs. Use rung 2 by default, and rung 3 on the trigger the ladder gives. An R1 score
+of 4 or more is the same signal, with or without the urge.
 
 ### The reuse objection
 
@@ -72,19 +74,19 @@ package nested under its feature can hold a single type.
 
 - **Demote (rung 1)**: a helper exported from its parent only so tests can reach it →
   unexport it, delete the direct tests, cover it through the parent's public API.
-- **Promote to feature sub-package (rung 2)**: a juicy, feature-scoped helper being
-  tested through awkward big-object setups → move it into a package nested under the
-  feature package, export it there, test its public API directly.
-- **Split the pure leaf out of an I/O package**: a juicy pure function or type in a
-  package that does I/O (network, files, environment variables), tested only through
-  that I/O → move it to a rung-2 package nested under the feature and export it
-  there. Give it rung-0 tests with 100% coverage and a mutation run
-  (`R7-test-placement.md`). The I/O code stays in the parent and calls it. This
-  applies also when the leaf is {{.Unexported}}.
-- **Promote to domain package (rung 3)**: a juicy, domain-generic helper that a
-  second package imports → create or extend `internal/pkg/<domain>`; move the generic
-  types; leave feature policy home as a thin storified method (see Stage 2 of
-  `R1-primitive-obsession.md`'s canonical example).
+- **Promote to feature sub-package (rung 2)**: a juicy helper that no second package
+  imports, tested through awkward big-object setups → move it into a rung-2 package or
+  module, export it there, test its public API directly.
+- **Split the pure leaf out of an I/O package**: a juicy pure function or type sits in
+  a package that does I/O (network, files, environment variables). Only tests through
+  that I/O reach it. Move it to a rung-2 package or module and export it there. Give
+  it leaf unit tests (rung 0 of `R7-test-placement.md`) with 100% coverage and a
+  mutation run. The I/O code stays in the parent and calls it. This applies also
+  when the leaf is {{.Unexported}}.
+- **Promote to domain package (rung 3)**: a juicy helper that a second package
+  imports, or that fits an existing domain package → create or extend the shared
+  domain package; move the generic types; leave feature policy home as a thin
+  storified method (see Stage 2 of `R1-primitive-obsession.md`'s canonical example).
 - **Split policy from vocabulary during promotion**: feature constants and preference
   logic stay in the feature; only the domain-generic types and queries move.
 - **Move Method to the Envied Type** (Fowler: Feature Envy → Move Function): a

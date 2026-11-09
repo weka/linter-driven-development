@@ -151,10 +151,11 @@ Handler.heartbeat(raw):
 
 Every extraction raises a second question: where does the helper live? The answer is
 decided by two axes — juiciness (the scorecard in R1; cite
-it, never re-derive it) and scope (feature-specific versus domain-generic). Three
-rungs: internal in place, a sub-package nested under the feature, and a shared
-domain package when a second package imports it. Never test privates, and never
-export a helper into its parent package just so a test can reach it.
+it, never re-derive it) and scope (does a second package import it?). Three rungs:
+internal in place, a sub-package nested under the feature, and a shared domain
+package when a second package imports it or a fitting one exists. Never test
+privates, and never export a helper into its parent package just so a test can reach
+it.
 
 ```text
 # ❌ made public by the feature package only so the test can reach it

@@ -59,7 +59,8 @@ result, an exception, an optional type — follows the repository's language.
 ### Stage 2 — placement (R4 rung 3)
 
 `Port`, `Ports`, `firstNamed` and `first` say nothing about Kubernetes or Weka — they
-are generic networking vocabulary, so they move to a shared `networking` package
+are generic networking vocabulary, and a second feature imports them, so they move
+to a shared `networking` package
 (rung 3 of `R4-helper-placement.md`). The wire adapter `parsePorts` knows the DTO, so
 it stays with the feature. The feature policy stays home as a two-line storified
 method: `management()` becomes `firstNamed(managementPortName) or first()` on the
