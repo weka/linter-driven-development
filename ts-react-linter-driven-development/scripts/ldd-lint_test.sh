@@ -1523,6 +1523,19 @@ run_lint package-size
 expect_exit 0 && expect_has "pkg: $MAX_FILES source files (limit $MAX_FILES, profile default)" && ok
 finish
 
+begin "--over-limit lists the directories at or over the limit and leaves out the warning zone"
+fill_dir a "$WARN_FILES"; fill_dir b "$MAX_FILES"
+run_lint package-size --over-limit
+expect_exit 0 && expect_has "b: $MAX_FILES source files (limit $MAX_FILES, profile default)" \
+  && expect_not "a:" && expect_not "warning at $WARN_FILES, profile" && ok
+finish
+
+begin "--over-limit with file-length is a usage error"
+write_src "src/a$FX_EXT" 1
+run_lint file-length --over-limit
+expect_exit 2 && expect_has "only package-size takes --over-limit" && ok
+finish
+
 begin ".ldd-lint.yaml sets the directory sizes"
 printf 'package_warn_files: 2\npackage_max_files: 3\n' > "$REPO/.ldd-lint.yaml"
 fill_dir small 2; fill_dir big 3

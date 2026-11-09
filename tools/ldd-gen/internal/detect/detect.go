@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"path"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -83,6 +84,7 @@ var (
 	// numberedBold is the headline shape the handbook extractor reads too:
 	// a question is "N. **headline**" and nothing else opens an item.
 	numberedBold = regexp.MustCompile(`^(\d+)\. \*\*`)
+	scriptFlagRe = regexp.MustCompile(`^--[a-z][a-z-]*$`)
 	detectRe     = regexp.MustCompile(`^\s*Detect(-[a-z]+)?:`)
 	placeholder  = regexp.MustCompile(`<[A-Za-z][A-Za-z0-9 _-]*>`)
 	gateRe       = regexp.MustCompile(`^Q\d+$`)
@@ -115,7 +117,7 @@ func lintItems(p string, items []item) []Problem {
 		}
 		switch len(it.detects) {
 		case 0:
-			problems = append(problems, Problem{p, it.line, fmt.Sprintf("question %d has no detect line (Detect-grep, Detect-path, Detect-gate or Detect: judgment)", it.number)})
+			problems = append(problems, Problem{p, it.line, fmt.Sprintf("question %d has no detect line (Detect-grep, Detect-path, Detect-gate, Detect-script or Detect: judgment)", it.number)})
 		case 1:
 			if msg := lintDetect(it.detects[0].text); msg != "" {
 				problems = append(problems, Problem{p, it.detects[0].line, fmt.Sprintf("question %d: %s", it.number, msg)})
@@ -146,9 +148,54 @@ func lintDetect(text string) string {
 		return ""
 	case "grep", "path":
 		return lintPattern(kind, rest)
+	case "script":
+		return lintScript(rest)
 	default:
-		return fmt.Sprintf("unknown detect kind %q (grep, path, gate, or a bare Detect: judgment)", "Detect-"+kind)
+		return fmt.Sprintf("unknown detect kind %q (grep, path, gate, script, or a bare Detect: judgment)", "Detect-"+kind)
 	}
+}
+
+// scriptSubcommands lists the sibling scripts a Detect-script line may run,
+// each with the subcommands the detection pass may call.
+func scriptSubcommands(script string) ([]string, bool) {
+	if script == "ldd-lint" {
+		return []string{"file-length", "package-size"}, true
+	}
+	return nil, false
+}
+
+// lintScript checks "<script> <subcommand> [--flag ...]": a script and a
+// subcommand from the allowlist, flags of the shape --name, each at most once.
+func lintScript(rest string) string {
+	if strings.Contains(rest, "`") {
+		return "Detect-script takes no backticks; the script and its subcommand are literal words"
+	}
+	if m := placeholder.FindString(rest); m != "" {
+		return fmt.Sprintf("Detect-script carries the placeholder %s; the line names a script, a subcommand and flags", m)
+	}
+	fields := strings.Fields(rest)
+	if len(fields) < 2 {
+		return fmt.Sprintf("Detect-script takes <script> <subcommand> [--flag ...], got %q", rest)
+	}
+	script, sub, flags := fields[0], fields[1], fields[2:]
+	subs, ok := scriptSubcommands(script)
+	if !ok {
+		return fmt.Sprintf("Detect-script names the unknown script %q (known: ldd-lint)", script)
+	}
+	if !slices.Contains(subs, sub) {
+		return fmt.Sprintf("Detect-script: %s has no subcommand %q (known: %s)", script, sub, strings.Join(subs, ", "))
+	}
+	seen := map[string]bool{}
+	for _, fl := range flags {
+		if !scriptFlagRe.MatchString(fl) {
+			return fmt.Sprintf("Detect-script flag %q is not of the shape --name", fl)
+		}
+		if seen[fl] {
+			return fmt.Sprintf("Detect-script flag %s given twice", fl)
+		}
+		seen[fl] = true
+	}
+	return ""
 }
 
 func lintPattern(kind, rest string) string {

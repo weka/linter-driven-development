@@ -5,6 +5,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+### Added
+
+- **The gap linter's findings are detection rows.** R5 Q6 (file length) and Q7
+  (package size) carry `Detect-script: ldd-lint …` lines, a fifth detect kind: the
+  detection pass runs the gap linter over the scope and writes its findings as
+  `script` rows of `hits.tsv` and `counts.tsv`, with a receipt per question. Its
+  threshold lines print under the `R9 gate:` line. A linter that fails makes its
+  rows `inconclusive`, never clean. The god-file lead leaves R5 Q2, which keeps
+  horizontal scatter, and `ldd-lint.sh package-size` takes `--over-limit`.
+
 ## [0.6.0] - 2026-10-29
 
 ### Added

@@ -180,7 +180,12 @@ differently from the other bindings:
   that language is installed. The split and the routing are core: a scope is grouped
   by the language of each file, a group goes to the plugin installed for its
   language, else to this plugin's block, else to the generic plugin, else it is
-  excluded and every file of it named.
+  excluded and every file of it named. The detection script knows five detect
+  kinds; `Detect-script: <script> <subcommand> [--flag …]` runs a sibling script
+  from an allowlist (today `ldd-lint`, with `file-length` or `package-size`) once
+  per distinct line and records its findings as `script` rows. A script that
+  exits other than 0 makes its counts row `inconclusive`, and the linter's
+  threshold lines print under the `R9 gate:` line.
 - `scripts/ldd-lint.sh` and `scripts/ldd-lint_test.sh`, the gap linter and its
   fixture matrix, are core templates. The linter measures lines per source file and
   source files per directory, where the repository's linter does not hold them. It
@@ -189,7 +194,8 @@ differently from the other bindings:
   comment syntax, the files a directory count leaves out, and whether the
   repository's own linter config names a file-length rule. A named rule belongs to
   the linter, so the script reads no limit out of a config and copies no linter's way
-  of counting. The table also holds the doctor's part per linter: the commands that
+  of counting. `package-size --over-limit` lists only the directories at or over
+  the limit and leaves out the warning zone; the review uses it. The table also holds the doctor's part per linter: the commands that
   ask the installed linter which rules it runs (and, for ruff and ESLint, every
   setting), and the presence check for revive rules, which golangci-lint does not
   report. The table is the one place core

@@ -151,7 +151,7 @@ are the ones that catch the most. The house-rule questions are review questions 
 - **R2** {{questions "rules/R2/falsifying-questions.md" 1 5}}
 - **R3** {{questions "rules/R3/falsifying-questions.md" 2 3}}
 - **R4** {{questions "rules/R4/falsifying-questions.md" 2 3}}
-- **R5** {{questions "rules/R5/falsifying-questions.md" 1 2}}
+- **R5** {{questions "rules/R5/falsifying-questions.md" 1 2 6}}
 - **R6** {{questions "rules/R6/falsifying-questions.md" 2 5}}
 - **R7** {{questions "rules/R7/falsifying-questions.md" 1 2 6}}
 - **R8** {{questions "rules/R8/falsifying-questions.md" 1 5}}

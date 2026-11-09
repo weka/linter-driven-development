@@ -247,7 +247,7 @@ it.
 A Go analyzer under `tools/` *(planned)*, a different program from the plugin's gap
 linter `scripts/ldd-lint.sh`, answers the falsifying
 questions that are AST facts: package-level mutable state and manufactured root
-contexts (R8), test placement (R7), function and file length (R3), the mechanical
+contexts (R8), test placement (R7), function length (R3), the mechanical
 halves of concurrency safety (R10) and mutation discipline (R12). It emits findings
 with a rule code and a `file:line`, runs as a hook and in CI at zero tokens, and
 replaces the grep behind a question's detect line, writing the same hits table S8
@@ -369,13 +369,14 @@ question with its hit count. It prints the counts table, about 300 tokens, and t
 per-family totals the spawn step needs. The suppression scan the skill runs in step 1
 is a `SUPPRESS` row of the same table. What runs comes from the rules, not from the
 script: each numbered question in the bindings' question files and in the core
-defaults carries one **detect line** beside its prose, of one of four kinds.
+defaults carries one **detect line** beside its prose, of one of five kinds.
 
 | Detect line | What the script does |
 |---|---|
 | `Detect-grep: PATTERN [files=src\|test\|all] [exclude-path=ERE,…] [context=n]` — the pattern an ERE in backticks | `grep -nHE` over the scope's source files — the non-test ones unless `files=` says otherwise, minus paths matching an `exclude-path` entry; `context` appends the next n lines to each hit's excerpt |
 | `Detect-path: PATTERN` | the pattern over the scope's relative paths: layer directories, role-named packages |
 | `Detect-gate: Q<n>` | the R9 gate's `[Q<n>]` report lines, from one run of `check-repo-brain.sh` over the repository, or over the scope's docs on a scoped review; `inconclusive` when the run outlives `--gate-budget` or the gate fails (an exit other than 0 or 1, or an exit 1 with no violation summary); the rest of the pass still runs, and the documentation hunter answers those questions from the prose |
+| `Detect-script: SCRIPT SUBCOMMAND [--flag …]` | the gap linter's findings, from one run of a sibling script over the scope's files (today `ldd-lint`, with `file-length` or `package-size --over-limit`); a hit is a path and the linter's message, with no line number, which carries the measurement and the limit's source; the linter's `threshold:` lines print under the `R9 gate:` line; `inconclusive` when the script exits other than 0, and the hunter answers from the prose |
 | `Detect: judgment` | no mechanical lead; the hunter runs the prose, as it does for a question whose only procedure depends on an earlier hit (R1's second question) or on a read |
 
 A pattern is a literal: the placeholder forms the prose used to carry — `<changed
@@ -393,7 +394,7 @@ the language from the repository's marker file and takes the glob as an argument
 when there is none.
 
 The generator's `lint-core` check holds the contract: every question carries exactly
-one detect line, its kind is one of the four, a `grep` or `path` pattern compiles
+one detect line, its kind is one of the five, a `script` line names an allowed script and subcommand with flags of the shape `--name`, a `grep` or `path` pattern compiles
 and carries no placeholder, its flags are the three named, and every binding that
 renders a rule renders the same number of questions as the core default. A fixture
 test in the shape of the R9 gate's matrix, `scripts/ldd-detect_test.sh`, runs every
@@ -402,11 +403,12 @@ planted hit that does not fire, or two runs whose counts differ; the eval manife
 153 plants and controls per suite, remain the recall test of what the patterns find.
 The classification the pass produced, per binding:
 
-| Binding | grep | path | gate | judgment |
-|---|---:|---:|---:|---:|
-| Go | 36 | 2 | 4 | 28 |
-| Python | 37 | 2 | 4 | 27 |
-| generic (core defaults) | 17 | 2 | 4 | 47 |
+| Binding | grep | path | gate | script | judgment |
+|---|---:|---:|---:|---:|---:|
+| Go | 39 | 2 | 4 | 2 | 27 |
+| Python | 40 | 2 | 4 | 2 | 26 |
+| TypeScript and React | 41 | 2 | 4 | 2 | 25 |
+| generic (core defaults) | 17 | 2 | 4 | 2 | 49 |
 
 The review skill runs on the two scripts (the stage shipped in two halves: the
 scripts first with the skill unchanged, so no eval behavior moved before the rewiring
@@ -446,9 +448,11 @@ than silently skipped, which is the failure class #63 closed by hand for one rul
 
 S8 changes how the review finds leads, not the plugin's shape, so it does not wait
 for gate 1 of [eval-return-experiments.md](eval-return-experiments.md). It is also
-the seam S6 needs: the analyzer, when it comes, replaces a detect line's pattern with
-its own output for the questions that are AST facts and writes the same hits table,
-so S6 changes rules and one script and touches no skill.
+the seam S6 needs, and `Detect-script:` is that seam built in shell for the two
+checks that need no AST: file length and package size, which the gap linter measures.
+The analyzer, when it comes, replaces a detect line's pattern with its own output for
+the questions that are AST facts and writes the same hits table, so S6 changes rules
+and one script and touches no skill.
 
 Expected: Cases A to F down 10 to 15 percent each; the whole-repository review down
 about 5 to 10 percent, mostly hunter tool output and the critic's sweep; hunters with

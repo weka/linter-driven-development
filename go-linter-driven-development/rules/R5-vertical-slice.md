@@ -130,14 +130,9 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect: judgment
    Detection: for each feature noun in the diff,
    `grep -rln '<feature>' --include='*.go' . | xargs -n1 dirname | sort -u` — count
-   distinct layer-named directories. The inverse shape is the god file, and it needs
-   no feature noun: `xargs wc -l < files.txt | sort -n | tail -6` over the scope's
-   file list names the longest files; check each against revive's
-   `file-length-limit` where the repository sets it, else 450 code lines.
+   distinct layer-named directories.
    Violation: the same feature living in `handlers/` and `services/` (etc.) — it is
-   horizontally scattered; or one file over that limit, or with a `//nolint` silencing
-   the limit, standing in for the whole slice — split it by role (file-per-type)
-   inside the package.
+   horizontally scattered.
 
 3. **Does the diff add a new file into a layer directory instead of a slice?**
    Detect: judgment
@@ -159,3 +154,23 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    `ls docs/architecture/vertical-slice-migration.md` fails.
    Violation: mixed state with no documented strategy/progress — add the template
    above.
+
+6. **Is any file over the file-length limit?**
+   Detect-script: ldd-lint file-length
+   Detection: the gap linter counts the code lines of each Go file in the scope. The
+   limit is revive's `file-length-limit` where the repository sets it, else
+   450 code lines. When the repository's linter holds the rule, the row
+   count is 0 and the `ldd-lint:` line names the rule: the linter's own report is the
+   lead, and the limit is its to enforce.
+   Violation: a file over the limit standing in for the whole slice, or a `//nolint`
+   silencing the limit (the suppression row carries directives) — split it by role
+   (file-per-type) inside the package.
+
+7. **Is any package over the file-count limit?**
+   Detect-script: ldd-lint package-size --over-limit
+   Detection: the gap linter counts the Go files of each directory in the scope,
+   leaving out test and generated files. The limit is `package_max_files` in
+   `.ldd-lint.yaml`, else 13 files.
+   Violation: a directory at or over the limit — decompose it into sub-packages with
+   the refactoring skill's package-decomposition procedure. The warning zone is not a
+   review finding.

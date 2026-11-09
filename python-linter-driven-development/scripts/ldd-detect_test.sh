@@ -28,12 +28,16 @@ DETECT="${1:-$HERE/ldd-detect.sh}"
 DETECT=$(cd "$(dirname "$DETECT")" && pwd)/$(basename "$DETECT")
 RULES=$(cd "$(dirname "$DETECT")/../rules" && pwd)
 SCOPE_SH=$(dirname "$DETECT")/ldd-scope.sh
+MAX_LINES=450
+WARN_FILES=8
+MAX_FILES=13
 
 pass=0 failed=0 skipped=0
 CASE=""
 OUT="" ERR="" CODE=0
 ROW=""
 REPO="" BUNDLE=""
+TAB=$(printf '\t')
 NO_PLUGINS=$(mktemp)
 printf '{ "version": 2, "plugins": {} }\n' > "$NO_PLUGINS"
 SIBLINGS_FILE=$(mktemp)
@@ -92,17 +96,24 @@ expect_count() { # <rule> <question> <value|>=n>
   esac
 }
 
-# run_stub_gate <gate body> [options...] — runs a copy of the script whose
-# check-repo-brain.sh beside it is a stub with that body, over $REPO with $BUNDLE
-run_stub_gate() {
-  local body="$1" fake; shift
-  fake=$(mktemp -d)
+# run_stub_sibling <sibling> <body> [options...] — runs a copy of the script
+# whose sibling script beside it (check-repo-brain or ldd-lint) is a stub with
+# that body, over $REPO with $BUNDLE; the other sibling stays the real one, so
+# only the stubbed one can fail
+run_stub_sibling() {
+  local name="$1" body="$2" fake dir; shift 2
+  fake=$(mktemp -d); dir=$(dirname "$DETECT")
   cp "$DETECT" "$fake/ldd-detect.sh"
-  printf '#!/usr/bin/env bash\n%s\n' "$body" > "$fake/check-repo-brain.sh"
+  for sib in check-repo-brain ldd-lint; do
+    [[ -f "$dir/$sib.sh" ]] && cp "$dir/$sib.sh" "$fake/$sib.sh"
+  done
+  printf '#!/usr/bin/env bash\n%s\n' "$body" > "$fake/$name.sh"
   OUT=$(cd "$REPO" && bash "$fake/ldd-detect.sh" --rules "$RULES" "$@" --root . "$BUNDLE" 2>"$BUNDLE/.stderr"); CODE=$?
   ERR=$(cat "$BUNDLE/.stderr"); rm -f "$BUNDLE/.stderr"
   rm -rf "$fake"
 }
+# run_stub_gate <gate body> [options...] — the stub is the R9 gate
+run_stub_gate() { local body="$1"; shift; run_stub_sibling check-repo-brain "$body" "$@"; }
 # expect_gate_inconclusive <reason> — every gate question of the plan counts
 # "inconclusive", and the "R9 gate:" line carries the reason
 expect_gate_inconclusive() {
@@ -555,7 +566,7 @@ finish
 begin "--gate-budget stops a slow gate and its children; the gate questions are inconclusive"
 mk_repo; : > "$BUNDLE/dirs.txt"
 FAKE=$(mktemp -d)
-cp "$DETECT" "$FAKE/ldd-detect.sh"
+cp "$DETECT" "$FAKE/ldd-detect.sh"; cp "$(dirname "$DETECT")/ldd-lint.sh" "$FAKE/ldd-lint.sh"
 printf '#!/usr/bin/env bash\nsleep 37\necho never\n' > "$FAKE/check-repo-brain.sh"
 t0=$SECONDS
 OUT=$(cd "$REPO" && bash "$FAKE/ldd-detect.sh" --rules "$RULES" --gate-budget 1 --root . "$BUNDLE" 2>"$BUNDLE/.stderr"); CODE=$?
@@ -646,6 +657,66 @@ begin "a --gate-budget with no value is a usage error (exit 2)"
 mk_repo
 OUT=$(cd "$REPO" && bash "$DETECT" --root . "$BUNDLE" --gate-budget 2>&1); CODE=$?; ERR=""
 expect_exit 2 && expect_has "--gate-budget needs a value" && ok
+finish
+
+
+# --- the gap linter's findings: Detect-script rows ---
+# plant_code_lines <path> <n> — a source file of n code lines in the row's language
+plant_code_lines() {
+  mkdir -p "$REPO/$(dirname "$1")"
+  local i; for (( i = 1; i <= $2; i++ )); do printf 'v%d = %d\n' "$i" "$i"; done > "$REPO/$1"
+}
+# plant_dir <dir> <n> — n one-line source files in <dir>
+plant_dir() { local i; for (( i = 1; i <= $2; i++ )); do plant_code_lines "$1/m$i$FX_EXT" 1; done; }
+
+begin "the plan carries the two script rows of R5"
+run_plan
+expect_exit 0 && expect_quiet \
+  && { printf '%s\n' "$OUT" | grep -qxF "R5${TAB}Q6${TAB}script${TAB}ldd-lint file-length" || bad "no R5 Q6 script row in the plan"; } \
+  && printf '%s\n' "$OUT" | grep -qxF "R5${TAB}Q6${TAB}script${TAB}ldd-lint file-length" \
+  && { printf '%s\n' "$OUT" | grep -qxF "R5${TAB}Q7${TAB}script${TAB}ldd-lint package-size --over-limit" || bad "no R5 Q7 script row in the plan"; } \
+  && printf '%s\n' "$OUT" | grep -qxF "R5${TAB}Q7${TAB}script${TAB}ldd-lint package-size --over-limit" && ok
+finish
+
+begin "a file over the file-length limit is a script row of R5 Q6 with the linter's message"
+mk_repo; plant_code_lines "services/long$FX_EXT" $((MAX_LINES + 1)); write_scope; run_detect
+want="R5${TAB}6${TAB}script${TAB}services/long$FX_EXT${TAB}0${TAB}$((MAX_LINES + 1)) code lines (limit $MAX_LINES, profile default)"
+expect_exit 0 && expect_count R5 6 1 \
+  && { grep -qxF "$want" "$BUNDLE/hits.tsv" || bad "hits.tsv has no row: $want"; } \
+  && grep -qxF "$want" "$BUNDLE/hits.tsv" \
+  && expect_has "ldd-lint: threshold: " && expect_has "2 script," && ok
+finish
+
+begin "a short tree has no R5 Q6 hit and the threshold line still prints"
+mk_repo; run_detect
+expect_exit 0 && expect_count R5 6 0 && expect_has "ldd-lint: threshold: " && ok
+finish
+
+begin "a directory at the file-count limit is an R5 Q7 hit; the warning zone is not"
+mk_repo; plant_dir bigpkg "$MAX_FILES"; plant_dir warnpkg "$WARN_FILES"; write_scope; run_detect
+expect_exit 0 && expect_count R5 7 '>=1' \
+  && { awk -F'\t' '$1 == "R5" && $2 == 7 && $4 == "bigpkg"' "$BUNDLE/hits.tsv" | grep -q . || bad "bigpkg is not an R5 Q7 hit"; } \
+  && awk -F'\t' '$1 == "R5" && $2 == 7 && $4 == "bigpkg"' "$BUNDLE/hits.tsv" | grep -q . \
+  && { ! awk -F'\t' '$1 == "R5" && $2 == 7 && $4 == "warnpkg"' "$BUNDLE/hits.tsv" | grep -q . || bad "warnpkg, in the warning zone, is a hit"; } \
+  && ! awk -F'\t' '$1 == "R5" && $2 == 7 && $4 == "warnpkg"' "$BUNDLE/hits.tsv" | grep -q . && ok
+finish
+
+begin "a linter that fails makes its script questions inconclusive; the rest of the pass runs"
+mk_repo; plant_code_lines "services/long$FX_EXT" $((MAX_LINES + 1)); write_scope
+run_stub_sibling ldd-lint 'echo "ldd-lint: boom" >&2; exit 2'
+expect_exit 0 && expect_count R5 6 inconclusive && expect_count R5 7 inconclusive \
+  && expect_has "ldd-lint: inconclusive — exit 2: ldd-lint: boom" \
+  && { printf '%s\n' "$OUT" | grep -qE '^structure .* 2 inconclusive' || bad "the structure family line does not count 2 inconclusive"; } \
+  && printf '%s\n' "$OUT" | grep -qE '^structure .* 2 inconclusive' \
+  && expect_count R10 5 2 && expect_count R9 1 0 && expect_not "R9 gate: inconclusive" && ok
+finish
+
+begin "two runs with a script row write identical counts and hits"
+mk_repo; plant_code_lines "services/long$FX_EXT" $((MAX_LINES + 1)); write_scope; run_detect
+cp "$BUNDLE/counts.tsv" "$BUNDLE/first.tsv"; cp "$BUNDLE/hits.tsv" "$BUNDLE/first-hits.tsv"
+run_detect
+expect_exit 0 && { cmp -s "$BUNDLE/first.tsv" "$BUNDLE/counts.tsv" && cmp -s "$BUNDLE/first-hits.tsv" "$BUNDLE/hits.tsv" || bad "the tables differ between runs"; } \
+  && cmp -s "$BUNDLE/first.tsv" "$BUNDLE/counts.tsv" && cmp -s "$BUNDLE/first-hits.tsv" "$BUNDLE/hits.tsv" && ok
 finish
 
 } # run_row_cases

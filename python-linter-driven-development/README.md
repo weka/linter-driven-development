@@ -136,7 +136,7 @@ python-linter-driven-development/
 - **[`rules/`](rules/)** — R1–R12, each a self-contained hunter rulebook: Principle,
   Why, a canonical before/after in Python, Design guidance, a Fix pattern, and
   Falsifying questions, each with a detect line the detection script runs over `.py`
-  files — a grep or path pattern, an R9 gate question, or `judgment`.
+  files — a grep or path pattern, an R9 gate question, a gap-linter script, or `judgment`.
 - **[`skills/`](skills/)** — thin directional views that sequence and route into the
   rules. They never restate rule content. The testing skill's
   [reference](skills/testing/reference.md) is a short pytest harness catalogue.

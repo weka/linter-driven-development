@@ -77,7 +77,11 @@ reported as such.
 The detection script runs every falsifying question's detect line over the scope,
 writes `hits.tsv`, `hits-all.tsv` and `counts.tsv` into the bundle, and prints the
 **counts table** — one row per question, `rule q kind hits`, a `judgment` row for a
-question only a hunter's reading answers — then one line per rule family. That
+question only a hunter's reading answers — then one line per rule family. A `script`
+row is the gap linter's measurement over the scope: one hit per file or directory
+over a limit, and the linter's `ldd-lint: threshold: …` lines print under the
+`R9 gate:` line, naming the limit that applied and whether the repository's own
+linter holds it. That
 table, about 300 tokens, is the pre-filter: the parent prints no rule file, composes
 no detection command, and never reads a Falsifying-questions section. On a scoped review the R9
 gate checks the docs the diff touches in full; in a doc that links to a scope file
@@ -87,9 +91,11 @@ doc's older drift or an unwired root is the repository's state, for a `--all` re
 `R9 gate: …` under the summary says which docs the gate checked. A gate row whose
 hits cell is `inconclusive` means the gate gave no verdict: it ran out of its
 `--gate-budget`, or it failed, and then the line reads `R9 gate: inconclusive — the
-gate failed (exit <n>): <its error line>`. An `inconclusive` row is never a
-`0` and never clean: the review goes on, and the documentation hunter answers that
-question from R9's prose. When the detection script exits 2 instead — a pattern its
+gate failed (exit <n>): <its error line>`. A `script` row is `inconclusive` the same
+way when its script exits other than 0, and an `ldd-lint: inconclusive — exit <n>:
+<its error line>` line says why. An `inconclusive` row is never a
+`0` and never clean: the review goes on, and the hunter of that rule's family answers
+that question from the rule's prose. When the detection script exits 2 instead — a pattern its
 grep rejects, a scope in which no file matches the source glob — the review did not
 run: report its message, spawn nothing, and never render a
 rule as `skipped` or compose the pass by hand. A rule family none of whose rules has
@@ -142,8 +148,8 @@ families:
 
 A family none of whose rules had a hit gets no hunter — its `judgment` rows alone
 spawn nothing; step 1's four family lines say which families did. An `inconclusive`
-gate row is a hit: the documentation family gets its hunter even when every other
-R9 row is `0`. A family with a
+gate or script row is a hit: its family gets its hunter even when every other row
+of the family is `0`. A family with a
 hit gets one hunter carrying **every rule file of the family**, the hitless ones
 included: their `judgment` questions are read on the ground the family's hits name,
 and their mechanical questions receipt `0 hit(s)`. Each spawn prompt MUST contain:
@@ -163,7 +169,8 @@ and their mechanical questions receipt `0 hit(s)`. Each spawn prompt MUST contai
    The counts are the hunter's receipts: it judges every hit the table counted, runs
    each `judgment` question as its rule's prose says, and returns one receipt per
    question carrying the table's number. When the family has an `inconclusive` row,
-   the prompt also carries step 1's `R9 gate: …` line, so the hunter knows why.
+   the prompt also carries step 1's `R9 gate:` and `ldd-lint:` lines, so the hunter
+   knows why.
 4. **The overflow rows**, when the family has any: a row whose file is `-` and whose
    excerpt reads `+N more hit(s) not listed` is a question capped in `hits.tsv`. The
    prompt names each (`R9 Q4: 55 more hits than listed`) and says where the rest are:
@@ -329,8 +336,9 @@ once, now. The contract it spells out, kept whatever the scope:
   verbatim in that rule's place in the header — never as `skipped`, never as a clean
   tally, never dropped — and the Scope line reads `PARTIAL coverage`; a rule that had
   hits and was not hunted is coverage the review did not have.
-- **A gate that failed is named.** When step 1's `R9 gate:` line reads `inconclusive
-  — the gate failed …`, the header carries it verbatim after the `Hunters:` line, so
+- **A gate or script that failed is named.** When step 1's `R9 gate:` line reads
+  `inconclusive — the gate failed …`, or an `ldd-lint:` line reads `inconclusive —
+  exit <n>: …`, the header carries both lines verbatim after the `Hunters:` line, so
   the script's defect gets a fix: `R9 gate: inconclusive — the gate failed (exit 2):
   <its error line> — gate questions answered from the prose`. The hunter's
   `inconclusive` receipts and its `gate disproved:` lines render verbatim beside the
@@ -356,7 +364,8 @@ This skill MUST NOT:
 - Edit code, fix findings, or invoke fix skills (@refactoring, @code-designing, @testing)
 - Write the report, or any part of it, to a file — the bundle is the only file it
   writes, and an empty scope writes none
-- Run the linter or tests, or block a commit — every finding is advisory
+- Run the linter or tests, or block a commit — every finding is advisory (the
+  plugin's own gap linter runs inside the detection pass; the parent runs none)
 - Restate or paste rule content — spawn prompts name rules by absolute path and range
 - Compose a detection command or a bundle recipe in place of `ldd-scope.sh` and
   `ldd-detect.sh` — the scripts are the pre-filter and the bundle

@@ -10,6 +10,8 @@
 # Usage:  bash scripts/ldd-lint.sh <subcommand> [options]
 #   file-length            source files over the file-length limit
 #   package-size           directories at or over the warning size or the limit
+#   --over-limit           package-size: leave out the warning zone; list only
+#                          the directories at or over the limit
 #   doctor                 per language of the repository, each rule of the
 #                          plugin's recommended config under setup/: whether
 #                          the repository's linter runs it, and the setting on
@@ -23,7 +25,8 @@
 #                          lookup starts there (default: cwd)
 #   --files <list>         measure the source files this list names, one
 #                          relative path per line (a scope bundle's files.txt
-#                          works: a "(not bundled: …)" suffix is ignored);
+#                          works: a "(not bundled: …)" suffix is ignored); a
+#                          relative list path is read from the caller's directory;
 #                          default: every source file of the repository
 #   --tsv                  findings as rows: path TAB line TAB message, line 0;
 #                          the threshold lines then go to stderr. doctor rows:
@@ -253,6 +256,7 @@ OVERRIDE_FILE=".ldd-lint.yaml"
 ROOT="$(pwd)"
 FILES_LIST=""
 TSV=0
+OVER_LIMIT=0
 OPT_GLOB=""
 OPT_TEST_RE=""
 SUBCOMMAND=""
@@ -282,6 +286,7 @@ while (( $# > 0 )); do
     --root)    value "$1" $#; ROOT="$2"; shift 2 ;;
     --files)   value "$1" $#; FILES_LIST="$2"; shift 2 ;;
     --tsv)     TSV=1; shift ;;
+    --over-limit) OVER_LIMIT=1; shift ;;
     --linter)   value "$1" $#; AGREE_LINTER="$2"; LINTER_SET=1; shift 2 ;;
     --rule)     value "$1" $#; AGREE_RULE="$2"; AGREE_SET="$AGREE_SET $1"; shift 2 ;;
     --decision) value "$1" $#; AGREE_DECISION="$2"; AGREE_SET="$AGREE_SET $1"; shift 2 ;;
@@ -304,6 +309,7 @@ done
 (( ! LINTER_SET )) || [[ "$SUBCOMMAND" == agree || ( "$SUBCOMMAND" == doctor && -n "$OPT_CONFIG" ) ]] \
   || die "only agree, and doctor with --config, take --linter"
 (( ! BRIEF )) || [[ "$SUBCOMMAND" == doctor ]] || die "only doctor takes --brief"
+(( ! OVER_LIMIT )) || [[ "$SUBCOMMAND" == package-size ]] || die "only package-size takes --over-limit"
 (( ! BRIEF )) || [[ -z "$OPT_CONFIG$FILES_LIST" ]] || die "--brief takes no --config or --files"
 [[ -d "$ROOT" ]] || die "not a directory: $ROOT"
 if [[ -n "$FILES_LIST" ]]; then
@@ -1577,7 +1583,7 @@ run_package_size() { # <id> — every directory that holds a measured file of th
     n="${n:-0}"
     if (( n >= lim )); then
       finding "$d" "$n source files (limit $lim, $src)"
-    elif (( n >= warn )); then
+    elif (( ! OVER_LIMIT && n >= warn )); then
       finding "$d" "$n source files (warning at $warn, $src)"
     fi
   done < <(awk -F'\t' -v id="$id" '$1 == id { print $2 }' "$SCOPE" | while IFS= read -r f; do

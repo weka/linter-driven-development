@@ -89,6 +89,7 @@ this table:
 | `PLR0913` (too many arguments) | rules/R1-primitive-obsession.md (Introduce Parameter Object) |
 | `FBT001` / `FBT002` whose branches share little after the keyword-only fix | rules/R11-conditional-dispatch.md (Split Flag Argument) |
 | `PLW0603` (`global` statement) | rules/R8-no-globals.md |
+| pylint `max-module-lines`; `scripts/ldd-lint.sh file-length` and `package-size` findings | rules/R5-vertical-slice.md |
 | `B006` / `B008` (mutable or call default) | rules/R12-mutation-discipline.md; a `None`-able collaborator default → rules/R11-conditional-dispatch.md ("Introduce Null Object") |
 | `PLR2004` on an enum-shaped string | rules/R1-primitive-obsession.md ("Name enum strings" move) |
 | ty `invalid-return-type` / mypy `return-value` on a `return None` from a `-> X` function | rules/R1-primitive-obsession.md (Q4 — a sentinel, never a `# ty: ignore` or `# type: ignore`) |

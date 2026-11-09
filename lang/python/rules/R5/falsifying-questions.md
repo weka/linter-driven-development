@@ -9,13 +9,9 @@
    Detect: judgment
    Detection: for each feature noun in the diff,
    `grep -rli '<feature>' --include='*.py' . | xargs -n1 dirname | sort -u` — count
-   distinct layer-named directories. The inverse shape is the god file, and it needs
-   no feature noun: `xargs wc -l < files.txt | sort -n | tail -6` over the scope's
-   file list names the longest modules. ruff has no file-length rule: the limit is
-   pylint's `max-module-lines` where the repository sets it, else {{.FileMaxLines}} code lines.
+   distinct layer-named directories.
    Violation: the same feature living in `handlers/` and `services/` (etc.) — it is
-   horizontally scattered; or one module over that limit standing in for the whole
-   slice — split it by role inside the package.
+   horizontally scattered.
 
 3. **Does the diff add a new file into a layer directory instead of a slice?**
    Detect: judgment
@@ -37,3 +33,24 @@
    `ls docs/architecture/vertical-slice-migration.md` fails.
    Violation: mixed state with no documented strategy/progress — add the template
    above.
+
+6. **Is any module over the file-length limit?**
+   Detect-script: ldd-lint file-length
+   Detection: the gap linter counts the code lines of each Python module in the
+   scope. ruff has no file-length rule: the limit is pylint's `max-module-lines`
+   where the repository sets it, else {{.FileMaxLines}} code lines. When the
+   repository's linter holds the rule, the row count is 0 and the `ldd-lint:` line
+   names the rule: the linter's own report is the lead, and the limit is its to
+   enforce.
+   Violation: a module over the limit standing in for the whole slice, or a
+   `# pylint: disable=too-many-lines` silencing the limit (the suppression row
+   carries directives) — split it by role inside the package.
+
+7. **Is any package over the file-count limit?**
+   Detect-script: ldd-lint package-size --over-limit
+   Detection: the gap linter counts the Python modules of each directory in the
+   scope, leaving out test and generated files and `__init__.py`. The limit is
+   `package_max_files` in `.ldd-lint.yaml`, else {{.PackageMaxFiles}} files.
+   Violation: a directory at or over the limit — decompose it into sub-packages with
+   the refactoring skill's package-decomposition procedure. The warning zone is not a
+   review finding.

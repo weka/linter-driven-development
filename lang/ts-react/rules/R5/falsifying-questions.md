@@ -12,16 +12,10 @@
    Detect: judgment
    Detection: for each feature noun in the diff,
    `grep -rli '<feature>' --include='*.ts' --include='*.tsx' --exclude-dir=node_modules src | xargs -n1 dirname | sort -u`
-   — count distinct layer-named directories. The inverse shape is the god file, and
-   it needs no feature noun: `xargs wc -l < files.txt | sort -n | tail -6` over the
-   scope's file list names the longest files; check each against the repository's
-   `sonarjs/max-lines` limit, or {{.FileMaxLines}} code lines where it sets none — a `Performance.tsx` of 1,199 lines holding the page, its hooks, its API
-   calls and its types in one module.
+   — count distinct layer-named directories.
    Violation: the same feature living in `components/`, `hooks/`, `services/` and
    `types/` — four top-level directories for one page — it is horizontally
-   scattered; or one file over that limit, or with a `max-lines` directive silencing
-   the rule, standing in for the whole slice — split it by role inside the page
-   folder.
+   scattered.
 
 3. **Does the diff add a new file into a layer directory instead of a slice?**
    Detect: judgment
@@ -45,3 +39,24 @@
    `CLAUDE.md` say nothing about which shape new code takes.
    Violation: mixed state with no documented strategy/progress — add the template
    above.
+
+6. **Is any file over the file-length limit?**
+   Detect-script: ldd-lint file-length
+   Detection: the gap linter counts the code lines of each source file in the scope.
+   The limit is the repository's `sonarjs/max-lines` where it sets one, else
+   {{.FileMaxLines}} code lines. When the repository's linter holds the rule, the row
+   count is 0 and the `ldd-lint:` line names the rule: the linter's own report is the
+   lead, and the limit is its to enforce.
+   Violation: a file over the limit standing in for the whole slice, or a
+   `max-lines` directive silencing the rule (the suppression row carries
+   directives) — a `Performance.tsx` of 1,199 lines holding the page, its hooks, its
+   API calls and its types in one module. Split it by role inside the page folder.
+
+7. **Is any directory over the file-count limit?**
+   Detect-script: ldd-lint package-size --over-limit
+   Detection: the gap linter counts the source files of each directory in the scope,
+   leaving out test, generated and story files and index modules. The limit is
+   `package_max_files` in `.ldd-lint.yaml`, else {{.PackageMaxFiles}} files.
+   Violation: a directory at or over the limit — decompose it into sub-directories
+   with the refactoring skill's package-decomposition procedure. The warning zone is
+   not a review finding.
