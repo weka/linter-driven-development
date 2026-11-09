@@ -121,9 +121,7 @@ Before presenting the plan, verify against the rules (cite, don't restate):
 - [ ] Types are self-validating; composed types trusted, never re-validated (R2)
 - [ ] Orchestration planned as a story; most logic pushed into leaf types (R3, R7)
 - [ ] **Placement decided** for every helper and type via the ladder — internal helper vs feature sub-package vs domain package (`../../rules/R4-helper-placement.md`)
-- [ ] No helper or type with R1 score ≥4 on rung 1 without a written reason. Split a package that mixes pure logic and I/O:
-  the pure leaves go to rung 2 (R4 "Split the pure leaf out of an I/O package"). Before you choose rung 2, search the other
-  packages for the same logic. A match means rung 3: the other package deletes its copy and imports the shared leaf.
+- [ ] No helper or type with R1 score ≥4 on rung 1 without a written reason. In a package that mixes pure logic and I/O, a pure leaf with R1 score ≥4 goes to rung 2 (R4 "Split the pure leaf out of an I/O package"). Before you choose rung 2, search the other packages for the same logic. A match makes a rung-3 candidate: weigh it with the maxim "a little copying is better than a little dependency". On rung 3, the other package deletes its copy and imports the shared leaf.
 - [ ] Vertical slice structure; package names are flatcase domain vocabulary, never roles/containers (R5)
 - [ ] No test-only interfaces: every interface has a second production implementation OR breaks a real import cycle, verified by grepping the import direction (detection command in `../../rules/R6-test-only-interfaces.md`); otherwise depend on the concrete type
 - [ ] Import direction strictly downward: leaf types ← sub-packages ← parent ← cmd/ (cycle-breaking move in `<package_decomposition>` in @refactoring's `reference.md` (`sed -n '/^<package_decomposition>/,/^<\/package_decomposition>/p; /^### Package decomposition/,$p'`))

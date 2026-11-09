@@ -12,7 +12,7 @@
    Detection: a test file whose package line lacks the `_test` suffix is an internal
    test package; grep those files for calls to lowercase functions
    defined in the package. An `export_test.go` file with a `var X = x` alias of a
-   private name is the same reach.
+   private name is a direct test of a private name too.
    Violation: any direct test of a private helper — that urge is the promotion
    signal; give the helper its own package instead.
 

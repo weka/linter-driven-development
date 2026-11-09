@@ -91,8 +91,10 @@ flat container of primitives that lives inside one function and crosses no bound
 alternative: the inner shape is a type with no name, and a variable name cannot
 name it. A test-only door to a private name is never the cheaper alternative. A door
 is an export, alias, re-export or hook that exists only so a test can reach a private
-name. When the need is a direct test of a private leaf, the cheaper move is R4 rung 2,
-not a door. The case file you read is the template for what a
+name. When the need is a direct test of a private leaf with R1 score 0–3, test it
+through the public entry of its parent. At a score of 4 or more, the leaf gets its own
+package or module under the feature, with an exported API that tests call directly.
+The case file you read is the template for what a
 correct refutation looks like.
 
 **Verdict schema — one line per finding, the literal word first:**
