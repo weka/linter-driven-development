@@ -273,7 +273,7 @@ lang_configure() {
       ;;
     python)
       LANG_EXCLUDE_RE='(^|/)(\.venv|venv|\.git|node_modules|__pycache__|\.tox|build|dist)/'
-      LANG_SUPPRESS_RE='#\s*(noqa|type:\s*ignore|ty:\s*ignore)'
+      LANG_SUPPRESS_RE='#\s*(noqa|pylint:\s*disable|type:\s*ignore|ty:\s*ignore)'
       LANG_COMMENT_RE='(#|""")'
       LANG_DIRECTIVE_RE='#\s*(noqa|type:|ty:|pragma|fmt:|pylint:|ruff:|isort:|!)|>>>'
       ;;
@@ -334,7 +334,7 @@ lang_configure() {
       # A language the table does not know: every common comment marker and
       # suppression spelling, so --glob reviews it without a row of its own.
       LANG_EXCLUDE_RE='(^|/)(vendor|\.git|node_modules|\.venv|target|build|dist)/'
-      LANG_SUPPRESS_RE='nolint|noqa|eslint-disable|#\[allow\(|@SuppressWarnings|type:\s*ignore|NOSONAR|rubocop:disable|shellcheck disable'
+      LANG_SUPPRESS_RE='nolint|noqa|pylint:\s*disable|eslint-disable|#\[allow\(|@SuppressWarnings|type:\s*ignore|NOSONAR|rubocop:disable|shellcheck disable'
       LANG_COMMENT_RE='(//|#|/[*]|--|""")'
       LANG_DIRECTIVE_RE='//go:|nolint|#\s*(noqa|type:|pragma|!)|eslint-|@ts-|pragma'
       ;;

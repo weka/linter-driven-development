@@ -177,6 +177,9 @@ func lintScript(rest string) string {
 	if len(fields) < 2 {
 		return fmt.Sprintf("Detect-script takes <script> <subcommand> [--flag ...], got %q", rest)
 	}
+	if rest != strings.Join(fields, " ") {
+		return "Detect-script separates its words with exactly one space"
+	}
 	script, sub, flags := fields[0], fields[1], fields[2:]
 	subs, ok := scriptSubcommands(script)
 	if !ok {

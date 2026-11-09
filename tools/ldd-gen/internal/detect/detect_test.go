@@ -92,6 +92,12 @@ func TestLint_Problems(t *testing.T) {
 		{"script without subcommand", func(s string) string {
 			return strings.Replace(s, "ldd-lint package-size --over-limit", "ldd-lint", 1)
 		}, "takes <script> <subcommand>"},
+		{"script wide space", func(s string) string {
+			return strings.Replace(s, "ldd-lint package-size", "ldd-lint  package-size", 1)
+		}, "exactly one space"},
+		{"script tab", func(s string) string {
+			return strings.Replace(s, "ldd-lint package-size", "ldd-lint\tpackage-size", 1)
+		}, "exactly one space"},
 		{"script bad flag", func(s string) string { return strings.Replace(s, "--over-limit", "--Over", 1) }, `flag "--Over" is not of the shape`},
 		{"script flag twice", func(s string) string {
 			return strings.Replace(s, "--over-limit", "--over-limit --over-limit", 1)

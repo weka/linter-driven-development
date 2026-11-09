@@ -751,6 +751,17 @@ expect_exit 0 && expect_quiet \
   && printf '%s\n' "$OUT" | grep -qxF "R5${TAB}Q7${TAB}script${TAB}ldd-lint package-size --over-limit" && ok
 finish
 
+begin "a pylint disable of the module-length limit is a suppression hit"
+if [[ "$FX_EXT" != ".py" ]]; then skip "pylint directives are Python's"; finish
+else
+  mk_repo; run_detect; base=$(count_of SUPPRESS -)
+  printf 'v1 = 1  # pylint: disable=too-many-lines\n' >> "$REPO/services/pl.py"; write_scope; run_detect
+  expect_exit 0 && expect_count SUPPRESS - $((base + 1)) \
+    && { grep -q "^SUPPRESS${TAB}-${TAB}grep${TAB}services/pl.py${TAB}1${TAB}" "$BUNDLE/hits.tsv" || bad "no suppression row for the pylint directive"; } \
+    && grep -q "^SUPPRESS${TAB}-${TAB}grep${TAB}services/pl.py${TAB}1${TAB}" "$BUNDLE/hits.tsv" && ok
+  finish
+fi
+
 begin "a file over the file-length limit is a script row of R5 Q6 with the linter's message"
 mk_repo; plant_code_lines "services/long$FX_EXT" $((MAX_LINES + 1)); write_scope; run_detect
 want="R5${TAB}6${TAB}script${TAB}services/long$FX_EXT${TAB}0${TAB}$((MAX_LINES + 1)) code lines (limit $MAX_LINES, profile default)"
