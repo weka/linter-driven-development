@@ -31,15 +31,19 @@
    `grep -rn '<method>' --include='test_*.py' --include='*_test.py' .` — is it
    exercised directly, or only through an orchestrator's test? Then list the new or
    changed underscore-prefixed functions and classes:
-   `grep -nE '^\s*(async def|def|class) _[a-zA-Z]'` in the changed files. Score each one
-   with the scorecard in `R1-primitive-obsession.md`. For a score of 4 or more, find
-   the tests that reach it. A helper with a score of 3 or less is not judged here. A
-   test that imports it is a Q2 finding.
-   Violation: leaf behavior reached only from above — add the rung-0 test; the
-   orchestrator test keeps only the seam. An underscore-prefixed leaf with a score of 4
-   or more is also a violation when only tests that build a server, files or a
-   database reach it. Fix it with R4's "Split the pure leaf out of an I/O package",
-   then add the rung-0 test.
+   `grep -nE '^\s*(async def|def|class) _[a-zA-Z]'` in the changed files. Score each
+   one with R1's scorecard, in the same Bash call:
+   `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
+   `R1-primitive-obsession.md` in this rule file's directory. Do not judge or report
+   a helper with a score of 3 or less. A test that imports it is a Q2 finding, not a
+   direct test.
+   Violation: leaf behavior with no direct test, reached only from above. This
+   applies to a public method of a leaf type and to an underscore-prefixed function or
+   class with a score of 4 or more. The usual test above it builds a server, files or
+   a database. Fix a public method: add the rung-0 test; the orchestrator test keeps
+   only the seam. Fix an underscore-prefixed leaf with R4's "Split the pure leaf out
+   of an I/O package", or "Promote to feature sub-package (rung 2)" when its module
+   does no I/O. Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `assert_called|assert_any_call|assert_has_calls|\.call_count|\.call_args|\.mock_calls|\.calls\b` files=test
@@ -59,8 +63,9 @@
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*len\b)|\blen\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)handlers/,(^|/)__main__\.py$,(^|/)main\.py$,(^|/)cli\.py$
    Detection: for each new or changed leaf package, with `paths_to_mutate` under
    `[tool.mutmut]` naming that package only, `mutmut run` then `mutmut results`;
-   skip orchestrators, the top rung and any module that does I/O. A pure leaf inside
-   such a module is a Q4 finding, not a skip. `mutmut` not installed: propose the install the mechanics bullet describes before hunting; no
+   skip orchestrators, the top rung and any module that does I/O. Judge a pure leaf
+   inside such a module with Q4. Do not skip it. `mutmut` not installed: propose the
+   install the mechanics bullet describes before hunting; no
    survivors from a run that did not execute is not a pass. In a read-only review,
    where no tests may run, take the hand check instead: list the leaf's comparisons
    and boolean conditions, check the parametrize table for a row at each boundary

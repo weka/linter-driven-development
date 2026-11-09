@@ -189,7 +189,8 @@ throw, and neither case body branches.
 - **Move the behavior down a rung**: rewrite the big-object test as a leaf unit test
   with literal inputs; if the leaf doesn't exist yet, that is an R1/R3 extraction
   first (`../examples/storify-leaf-type.md` shows the pair). When an
-  internal leaf is in a package that does I/O, apply "Split the pure leaf out of an
+  internal leaf with an R1 score of 4 or more is in a package that does I/O,
+  apply "Split the pure leaf out of an
   I/O package" (`R4-helper-placement.md`) first.
 - **Split Success and Error Tables**: one function asserting values, one asserting
   errors — complexity 1 in both.
@@ -245,15 +246,18 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    is it exercised directly, or only through a page's render test? Then list the new
    or changed non-exported functions and classes:
    `grep -nE '^((async )?function|class) [a-zA-Z]|^const [a-zA-Z]\w* = '` in the
-   changed `.ts` files. Score each one with the scorecard in
-   `R1-primitive-obsession.md`. For a score of 4 or more, find the tests that reach it.
-   A helper with a score of 3 or less is not judged here.
-   Violation: leaf behavior reached only from above — add the rung-0 test; the page
-   test keeps only the seam. A non-exported leaf with a score of 4 or more is also a
-   violation when only tests that render a tree, register `server.use` handlers or
-   build a `QueryClient` reach it. Fix it with R4's "Split the pure leaf out of an I/O
-   package", then add the rung-0 test. An `export` added only for the test is a Q2
-   finding, not the fix.
+   changed `.ts` and `.tsx` files. Score each one with R1's scorecard, in the same
+   Bash call: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
+   over `R1-primitive-obsession.md` in this rule file's directory. Do not judge or
+   report a helper with a score of 3 or less. An `export` added only for the test is a
+   Q2 finding, not a direct test.
+   Violation: leaf behavior with no direct test, reached only from above. This
+   applies to an exported function of a leaf module and to a non-exported function or
+   class with a score of 4 or more. The usual test above it renders a tree, registers
+   `server.use` handlers or builds a `QueryClient`. Fix an exported function: add the
+   rung-0 test; the page test keeps only the seam. Fix a non-exported leaf with R4's
+   "Split the pure leaf out of an I/O package", or "Promote to feature sub-package
+   (rung 2)" when its module does no I/O. Then add the rung-0 test in a `.ts` module.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `toHaveBeenCalled(Times|With|Once)?\(|toHaveBeen(Last|Nth)CalledWith|\.mock\.(calls|results|lastCall)` files=test
@@ -282,8 +286,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    each mutant in a sandbox copy under `.stryker-tmp/`, never in the checkout. Read
    the `clear-text` reporter: a `Survived` line carries the file, the line and the
    replacement, and a `CompileError` line is a mutant the types rejected, not a
-   kill. Skip orchestrators, the top rung and any module that does I/O. A pure leaf
-   inside such a module is a Q4 finding, not a skip. Stryker
+   kill. Skip orchestrators, the top rung and any module that does I/O. Judge a pure leaf
+   inside such a module with Q4. Do not skip it. Stryker
    not installed (`@stryker-mutator/core` absent from `devDependencies`): propose
    the install the mechanics bullet describes before hunting; no survivors from a
    run that did not execute is not a pass. In a read-only review, where no tests

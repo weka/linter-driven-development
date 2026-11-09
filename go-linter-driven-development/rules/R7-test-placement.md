@@ -154,7 +154,8 @@ private-function test.
 - **Move the behavior down a rung**: rewrite the big-object test as a leaf unit test
   with literal inputs; if the leaf doesn't exist yet, that is an R1/R3 extraction
   first (`../examples/storify-leaf-type.md` shows the pair). When an
-  unexported leaf is in a package that does I/O, apply "Split the pure leaf out of an
+  unexported leaf with an R1 score of 4 or more is in a package that does I/O,
+  apply "Split the pure leaf out of an
   I/O package" (`R4-helper-placement.md`) first.
 - **Split Success and Error Tables**: one function asserting values, one asserting
   errors — complexity 1 in both.
@@ -197,16 +198,20 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect: judgment
    Detection: for each new public method on a leaf type,
    `grep -rn '<Method>' --include='*_test.go' .` — is it exercised directly, or only
-   through an orchestrator's test? Then list the new or changed unexported functions
-   and types: `grep -nE '^(func|type) [a-z]'` in the changed files. Score each one with
-   the scorecard in `R1-primitive-obsession.md`. For a score of 4 or more, read the
-   package's `_test.go` files for the tests that reach it. A helper with a score of 3
-   or less is not judged here. An in-package test that calls it is a Q2 finding.
-   Violation: leaf behavior reached only from above — add the rung-0 test; the
-   orchestrator test keeps only the seam. An unexported leaf with a score of 4 or more
-   is also a violation when only tests that build a server, files or a database reach
-   it. Fix it with R4's "Split the pure leaf out of an I/O package", then add the
-   rung-0 test.
+   through an orchestrator's test? Then list the new or changed unexported functions,
+   methods and types: `grep -nE '^func (\([^)]*\) )?[a-z]|^type [a-z]'` in the changed
+   files. Score each one with R1's scorecard, in the same Bash call:
+   `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
+   `R1-primitive-obsession.md` in this rule file's directory. Do not judge or report
+   a helper with a score of 3 or less. An in-package test that calls it is a Q2
+   finding, not a direct test.
+   Violation: leaf behavior with no direct test, reached only from above. This
+   applies to a public method of a leaf type and to an unexported function, method or
+   type with a score of 4 or more. The usual test above it builds a server, files or
+   a database. Fix a public method: add the rung-0 test; the orchestrator test keeps
+   only the seam. Fix an unexported leaf with R4's "Split the pure leaf out of an I/O
+   package", or "Promote to feature sub-package (rung 2)" when its package does no
+   I/O. Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `AssertExpectations|AssertCalled|\.calls\b` files=test
@@ -223,8 +228,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*[Ll]en\b)|\b[Ll]en\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)cmd/,(^|/)main\.go$,(^|/)handlers/
    Detection: for each new or changed leaf package,
    `gremlins unleash ./path/to/leaf | grep -E '^\s*LIVED'`; skip orchestrators, the
-   top rung and any package that does I/O. A pure leaf inside such a package is a Q4
-   finding, not a skip. `gremlins` not on `PATH`: propose the
+   top rung and any package that does I/O. Judge a pure leaf inside such a package
+   with Q4. Do not skip it. `gremlins` not on `PATH`: propose the
    install the mechanics bullet describes before hunting; an empty `LIVED` list from
    a run that did not execute, or whose mutants all timed out, is not a pass. In a
    read-only review, where no tests may run, take the hand check instead: list the

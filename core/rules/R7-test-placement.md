@@ -76,7 +76,8 @@ and review contract.
 - **Move the behavior down a rung**: rewrite the big-object test as a leaf unit test
   with literal inputs; if the leaf doesn't exist yet, that is an R1/R3 extraction
   first (`../examples/storify-leaf-type.md` shows the pair). When an
-  {{.Unexported}} leaf is in a package that does I/O, apply "Split the pure leaf out of an
+  {{.Unexported}} leaf with an R1 score of 4 or more is in a package that does I/O,
+  apply "Split the pure leaf out of an
   I/O package" (`R4-helper-placement.md`) first.
 - **Split Success and Error Tables**: one function asserting values, one asserting
   errors — complexity 1 in both.
