@@ -33,7 +33,7 @@ Display current implementation status:
   [Show this part only when the last preamble command printed a line. Copy each
   line as given. When it printed nothing, leave this part out.]
 
-⏸️ Deferred:
+⏸️ Deferral ledger:
   [Copy the `ldd-ledger.sh show` output as given. Only the user clears it.]
 
 🎯 Next Action:

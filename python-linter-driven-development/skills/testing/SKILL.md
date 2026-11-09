@@ -63,7 +63,7 @@ Ready after tests? Run linter: `ruff check --fix . && ruff format . && ty check`
   mutation tool runs over the leaf's package (`../../rules/R7-test-placement.md`,
   Mutation score on leaf types only) — coverage is the floor, the mutation score the claim.
   A run that did not execute is not a pass. Write it to the ledger:
-  `bash <this skill dir>/../../scripts/ldd-ledger.sh add mutation-not-run <user|no-user-answer> '<leaf — why>'`
+  `bash <this skill dir>/../../scripts/ldd-ledger.sh add mutation-not-run <user|no-user-answer> '<leaf — why>'`.
 - Higher rungs (orchestrating types): cover the delta each rung adds — its seams and emergent behaviors
 - Critical workflows: top-rung (system) tests
 

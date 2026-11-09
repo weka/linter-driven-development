@@ -72,7 +72,8 @@ refactor code starts the workflow on its own. The command makes it explicit. The
 3. **Review.** You get an advisory report. Nothing in it blocks the commit. Fix 🐛
    Bugs now. The report recommends fixing 🔴 Design Debt before the commit; you may
    commit as is. 🟡 and 🟢 are your call: say "fix all" or "defer the yellow ones".
-4. **Ship.** Documentation and a commit. You get the hash.
+4. **Ship.** Documentation and a commit. You get the hash and the deferral ledger:
+   each deferred finding, and each mutation run that did not execute. Only you clear it.
 
 A bug fix differs only in the first step: the plan is short, and the first failing
 test is the reproduction.

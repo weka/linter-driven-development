@@ -259,7 +259,7 @@ advisory. Fix bugs and user-accepted findings via @refactoring — except accept
 @pre-commit-review in INCREMENTAL mode until the delta reports clean.
 
 Defer a finding only on the user's answer. Write each deferral to the ledger at once
-(`<deferral_ledger>`), with who `user`. When no user can answer (a non-interactive
+(`<deferral_ledger>`) as a `finding` row with who `user`. When no user can answer (a non-interactive
 run), write it with `no-user-answer`. Never defer a skeptic-CONFIRMED finding without
 one of the two.
 
@@ -291,8 +291,8 @@ before.
    `Stop check` block verbatim: the six labelled lines (`1 gates` … `6 commit`), not
    a prose account of them. The block is a precondition of the summary, not an
    ornament: no block, or fewer than six lines, means the refactoring did not finish —
-   run its `<stopping_criteria>` now, render the block, then present. The ship
-   summary prints `ldd-ledger.sh show` verbatim. User decides only about the deferred
+   run its `<stopping_criteria>` now, render the block, then present. Run
+   `ldd-ledger.sh show` when you write the summary, and paste its output. User decides only about the deferred
    advisory findings: fix them now or later.
 </phase_5_ship>
 
@@ -300,8 +300,9 @@ before.
 The ledger is a file that keeps deferred work when the context is compacted. Write a
 row with `bash <this skill dir>/../../scripts/ldd-ledger.sh add <kind> <who> '<text>'`.
 The kind is `finding`, `prep` or `mutation-not-run`. The who is `user` or
-`no-user-answer`. Every closing report prints `ldd-ledger.sh show` verbatim: the ship
-summary, the PR body and the final message of the session. Never write that all items
+`no-user-answer`. Every closing report prints the ledger: the ship summary, the PR body
+and the final message of the session. Run `ldd-ledger.sh show` when you write the
+report, and paste its output. Never write that all items
 are closed while the ledger has rows. Only the user clears the ledger
 (`ldd-ledger.sh clear`), after each row is fixed or accepted as debt. The workflow
 never runs `ldd-ledger.sh clear`.
