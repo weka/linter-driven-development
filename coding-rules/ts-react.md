@@ -221,11 +221,11 @@ function collectIpConfigFrom(addresses: readonly ReportedAddress[]): IPConfig {
 
 ### R4 — Helper Placement
 
-Every extraction raises a second question: where does the helper live? The answer is
-decided by two axes — juiciness (the scorecard in R1; cite
-it, never re-derive it) and scope (does a second package import it?). Three rungs:
-internal in place, a sub-package nested under the feature, and a shared domain
-package when a second package imports it or a fitting one exists. Never test
+Every extraction raises a second question: where does the helper live? Two axes
+decide the answer. One is juiciness: the scorecard in R1
+(cite it, never re-derive it). The other is scope: does a second package import it?
+There are three rungs: internal in place, a sub-package nested under the
+feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
 it.
 

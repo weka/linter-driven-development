@@ -135,7 +135,7 @@ The webhook spec has an expansion leaf, a reply classifier and an I/O probe. The
 case expects a placement line for every type. Each line has an
 [R1 score](../core/rules/R1-primitive-obsession.md) and a rung. A type with a score of 4
 or more goes on
-[rung 2 or 3](../core/rules/R4-helper-placement.md), or has a written reason for rung 1.
+[rung 2 or 3](../core/rules/R4-helper-placement.md).
 The probe stays in the feature package.
 
 The promotion case expects the leaf in a rung-2 package or module. The new package has

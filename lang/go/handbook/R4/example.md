@@ -1,9 +1,10 @@
 ```go
 // ❌ exported from the feature package only so the test can reach it
-func ParseCIDRList(raw string) ([]netip.Prefix, error)
+func ParseK3sArgument(arg string) (key, value string, ok bool)
 
-// ✅ rung 1: unexported where it is used, tested through the public API that calls it
-func parseCIDRList(raw string) ([]netip.Prefix, error)
+// ✅ rung 1: one caller, no vocabulary of its own; unexported where it is used,
+//    tested through the public API that calls it
+func parseK3sArgument(arg string) (key, value string, ok bool)
 
 // ✅ rung 3: generic networking vocabulary with three callers → its own package
 package networking

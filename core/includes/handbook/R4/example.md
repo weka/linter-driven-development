@@ -1,9 +1,10 @@
 ```text
 # ❌ made public by the feature package only so the test can reach it
-public parseCIDRList(raw)          # one caller, in this package
+public parseK3sArgument(arg)       # one caller, in this package
 
-# ✅ rung 1: hidden where it is used, tested through the public API that calls it
-parseCIDRList(raw)                 # private to the feature
+# ✅ rung 1: one caller, no vocabulary of its own; hidden where it is used,
+#    tested through the public API that calls it
+parseK3sArgument(arg)              # private to the feature
 
 # ✅ rung 3: networking vocabulary with three callers → its own package, named for the domain
 networking.parsePrefixes(raw)      # public, with the Prefixes type beside it

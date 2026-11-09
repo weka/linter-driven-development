@@ -172,20 +172,21 @@ func (h *Handler) Heartbeat(ctx context.Context, raw []byte) error {
 
 ### R4 — Helper Placement
 
-Every extraction raises a second question: where does the helper live? The answer is
-decided by two axes — juiciness (the scorecard in R1; cite
-it, never re-derive it) and scope (does a second package import it?). Three rungs:
-unexported in place, a sub-package nested under the feature, and a shared domain
-package when a second package imports it or a fitting one exists. Never test
+Every extraction raises a second question: where does the helper live? Two axes
+decide the answer. One is juiciness: the scorecard in R1
+(cite it, never re-derive it). The other is scope: does a second package import it?
+There are three rungs: unexported in place, a sub-package nested under the
+feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
 it.
 
 ```go
 // ❌ exported from the feature package only so the test can reach it
-func ParseCIDRList(raw string) ([]netip.Prefix, error)
+func ParseK3sArgument(arg string) (key, value string, ok bool)
 
-// ✅ rung 1: unexported where it is used, tested through the public API that calls it
-func parseCIDRList(raw string) ([]netip.Prefix, error)
+// ✅ rung 1: one caller, no vocabulary of its own; unexported where it is used,
+//    tested through the public API that calls it
+func parseK3sArgument(arg string) (key, value string, ok bool)
 
 // ✅ rung 3: generic networking vocabulary with three callers → its own package
 package networking

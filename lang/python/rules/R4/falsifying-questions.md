@@ -4,8 +4,8 @@
    listed in `__all__`),
    `grep -rn '<Symbol>' --include='*.py' . | grep -v 'test_\|_test.py\|conftest'` —
    count non-test references outside its defining module.
-   Violation: zero production call sites outside the package while test files
-   reference it — it was made public for tests; demote (rung 1) or promote
+   Violation: zero production call sites outside its defining module while test
+   files reference it — it was made public for tests; demote (rung 1) or promote
    (rung 2/3).
 
 2. **Are `_private` helpers tested directly?**

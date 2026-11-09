@@ -2,11 +2,11 @@
 
 ## Principle
 
-Every extraction raises a second question: where does the helper live? The answer is
-decided by two axes — juiciness (the scorecard in `R1-primitive-obsession.md`; cite
-it, never re-derive it) and scope (does a second package import it?). Three rungs:
-underscore-prefixed in place, a sub-package nested under the feature, and a shared domain
-package when a second package imports it or a fitting one exists. Never test
+Every extraction raises a second question: where does the helper live? Two axes
+decide the answer. One is juiciness: the scorecard in `R1-primitive-obsession.md`
+(cite it, never re-derive it). The other is scope: does a second package import it?
+There are three rungs: underscore-prefixed in place, a sub-package nested under the
+feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
 it.
 
@@ -60,13 +60,12 @@ the underscore and `__all__` carry visibility.
 ### The placement ladder
 
 1. **Trivial helper** (R1 score 0–3) → underscore-prefixed, same package, tested only
-   through the parent's public API. A helper (function or type) with a score of 4 or
-   more stays here only with a reason written in the design.
+   through the parent's public API.
 2. **Juicy, and no second package imports it** → a package nested under the feature
    package, or a module with public names inside the feature package. The feature
    needs no minimum size for it. See `R5-vertical-slice.md`.
-3. **Juicy, and a second package imports it or a fitting domain package exists** → a
-   top-level shared package: extend the domain package that fits it, or create one.
+3. **Juicy, and a second package imports it** → a top-level shared package. Extend
+   the domain package that fits it, or create one.
    Granularity: a package is a domain *vocabulary* (`networking`), not a single noun
    (`kubeport`), never a role (`util`/`helpers`/`common`).
 
@@ -116,8 +115,7 @@ package nested under its feature can hold a single type.
   mutation run. The I/O code stays in the parent and calls it. This applies also
   when the leaf is underscore-prefixed.
 - **Promote to domain package (rung 3)**: a juicy helper that a second package
-  imports, or that fits an existing domain package → create or extend the shared
-  domain package; move the generic types; leave feature policy home as a thin
+  imports → create or extend the shared domain package; move the generic types; leave feature policy home as a thin
   storified method (see Stage 2 of `R1-primitive-obsession.md`'s canonical example).
 - **Split policy from vocabulary during promotion**: feature constants and preference
   logic stay in the feature; only the domain-generic types and queries move.
@@ -160,8 +158,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    listed in `__all__`),
    `grep -rn '<Symbol>' --include='*.py' . | grep -v 'test_\|_test.py\|conftest'` —
    count non-test references outside its defining module.
-   Violation: zero production call sites outside the package while test files
-   reference it — it was made public for tests; demote (rung 1) or promote
+   Violation: zero production call sites outside its defining module while test
+   files reference it — it was made public for tests; demote (rung 1) or promote
    (rung 2/3).
 
 2. **Are `_private` helpers tested directly?**
