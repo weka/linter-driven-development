@@ -224,9 +224,9 @@ function collectIpConfigFrom(addresses: readonly ReportedAddress[]): IPConfig {
 Every extraction raises a second question: where does the helper live? The answer is
 decided by two axes — juiciness (the scorecard in R1; cite
 it, never re-derive it) and scope (feature-specific versus domain-generic). Three
-rungs: internal in place, feature sub-package, shared domain package. Never test
-privates, and never export a helper into its parent package just so a test can reach
-it.
+rungs: internal in place, a sub-package nested under the feature, and a shared
+domain package when a second package imports it. Never test privates, and never
+export a helper into its parent package just so a test can reach it.
 
 ```typescript
 // ❌ exported from the page module only so the test can import it
@@ -254,11 +254,11 @@ import { parsePort, Ports } from '@/networking/ports'
 > and the helper wants its own module with a public name. Rung 1 is beside its only
 > caller at module scope, never inside the component body, where it is re-created
 > every render; rung 2 is the page folder's own module or its `hooks/`; rung 3 a
-> shared `src/<domain>/` module. There is no `internal/`. Extract Custom Hook climbs
-> the same ladder: beside its only caller, then the page's `hooks/`, then
-> `src/hooks/` only when two pages share it.
+> shared `src/<domain>/` module, when a second page imports it. There is no
+> `internal/`. Extract Custom Hook climbs the same ladder: beside its only caller,
+> then the page's `hooks/`, then `src/hooks/` only when two pages share it.
 
-**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
+**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Split the pure leaf out of an I/O package · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
 
 ### R5 — Vertical Slice
 

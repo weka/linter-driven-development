@@ -35,6 +35,7 @@
    and ask whether plausible domain siblings exist under the name.
    Violation: a module named after its one type (`src/kubeport/`) with no room for
    siblings — fold into a vocabulary module (`src/networking/`) or keep at rung 1/2.
+   A rung-2 module nested under its feature is not judged by this question.
 
 5. **Did feature policy leak into a shared module?**
    Detect: judgment

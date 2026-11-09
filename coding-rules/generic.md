@@ -152,9 +152,9 @@ Handler.heartbeat(raw):
 Every extraction raises a second question: where does the helper live? The answer is
 decided by two axes — juiciness (the scorecard in R1; cite
 it, never re-derive it) and scope (feature-specific versus domain-generic). Three
-rungs: internal in place, feature sub-package, shared domain package. Never test
-privates, and never export a helper into its parent package just so a test can reach
-it.
+rungs: internal in place, a sub-package nested under the feature, and a shared
+domain package when a second package imports it. Never test privates, and never
+export a helper into its parent package just so a test can reach it.
 
 ```text
 # ❌ made public by the feature package only so the test can reach it
@@ -169,13 +169,14 @@ networking.parsePrefixes(raw)      # public, with the Prefixes type beside it
 
 > **Spelling:** rung 1 is the language's private form: a lower-case or underscored
 > name, a symbol the module does not export, a file-local declaration. Rung 2 is a
-> sub-package, sub-module or namespace under the feature; rung 3 a shared package
-> under the source root. A test that has to reach a private name, through a friend
-> module, a reflection helper or a test-only export, is a placement signal, never a
-> reason to add the seam. The `"weka-api"` port name is feature policy and stays in
-> the feature; `Port`, `Ports` and `firstNamed` are networking vocabulary and move.
+> sub-package, sub-module or namespace under the feature, with public names; rung 3 a
+> shared package under the source root, when a second package imports it. A test that
+> has to reach a private name, through a friend module, a reflection helper or a
+> test-only export, is a placement signal, never a reason to add the seam. The
+> `"weka-api"` port name is feature policy and stays in the feature; `Port`, `Ports`
+> and `firstNamed` are networking vocabulary and move.
 
-**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
+**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Split the pure leaf out of an I/O package · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
 
 ### R5 — Vertical Slice
 

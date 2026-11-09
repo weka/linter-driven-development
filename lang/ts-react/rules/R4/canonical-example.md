@@ -1,8 +1,8 @@
 From the Port case (`R1-primitive-obsession.md` carries the full three-stage study).
 After extraction, `Port`/`Ports`/`firstNamed`/`first` say nothing about Kubernetes
-or Weka: juicy (range validation, collection queries) and domain-generic → rung 3,
-a shared `src/networking/` module. The feature keeps a two-line storified policy
-function:
+or Weka: juicy (range validation, collection queries), domain-generic, and imported
+by a second page → rung 3, a shared `src/networking/` module. The feature keeps a
+two-line storified policy function:
 
 ```typescript
 const WEKA_API_PORT = 'weka-api'
@@ -33,7 +33,8 @@ where it is re-created every render), covered through the module's exports; rung
 is the page folder's own module named for its vocabulary
 (`pages/Cluster/managementPort.ts`, `pages/Cluster/hooks/`), imported by relative
 path; rung 3 is a shared `src/<domain>/` module named for a vocabulary, reached
-through the path alias. There is no `internal/` convention — `export` is the wall,
-and a barrel `index.ts` that re-exports a module's private names tears it down.
+through the path alias, when a second page imports it. There is no `internal/`
+convention — `export` is the wall, and a barrel `index.ts` that re-exports a
+module's private names tears it down.
 Extract Function (here, a custom hook) climbs the same ladder: beside its only
 caller, then the page's `hooks/`, then `src/hooks/` only when two pages share it.

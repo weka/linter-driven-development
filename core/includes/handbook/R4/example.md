@@ -11,8 +11,9 @@ networking.parsePrefixes(raw)      # public, with the Prefixes type beside it
 
 > **Spelling:** rung 1 is the language's private form: a lower-case or underscored
 > name, a symbol the module does not export, a file-local declaration. Rung 2 is a
-> sub-package, sub-module or namespace under the feature; rung 3 a shared package
-> under the source root. A test that has to reach a private name, through a friend
-> module, a reflection helper or a test-only export, is a placement signal, never a
-> reason to add the seam. The `"weka-api"` port name is feature policy and stays in
-> the feature; `Port`, `Ports` and `firstNamed` are networking vocabulary and move.
+> sub-package, sub-module or namespace under the feature, with public names; rung 3 a
+> shared package under the source root, when a second package imports it. A test that
+> has to reach a private name, through a friend module, a reflection helper or a
+> test-only export, is a placement signal, never a reason to add the seam. The
+> `"weka-api"` port name is feature policy and stays in the feature; `Port`, `Ports`
+> and `firstNamed` are networking vocabulary and move.

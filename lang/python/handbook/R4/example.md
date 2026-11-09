@@ -13,7 +13,8 @@ from app.networking import Port, Ports
 
 > **In Python:** the leading underscore is a convention, not a wall, so a test *can*
 > import `_parse_row`. That it can is not a reason it should: the urge is a placement
-> signal, and the helper wants its own module with a public name. Rung 2 is the
-> feature package, whose `__init__.py` re-exports the slice's public names and lists
-> them in `__all__`; rung 3 a shared package under the source root. There is no
+> signal, and the helper wants its own module with a public name. Rung 2 is a module
+> or sub-package inside the feature package, with public names
+> (`alerts/vectorenv.py`); rung 3 a shared package under the source root, when a
+> second package imports it. There is no
 > `internal/`; the underscore and `__all__` carry visibility.

@@ -26,6 +26,7 @@
    plausible domain siblings exist under the name.
    Violation: a package named after its one type (`kubeport`) with no room for
    siblings — fold into a vocabulary package (`networking`) or keep at rung 1/2.
+   A rung-2 package nested under its feature is not judged by this question.
 
 5. **Did feature policy leak into a shared package?**
    Detect: judgment

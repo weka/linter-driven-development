@@ -1,7 +1,8 @@
 From the Port case (`R1-primitive-obsession.md` carries the full three-stage study).
 After extraction, `Port`/`Ports`/`FirstNamed`/`First` say nothing about Kubernetes or
-Weka: juicy (range validation, collection queries) and domain-generic → rung 3,
-`internal/pkg/networking`. The feature keeps a four-line storified policy method:
+Weka: juicy (range validation, collection queries), domain-generic, and imported by a
+second feature → rung 3, `internal/pkg/networking`. The feature keeps a four-line
+storified policy method:
 
 ```go
 func (s kubeService) managementPort() (networking.Port, bool) {

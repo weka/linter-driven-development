@@ -175,9 +175,9 @@ func (h *Handler) Heartbeat(ctx context.Context, raw []byte) error {
 Every extraction raises a second question: where does the helper live? The answer is
 decided by two axes — juiciness (the scorecard in R1; cite
 it, never re-derive it) and scope (feature-specific versus domain-generic). Three
-rungs: unexported in place, feature sub-package, shared domain package. Never test
-privates, and never export a helper into its parent package just so a test can reach
-it.
+rungs: unexported in place, a sub-package nested under the feature, and a shared
+domain package when a second package imports it. Never test privates, and never
+export a helper into its parent package just so a test can reach it.
 
 ```go
 // ❌ exported from the feature package only so the test can reach it
@@ -196,7 +196,7 @@ func ParsePrefixes(raw string) (Prefixes, error)
 > `internal/pkg/networking`. A shared package that knows one feature's constants is
 > leaked policy, not shared vocabulary.
 
-**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
+**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Split the pure leaf out of an I/O package · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
 
 ### R5 — Vertical Slice
 

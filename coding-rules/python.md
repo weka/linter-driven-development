@@ -181,9 +181,9 @@ def upsert_iface_addr_host(self, iface: Interface) -> None:
 Every extraction raises a second question: where does the helper live? The answer is
 decided by two axes — juiciness (the scorecard in R1; cite
 it, never re-derive it) and scope (feature-specific versus domain-generic). Three
-rungs: underscore-prefixed in place, feature sub-package, shared domain package. Never test
-privates, and never export a helper into its parent package just so a test can reach
-it.
+rungs: underscore-prefixed in place, a sub-package nested under the feature, and a shared
+domain package when a second package imports it. Never test privates, and never
+export a helper into its parent package just so a test can reach it.
 
 ```python
 # ❌ imported by the test through its private name, so it stays where it should not
@@ -200,12 +200,13 @@ from app.networking import Port, Ports
 
 > **In Python:** the leading underscore is a convention, not a wall, so a test *can*
 > import `_parse_row`. That it can is not a reason it should: the urge is a placement
-> signal, and the helper wants its own module with a public name. Rung 2 is the
-> feature package, whose `__init__.py` re-exports the slice's public names and lists
-> them in `__all__`; rung 3 a shared package under the source root. There is no
+> signal, and the helper wants its own module with a public name. Rung 2 is a module
+> or sub-package inside the feature package, with public names
+> (`alerts/vectorenv.py`); rung 3 a shared package under the source root, when a
+> second package imports it. There is no
 > `internal/`; the underscore and `__all__` carry visibility.
 
-**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
+**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Split the pure leaf out of an I/O package · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
 
 ### R5 — Vertical Slice
 
