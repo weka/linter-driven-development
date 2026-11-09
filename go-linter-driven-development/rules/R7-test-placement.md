@@ -124,13 +124,20 @@ private-function test.
   `gremlins unleash ./<leaf>`; with no task runner, propose that `go install` line for
   the developer to run. Ask first, never install silently, and never substitute a
   different invocation: a report whose mutants all timed out, with no `LIVED` and no
-  `KILLED` line, is a broken run, not a clean one. The actor that tried the tool
-  writes each run that did not execute to the deferral ledger with
-  `ldd-ledger.sh add mutation-not-run`. That actor is the testing skill, or the
-  main agent when it runs the tool itself. gremlins never mutates an equality
+  `KILLED` line, is a broken run, not a clean one. gremlins never mutates an equality
   (`==`, `!=`) or a literal constant, so it cannot ask for the row where an element
   sorts below the needle or the row on the far side of a limit; the hand check's row
   at each boundary and one past it covers those two on purpose, not by accident.
+  The actor that tried the tool writes each run that did not execute to the deferral
+  ledger, and reads the exit code. That actor is the testing skill, or the main agent
+  when it runs the tool itself on `/go-ldd-quickfix`. The call:
+
+```bash
+bash <this rule file's directory>/../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
+<leaf> — <why the run did not execute>
+ROW
+```
+
 - **Orchestrating types**: integration-style tests wiring real collaborators — real
   store over an embedded DB, real client against an in-process HTTP server — never
   interface-injected doubles (`R6-test-only-interfaces.md`). They cover the seams;
@@ -230,12 +237,14 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
 7. **Does a mutant survive a leaf type's tests?**
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*[Ll]en\b)|\b[Ll]en\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)cmd/,(^|/)main\.go$,(^|/)handlers/
    Detection: for each new or changed leaf package,
-   `gremlins unleash ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|TIMED OUT)|Killed:|Timed out:'`;
+   `gremlins unleash ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|NOT COVERED|TIMED OUT)|Killed:|Not covered:|Timed out:'`;
    skip orchestrators, the top rung and any package that does I/O. Judge a pure leaf
    inside such a package with Q4. Do not skip it. `gremlins` not on `PATH`: propose
    the install the mechanics bullet describes before hunting; an empty `LIVED` list from
-   a run that did not execute, or whose mutants all timed out, is not a pass. No
-   summary line, or `Killed: 0` and `Lived: 0`, means the run did not execute. In a
+   a run that did not execute, or whose mutants all timed out, is not a pass. A
+   `NOT COVERED` mutant is a finding, the same as a `LIVED` one: a missing test row.
+   The run did not execute only when there is no summary line, or when every count
+   (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0. In a
    read-only review, where no tests may run, take the hand check instead: list the
    leaf's comparisons and boolean conditions, check the table for a row at each
    boundary value and on each side of each condition, and name the row that is
@@ -249,6 +258,6 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    and the `not reached:` line names the three leaf directories with the most hits,
    each as the review that judges it: `R7 Q7: /go-ldd-review <dir>`. On a
    scoped review the question is judged in full.
-   Violation: any `LIVED` line on a leaf package that is not recorded as an
-   equivalent mutant — a missing table row or dead logic; name the mutant (file,
+   Violation: any `LIVED` or `NOT COVERED` line on a leaf package that is not
+   recorded as an equivalent mutant — a missing table row or dead logic; name the mutant (file,
    line, mutation) and the row that would kill it.

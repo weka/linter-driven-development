@@ -7,7 +7,7 @@ public parseK3sArgument(arg)       # one caller, in this package
 parseK3sArgument(arg)              # private to the feature
 
 # ✅ rung 3: networking vocabulary with three callers → its own package, named for the domain
-networking.parsePrefixes(raw)      # public, with the Prefixes type beside it
+public networking.parsePrefixes(raw)  # with the Prefixes type beside it
 ```
 
 > **Spelling:** rung 1 is the language's private form: a lower-case or underscored

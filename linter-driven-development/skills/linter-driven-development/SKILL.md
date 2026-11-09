@@ -150,7 +150,8 @@ and can still be hostile to the plan.
    the `linter-driven-development:overabstraction-skeptic` (Agent tool; spawn prompt per @pre-commit-review step 3), with
    one sharpening in the spawn prompt: the justification is the approved plan in
    hand, not an imagined future — score the extraction as if the feature already
-   existed. REFUTED → apply the cheaper alternative or defer. R2's construction
+   existed. REFUTED → apply the cheaper alternative or defer. Write each deferral here
+   to the ledger at once as a `prep` row, as in gate 3. R2's construction
    mechanics — a validating constructor, internal fields, an options type and its
    `With*` functions, a named Null Object default — are not extractions and skip this
    gate: apply R2 as written.

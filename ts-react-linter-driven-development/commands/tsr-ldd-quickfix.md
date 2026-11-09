@@ -72,6 +72,17 @@ isolated context, spawned with the package list)
 - Repeat until the agent reports `LINT STATUS: green` for the scope, or until the
   respawn ceiling ends Phase 3 with that list
 
+**Mutation check** (you, the main agent, after the tests pass)
+- When the fix touches a leaf package or module, run the mutation tool over it as
+  the mutation mechanics in `../rules/R7-test-placement.md` say.
+- When the tool cannot run, write the `mutation-not-run` row, and read the exit code:
+
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
+<leaf> — <why the run did not execute>
+ROW
+```
+
 **Phase 4 — REVIEW over the scope's diff** (via @pre-commit-review)
 - @pre-commit-review orchestrates parallel `ts-react-linter-driven-development:rule-hunter` agents + the
   `ts-react-linter-driven-development:overabstraction-skeptic` against the diff; it reports, never edits, never widens;

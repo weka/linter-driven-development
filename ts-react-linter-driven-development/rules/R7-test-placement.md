@@ -155,12 +155,19 @@ throw, and neither case body branches.
   `lint` in `package.json` that runs `stryker run`; check the runner's supported
   Vitest major against the repository's before proposing it. Ask first, never
   install silently, and never read a run that did not execute as a clean one.
-  The actor that tried the tool writes each run that did not execute to the
-  deferral ledger with `ldd-ledger.sh add mutation-not-run`. That actor is the
-  testing skill, or the main agent when it runs the tool itself.
   Stryker mutates equality, relational and logical operators, literals and optional
   chaining, so the hand check's boundary rows mostly confirm its report rather than
   cover a blind spot.
+  The actor that tried the tool writes each run that did not execute to the deferral
+  ledger, and reads the exit code. That actor is the testing skill, or the main agent
+  when it runs the tool itself on `/tsr-ldd-quickfix`. The call:
+
+```bash
+bash <this rule file's directory>/../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
+<leaf> — <why the run did not execute>
+ROW
+```
+
 - **Orchestrating types**: integration-style tests wiring real collaborators — real
   store over an embedded DB, real client against an in-process HTTP server — never
   interface-injected doubles (`R6-test-only-interfaces.md`). They cover the seams;

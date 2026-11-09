@@ -52,12 +52,14 @@
 7. **Does a mutant survive a leaf type's tests?**
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*[Ll]en\b)|\b[Ll]en\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)cmd/,(^|/)main\.go$,(^|/)handlers/
    Detection: for each new or changed leaf package,
-   `gremlins unleash ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|TIMED OUT)|Killed:|Timed out:'`;
+   `gremlins unleash ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|NOT COVERED|TIMED OUT)|Killed:|Not covered:|Timed out:'`;
    skip orchestrators, the top rung and any package that does I/O. Judge a pure leaf
    inside such a package with Q4. Do not skip it. `gremlins` not on `PATH`: propose
    the install the mechanics bullet describes before hunting; an empty `LIVED` list from
-   a run that did not execute, or whose mutants all timed out, is not a pass. No
-   summary line, or `Killed: 0` and `Lived: 0`, means the run did not execute. In a
+   a run that did not execute, or whose mutants all timed out, is not a pass. A
+   `NOT COVERED` mutant is a finding, the same as a `LIVED` one: a missing test row.
+   The run did not execute only when there is no summary line, or when every count
+   (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0. In a
    read-only review, where no tests may run, take the hand check instead: list the
    leaf's comparisons and boolean conditions, check the table for a row at each
    boundary value and on each side of each condition, and name the row that is
@@ -71,6 +73,6 @@
    and the `not reached:` line names the three leaf directories with the most hits,
    each as the review that judges it: `R7 Q7: /{{.CmdPrefix}}-review <dir>`. On a
    scoped review the question is judged in full.
-   Violation: any `LIVED` line on a leaf package that is not recorded as an
-   equivalent mutant — a missing table row or dead logic; name the mutant (file,
+   Violation: any `LIVED` or `NOT COVERED` line on a leaf package that is not
+   recorded as an equivalent mutant — a missing table row or dead logic; name the mutant (file,
    line, mutation) and the row that would kill it.
