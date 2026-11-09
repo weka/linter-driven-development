@@ -6,7 +6,8 @@ allowed-tools:
   - Read
   - Bash(git *)
   - Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-lint.sh *)
-  - Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh *)
+  - Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh add *)
+  - Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh show)
 ---
 
 !`git status --porcelain`

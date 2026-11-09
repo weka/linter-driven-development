@@ -103,8 +103,9 @@ private-function test.
   installs a pinned version and runs it over one leaf package, and where there is no
   task runner propose the local install command for the developer to run; ask before
   installing, never install silently, and never read a run that did not execute as a
-  pass. The main agent writes each run that did not execute to the deferral ledger
-  with `ldd-ledger.sh add mutation-not-run`.
+  pass. The actor that tried the tool writes each run that did not execute to the
+  deferral ledger with `ldd-ledger.sh add mutation-not-run`. That actor is the
+  testing skill, or the main agent when it runs the tool itself.
   When the language has no maintained mutation tool, the check is done by hand and stays cheap because a
   leaf is small: for every comparison in the leaf the table holds a row at the
   boundary value and one just past it, for every boolean condition a row on each

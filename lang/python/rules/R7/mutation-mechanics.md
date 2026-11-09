@@ -8,6 +8,7 @@
   beside `test` and `lint` in the repository's Taskfile or Makefile that runs
   `mutmut run && mutmut results`; with no task runner and no dev group, propose
   `pipx install mutmut` for the developer to run. Ask first, never install silently,
-  and never read a run that did not execute as a clean one. The main agent writes
-  each run that did not execute to the deferral ledger with
-  `ldd-ledger.sh add mutation-not-run`.
+  and never read a run that did not execute as a clean one. The actor that tried
+  the tool writes each run that did not execute to the deferral ledger with
+  `ldd-ledger.sh add mutation-not-run`. That actor is the testing skill, or the
+  main agent when it runs the tool itself.

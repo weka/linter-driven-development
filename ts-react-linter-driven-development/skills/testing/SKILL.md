@@ -6,7 +6,8 @@ description: |
   Covers the composition ladder from rung-0 unit tests to whole-system tests, with emphasis on real in-memory dependencies.
   Ensures 100% coverage on leaf types with public API testing.
 allowed-tools:
-  - Bash(bash *ldd-ledger.sh *)
+  - Bash(bash *ldd-ledger.sh add *)
+  - Bash(bash *ldd-ledger.sh show)
 ---
 
 <objective>
@@ -62,8 +63,12 @@ Ready after tests? Run linter: `npx tsc --noEmit && npx eslint . --fix && npx pr
 - Rung 0 (leaf types): 100% unit test coverage, and no untriaged survivor when the
   mutation tool runs over the leaf's package (`../../rules/R7-test-placement.md`,
   Mutation score on leaf types only) — coverage is the floor, the mutation score the claim.
-  A run that did not execute is not a pass. Write it to the ledger:
-  `bash <this skill dir>/../../scripts/ldd-ledger.sh add mutation-not-run <user|no-user-answer> '<leaf — why>'`.
+  A run that did not execute is not a pass. Write it to the ledger, and read the exit code:
+  ```bash
+  bash <this skill dir>/../../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
+  <leaf> — <why the run did not execute>
+  ROW
+  ```
 - Higher rungs (orchestrating types): cover the delta each rung adds — its seams and emergent behaviors
 - Critical workflows: top-rung (system) tests
 

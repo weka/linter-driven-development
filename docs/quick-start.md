@@ -73,8 +73,9 @@ refactor code starts the workflow on its own. The command makes it explicit. The
    Bugs now. The report recommends fixing 🔴 Design Debt before the commit; you may
    commit as is. 🟡 and 🟢 are your call: say "fix all" or "defer the yellow ones".
 4. **Ship.** Documentation and a commit. You get the hash and the deferral ledger:
-   each deferred finding, and each mutation run that did not execute. When each row is
-   fixed or accepted as debt, ask: "clear the ledger".
+   each deferred finding, each deferred prep move, and each mutation run that did not
+   execute. The ledger is one file for each branch. When each row is fixed or accepted
+   as debt, ask: "clear the ledger". The plugin clears it only when you ask.
 
 A bug fix differs only in the first step: the plan is short, and the first failing
 test is the reproduction.

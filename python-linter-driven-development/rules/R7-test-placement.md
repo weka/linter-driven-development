@@ -138,9 +138,10 @@ one function asserts values, one asserts the raise, and neither case body branch
   beside `test` and `lint` in the repository's Taskfile or Makefile that runs
   `mutmut run && mutmut results`; with no task runner and no dev group, propose
   `pipx install mutmut` for the developer to run. Ask first, never install silently,
-  and never read a run that did not execute as a clean one. The main agent writes
-  each run that did not execute to the deferral ledger with
-  `ldd-ledger.sh add mutation-not-run`.
+  and never read a run that did not execute as a clean one. The actor that tried
+  the tool writes each run that did not execute to the deferral ledger with
+  `ldd-ledger.sh add mutation-not-run`. That actor is the testing skill, or the
+  main agent when it runs the tool itself.
 - **Orchestrating types**: integration-style tests wiring real collaborators — real
   store over an embedded DB, real client against an in-process HTTP server — never
   interface-injected doubles (`R6-test-only-interfaces.md`). They cover the seams;

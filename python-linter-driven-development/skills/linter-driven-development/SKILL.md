@@ -11,7 +11,8 @@ allowed-tools:
   - Skill(python-linter-driven-development:pre-commit-review)
   - Skill(python-linter-driven-development:documentation)
   - Agent
-  - Bash(bash *ldd-ledger.sh *)
+  - Bash(bash *ldd-ledger.sh add *)
+  - Bash(bash *ldd-ledger.sh show)
 ---
 
 <objective>
@@ -130,6 +131,7 @@ and can still be hostile to the plan.
 3. **BOUNDED** — effort S/M (hunter scale) → proceed. L → defer to Phase 4's report
    as `PREP-DEFERRED`, UNLESS gate 2 showed the feature cannot be tested at all
    without it — then it is not preparation but a design-plan gap: return to Phase 1.
+   Write each deferred item to the ledger at once as a `prep` row (`<deferral_ledger>`).
 4. **SKEPTICIZED** — any prep move that creates a type/interface/package is judged by
    the `python-linter-driven-development:overabstraction-skeptic` (Agent tool; spawn prompt per @pre-commit-review step 3), with
    one sharpening in the spawn prompt: the justification is the approved plan in
@@ -242,12 +244,10 @@ advisory. Fix bugs and user-accepted findings via @refactoring — except accept
 @pre-commit-review in INCREMENTAL mode until the delta reports clean.
 
 Defer a finding only on the user's answer. Write each deferral to the ledger at once
-(`<deferral_ledger>`) as a `finding` row with who `user`. When no user can answer (a
-non-interactive run), write it with `no-user-answer`. Never defer a skeptic-CONFIRMED
-finding without the user's answer or a `no-user-answer` row. When the review shows
-`R7 Q7: mutation run did not execute — <leaf>`, write a `mutation-not-run` row for
-that leaf. At the end of Phase 4, write each `PREP-DEFERRED` item that is still open
-as a `prep` row, with the same rule for who.
+(`<deferral_ledger>`) as a `finding` row with who `user`. A run is non-interactive
+only when the prompt or the system says that no user can answer. Never decide this
+yourself. In a non-interactive run, write the row with who `no-user-answer`. Never
+defer a skeptic-CONFIRMED finding without the user's answer or a `no-user-answer` row.
 
 **Cluster routing**: report entries marked 🔗 CLUSTER (≥2 hunters converging on one
 anchor) are fixed design-first, never member-by-member — partial fixes undo each
@@ -285,11 +285,26 @@ before.
 </phase_5_ship>
 
 <deferral_ledger>
-The ledger is a file that keeps deferred work when Claude Code compacts the context.
-Write a row with `bash <this skill dir>/../../scripts/ldd-ledger.sh add <kind> <who> '<text>'`.
-The kind is `finding`, `prep` or `mutation-not-run`. The who is `user` or
-`no-user-answer`. Every closing report prints the ledger: the ship summary, the PR body
-and the final message of the session. Run `ldd-ledger.sh show` when you write the
+The ledger is one file for each branch. It keeps deferred work when Claude Code
+compacts the conversation. Write a row with one of these calls. Put the text on the
+line between `<<'ROW'` and `ROW`:
+
+```bash
+bash <this skill dir>/../../scripts/ldd-ledger.sh add finding <user|no-user-answer> <<'ROW'
+<rule and question> <file:line> — <the fix>
+ROW
+bash <this skill dir>/../../scripts/ldd-ledger.sh add prep <<'ROW'
+<the prep move> — <the gate that failed>
+ROW
+bash <this skill dir>/../../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
+<leaf> — <why the run did not execute>
+ROW
+```
+
+Read the exit code of each `add`. When it is not 0, list the row by hand under
+`Deferred (not in the ledger):` with the error line. Then never print `Deferred: none`
+in that session. Every closing report prints the ledger: the ship summary, the final
+message, and any PR body that you write. Run `ldd-ledger.sh show` when you write the
 report, and paste its output. Never write that all items are closed while the ledger
 has rows. When the ledger has rows, tell the user: "When each row is fixed or accepted
 as debt, ask: clear the ledger." Run `ldd-ledger.sh clear` only when the user asks for

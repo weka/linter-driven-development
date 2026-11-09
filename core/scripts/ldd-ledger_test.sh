@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
-# Fixture matrix for ldd-ledger.sh — the deferral ledger's own conformance test.
-#
-# Each case builds a throwaway repository under a temp dir, runs the script in
-# it and asserts the exit code and the lines it prints. No case reads or writes
-# the ledger of the checkout that runs the test.
+# Tests of ldd-ledger.sh. Each case makes a temporary repository, runs the
+# script in it, and checks the exit code and the output. No case reads or
+# writes the ledger of the checkout that runs the test.
 #
 # Usage:  bash scripts/ldd-ledger_test.sh [path/to/ldd-ledger.sh]
 #         (default: the sibling ldd-ledger.sh)
@@ -11,6 +9,7 @@
 
 set -u
 unset GIT_DIR GIT_WORK_TREE
+export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 LEDGER="${1:-$HERE/ldd-ledger.sh}"
@@ -21,20 +20,27 @@ pass=0 failed=0
 CASE="" OUT="" CODE=0 TMP=""
 
 begin() { CASE="$1"; TMP=$(mktemp -d); }
-finish() { rm -rf "$TMP"; }
+finish() { chmod -R u+rwx "$TMP" 2>/dev/null; rm -rf "$TMP"; }
 ok()  { pass=$((pass + 1)); echo "PASS  $CASE"; }
 bad() { failed=$((failed + 1)); echo "FAIL  $CASE — $1"; echo "      exit=$CODE"; printf '%s\n' "$OUT" | sed 's/^/      | /'; }
 
-new_repo() { # <dir> — a repository with one commit
-  mkdir -p "$1"
-  (cd "$1" && git init -q && git -c user.name=t -c user.email=t@t commit -q --allow-empty -m init)
+new_repo() {
+  mkdir -p "$1" || { echo "setup failed: mkdir $1"; exit 1; }
+  (cd "$1" && git init -q -b main \
+    && git -c user.name=t -c user.email=t@t commit -q --allow-empty -m init) \
+    || { echo "setup failed: git init in $1"; exit 1; }
 }
-run() { # <dir> <args...> — runs the script in <dir>, stdout and stderr together
+git_in() {
+  (cd "$1" && shift && git "$@") || { echo "setup failed: git ${*:2} in $1"; exit 1; }
+}
+# Runs the script in <dir> with stdout and stderr together. Stdin is the
+# caller's: a case passes a heredoc, every other case gets /dev/null.
+run_stdin() {
   local dir="$1"; shift
   OUT=$(cd "$dir" && bash "$LEDGER" "$@" 2>&1); CODE=$?
 }
-
-# ---------- cases ----------
+run() { run_stdin "$@" </dev/null; }
+rows() { printf '%s\n' "$OUT" | sed -n '2,$p'; }
 
 begin "show in a fresh repository prints Deferred: none"
 new_repo "$TMP/r"
@@ -42,47 +48,92 @@ run "$TMP/r" show
 if (( CODE == 0 )) && [[ "$OUT" == "Deferred: none" ]]; then ok; else bad "expected exactly 'Deferred: none'"; fi
 finish
 
-begin "add then show prints the row under Deferred:"
+begin "each kind writes its exact row, and add prints it"
 new_repo "$TMP/r"
-run "$TMP/r" add finding user "R1 Q4 internal/x:12 — Extract Leaf Type"
-add_code=$CODE
+run "$TMP/r" add finding user "R1 Q4 internal/x:12 — Extract Leaf Type"; c1=$CODE o1=$OUT
+run "$TMP/r" add finding no-user-answer "second"; c2=$CODE o2=$OUT
+run "$TMP/r" add prep "Split the pure leaf — bounded L"; c3=$CODE o3=$OUT
+run "$TMP/r" add mutation-not-run "internal/x/leaf — gremlins not on PATH"; c4=$CODE o4=$OUT
 run "$TMP/r" show
-if (( add_code == 0 && CODE == 0 )) \
-  && [[ "$(printf '%s\n' "$OUT" | sed -n 1p)" == "Deferred:" ]] \
-  && [[ "$(printf '%s\n' "$OUT" | wc -l | tr -d ' ')" == "2" ]] \
-  && printf '%s\n' "$OUT" | sed -n 2p | grep -qF "finding" \
-  && printf '%s\n' "$OUT" | sed -n 2p | grep -qF "user" \
-  && printf '%s\n' "$OUT" | sed -n 2p | grep -qF "R1 Q4 internal/x:12 — Extract Leaf Type"; then ok
-else bad "expected 'Deferred:' and one row with kind, who and text (add exit=$add_code)"; fi
+want="Deferred:
+- finding · user · R1 Q4 internal/x:12 — Extract Leaf Type
+- finding · no-user-answer · second
+- prep · Split the pure leaf — bounded L
+- mutation-not-run · internal/x/leaf — gremlins not on PATH"
+if (( c1 == 0 && c2 == 0 && c3 == 0 && c4 == 0 && CODE == 0 )) && [[ "$OUT" == "$want" ]] \
+  && [[ "$o1" == "- finding · user · R1 Q4 internal/x:12 — Extract Leaf Type" ]] \
+  && [[ "$o3" == "- prep · Split the pure leaf — bounded L" ]] \
+  && [[ "$o4" == "- mutation-not-run · internal/x/leaf — gremlins not on PATH" ]]; then ok
+else bad "expected four exact rows (exits $c1 $c2 $c3 $c4; add output: $o1 | $o2 | $o3 | $o4)"; fi
 finish
 
-begin "each kind and who is accepted, one row per add"
+begin "a who on a prep or mutation-not-run row exits 2 and writes no row"
 new_repo "$TMP/r"
-run "$TMP/r" add finding no-user-answer "first"; c1=$CODE
-run "$TMP/r" add prep no-user-answer "second"; c2=$CODE
-run "$TMP/r" add mutation-not-run user "third"; c3=$CODE
+run "$TMP/r" add prep no-user-answer "text"; c1=$CODE
+run "$TMP/r" add mutation-not-run user "text"; c2=$CODE
 run "$TMP/r" show
-if (( c1 == 0 && c2 == 0 && c3 == 0 && CODE == 0 )) \
-  && [[ "$(printf '%s\n' "$OUT" | wc -l | tr -d ' ')" == "4" ]] \
-  && printf '%s\n' "$OUT" | grep -qF "mutation-not-run"; then ok
-else bad "expected three rows (exits $c1 $c2 $c3)"; fi
+if (( c1 == 2 && c2 == 2 )) && [[ "$OUT" == "Deferred: none" ]]; then ok
+else bad "expected exit 2 from both and no row (exits $c1 $c2)"; fi
 finish
 
-begin "text with spaces, a percent sign and a newline stays one row"
+begin "the same row added twice is one row, and the second add prints it"
+new_repo "$TMP/r"
+run "$TMP/r" add finding user "twice"
+run "$TMP/r" add finding user "twice"; c2=$CODE o2=$OUT
+run "$TMP/r" show
+if (( c2 == 0 )) && [[ "$o2" == "- finding · user · twice" ]] \
+  && [[ "$(rows)" == "- finding · user · twice" ]]; then ok
+else bad "expected one row (second add exit=$c2, output: $o2)"; fi
+finish
+
+begin "text from a quoted heredoc stays literal and runs nothing"
+new_repo "$TMP/r"
+run_stdin "$TMP/r" add finding user <<'ROW'
+it's $(touch pwned); echo x > made.txt `touch tick`
+ROW
+add_code=$CODE add_out=$OUT
+run "$TMP/r" show
+if (( add_code == 0 )) \
+  && [[ "$(rows)" == "- finding · user · it's \$(touch pwned); echo x > made.txt \`touch tick\`" ]] \
+  && [[ ! -e "$TMP/r/pwned" && ! -e "$TMP/r/made.txt" && ! -e "$TMP/r/tick" ]]; then ok
+else bad "expected the literal text and no new file (add exit=$add_code, output: $add_out)"; fi
+finish
+
+begin "text with spaces, a percent sign, a tab and a newline stays one row"
 new_repo "$TMP/r"
 run "$TMP/r" add finding user "50% of" "the leaf
-is untested"
+is	untested"
 add_code=$CODE
 run "$TMP/r" show
-if (( add_code == 0 )) && [[ "$(printf '%s\n' "$OUT" | wc -l | tr -d ' ')" == "2" ]] \
-  && printf '%s\n' "$OUT" | grep -qF "50% of the leaf is untested"; then ok
+if (( add_code == 0 )) && [[ "$(rows)" == "- finding · user · 50% of the leaf is untested" ]]; then ok
 else bad "expected one row with the joined text"; fi
+finish
+
+begin "text of spaces or tabs only exits 2 and writes no row"
+new_repo "$TMP/r"
+run "$TMP/r" add finding user "   "; c1=$CODE
+run "$TMP/r" add finding user "	"; c4=$CODE
+run "$TMP/r" add prep "	 	"; c2=$CODE
+run_stdin "$TMP/r" add mutation-not-run <<'ROW'
+
+ROW
+c3=$CODE
+run "$TMP/r" show
+if (( c1 == 2 && c2 == 2 && c3 == 2 && c4 == 2 )) && [[ "$OUT" == "Deferred: none" ]]; then ok
+else bad "expected exit 2 from each and no row (exits $c1 $c4 $c2 $c3)"; fi
+finish
+
+begin "add with no text and empty stdin exits 2"
+new_repo "$TMP/r"
+run "$TMP/r" add finding user; c1=$CODE
+run "$TMP/r" add prep
+if (( c1 == 2 && CODE == 2 )); then ok; else bad "expected exit 2 from both (finding exit=$c1)"; fi
 finish
 
 begin "add from a subdirectory writes the same ledger"
 new_repo "$TMP/r"
 mkdir -p "$TMP/r/a/b"
-run "$TMP/r/a/b" add prep no-user-answer "deep"
+run "$TMP/r/a/b" add prep "deep"
 add_code=$CODE
 run "$TMP/r" show
 if (( add_code == 0 )) && printf '%s\n' "$OUT" | grep -qF "deep" \
@@ -90,9 +141,37 @@ if (( add_code == 0 )) && printf '%s\n' "$OUT" | grep -qF "deep" \
 else bad "expected the row in the repository ledger"; fi
 finish
 
+begin "each branch has its own ledger"
+new_repo "$TMP/r"
+run "$TMP/r" add finding user "on main"
+git_in "$TMP/r" checkout -q -b feature/x
+run "$TMP/r" show; fresh=$OUT
+run "$TMP/r" add finding user "on feature"
+run "$TMP/r" show; feature=$OUT
+git_in "$TMP/r" checkout -q main
+run "$TMP/r" show
+if [[ "$fresh" == "Deferred: none" ]] \
+  && [[ "$feature" == "Deferred:
+- finding · user · on feature" ]] \
+  && [[ "$OUT" == "Deferred:
+- finding · user · on main" ]] \
+  && [[ ! -d "$TMP/r/.git/ldd/feature" ]] \
+  && [[ "$(find "$TMP/r/.git/ldd" -type f | wc -l | tr -d ' ')" == "2" ]]; then ok
+else OUT="new branch: $fresh | feature: $feature | main: $OUT"; bad "expected one flat file per branch"; fi
+finish
+
+begin "a detached HEAD writes the detached ledger"
+new_repo "$TMP/r"
+git_in "$TMP/r" checkout -q --detach
+run "$TMP/r" add prep "detached row"
+add_code=$CODE
+if (( add_code == 0 )) && [[ -f "$TMP/r/.git/ldd/detached.md" ]]; then ok
+else bad "expected .git/ldd/detached.md"; fi
+finish
+
 begin "a git worktree checkout has its own ledger under the main .git"
 new_repo "$TMP/r"
-(cd "$TMP/r" && git worktree add -q "$TMP/wt" 2>/dev/null)
+git_in "$TMP/r" worktree add -q "$TMP/wt"
 run "$TMP/wt" add finding user "in the worktree"
 add_code=$CODE
 run "$TMP/wt" show
@@ -102,8 +181,33 @@ if (( add_code == 0 && wt_code == 0 )) \
   && printf '%s\n' "$wt_out" | grep -qF "in the worktree" \
   && [[ "$OUT" == "Deferred: none" ]] \
   && [[ -f "$TMP/wt/.git" && ! -e "$TMP/wt/ldd" ]] \
-  && ls "$TMP/r/.git/worktrees/"*/ldd/ledger.md >/dev/null 2>&1; then ok
-else OUT="worktree: $wt_out | main: $OUT"; bad "expected the row in .git/worktrees/<name>/ldd/ledger.md only"; fi
+  && ls "$TMP/r/.git/worktrees/"*/ldd/*.md >/dev/null 2>&1; then ok
+else OUT="worktree: $wt_out | main: $OUT"; bad "expected the row in .git/worktrees/<name>/ldd/ only"; fi
+finish
+
+begin "a write failure exits 1, writes no row, and show stays true"
+new_repo "$TMP/r"
+run "$TMP/r" add finding user "kept"
+dir=$(dirname "$(find "$TMP/r/.git/ldd" -type f)")
+chmod a-w "$dir" "$dir"/*.md
+run "$TMP/r" add finding user "lost"
+add_code=$CODE add_out=$OUT
+run "$TMP/r" show
+if (( add_code == 1 )) && printf '%s\n' "$add_out" | grep -q '^ldd-ledger: ' \
+  && [[ "$OUT" == "Deferred:
+- finding · user · kept" ]]; then ok
+else OUT="add: $add_out | show: $OUT"; CODE=$add_code; bad "expected exit 1 with an ldd-ledger: line and the one old row"; fi
+finish
+
+begin "show of an unreadable ledger exits 1 and prints nothing to stdout"
+new_repo "$TMP/r"
+run "$TMP/r" add finding user "hidden"
+chmod a-r "$(find "$TMP/r/.git/ldd" -type f)"
+stdout=$(cd "$TMP/r" && bash "$LEDGER" show 2>/dev/null </dev/null); CODE=$?
+stderr=$(cd "$TMP/r" && bash "$LEDGER" show 2>&1 >/dev/null </dev/null)
+OUT="stdout: $stdout | stderr: $stderr"
+if (( CODE == 1 )) && [[ -z "$stdout" ]] && [[ "$stderr" == *"ldd-ledger: "* ]]; then ok
+else bad "expected exit 1, an empty stdout and an ldd-ledger: line"; fi
 finish
 
 begin "clear empties the ledger"
@@ -116,6 +220,12 @@ if (( clear_code == 0 && CODE == 0 )) && [[ "$OUT" == "Deferred: none" ]]; then 
 else bad "expected exactly 'Deferred: none' after clear (clear exit=$clear_code)"; fi
 finish
 
+begin "clear on an empty ledger exits 0"
+new_repo "$TMP/r"
+run "$TMP/r" clear
+if (( CODE == 0 )) && [[ -z "$OUT" ]]; then ok; else bad "expected exit 0 and no output"; fi
+finish
+
 begin "a bad kind exits 2 and writes no row"
 new_repo "$TMP/r"
 run "$TMP/r" add bogus user "text"
@@ -125,7 +235,7 @@ if (( add_code == 2 )) && [[ "$OUT" == "Deferred: none" ]]; then ok
 else CODE=$add_code; bad "expected exit 2 and no row"; fi
 finish
 
-begin "a bad who exits 2 and writes no row"
+begin "a bad who on a finding exits 2 and writes no row"
 new_repo "$TMP/r"
 run "$TMP/r" add finding agent "text"
 add_code=$CODE
@@ -134,18 +244,12 @@ if (( add_code == 2 )) && [[ "$OUT" == "Deferred: none" ]]; then ok
 else CODE=$add_code; bad "expected exit 2 and no row"; fi
 finish
 
-begin "add with no text exits 2"
-new_repo "$TMP/r"
-run "$TMP/r" add finding user
-if (( CODE == 2 )); then ok; else bad "expected exit 2"; fi
-finish
-
 begin "text that starts with a dash stays literal"
 new_repo "$TMP/r"
 run "$TMP/r" add finding user "-n --flag text"
 add_code=$CODE
 run "$TMP/r" show
-if (( add_code == 0 )) && printf '%s\n' "$OUT" | grep -qF -- "-n --flag text"; then ok
+if (( add_code == 0 )) && [[ "$(rows)" == "- finding · user · -n --flag text" ]]; then ok
 else bad "expected the dash text in the row (add exit=$add_code)"; fi
 finish
 
@@ -165,7 +269,7 @@ finish
 
 begin "outside a git repository exits 2"
 mkdir -p "$TMP/plain"
-OUT=$(cd "$TMP/plain" && GIT_CEILING_DIRECTORIES="$TMP" bash "$LEDGER" show 2>&1); CODE=$?
+OUT=$(cd "$TMP/plain" && GIT_CEILING_DIRECTORIES="$TMP" bash "$LEDGER" show 2>&1 </dev/null); CODE=$?
 if (( CODE == 2 )); then ok; else bad "expected exit 2"; fi
 finish
 
