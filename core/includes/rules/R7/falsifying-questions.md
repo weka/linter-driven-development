@@ -71,6 +71,8 @@ Test files are the ones the repository's test runner picks up (`*{{.TestGlob}}`,
    and boolean conditions, check the table for a row at each boundary value and on
    each side of each condition, and hand-flip any operator whose rows are missing
    (`<` to `<=`, `>` to `>=`, a condition negated), run the leaf's tests, revert.
+   When the tool run did not execute for a leaf, also when the hand check then judged
+   it, the receipt says so on its own line: `R7 Q7: mutation run did not execute — <leaf>`.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,

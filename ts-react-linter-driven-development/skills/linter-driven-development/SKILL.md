@@ -164,9 +164,6 @@ Deferred to Phase 4: [finding — failed gate]
 Feature landing shape after prep: [add-only / near-add-only / unchanged]
 ```
 
-Write each `Deferred to Phase 4` line to the ledger at once (`<deferral_ledger>`), as
-`ldd-ledger.sh add prep no-user-answer '<finding — failed gate>'`.
-
 Zero findings passing the gates is the common case — say so in one line and move on.
 
 Inverse trap: reshaping files the plan does not touch is litter-pickup wearing prep's
@@ -255,9 +252,12 @@ advisory. Fix bugs and user-accepted findings via @refactoring — except accept
 @pre-commit-review in INCREMENTAL mode until the delta reports clean.
 
 Defer a finding only on the user's answer. Write each deferral to the ledger at once
-(`<deferral_ledger>`) as a `finding` row with who `user`. When no user can answer (a non-interactive
-run), write it with `no-user-answer`. Never defer a skeptic-CONFIRMED finding without
-one of the two.
+(`<deferral_ledger>`) as a `finding` row with who `user`. When no user can answer (a
+non-interactive run), write it with `no-user-answer`. Never defer a skeptic-CONFIRMED
+finding without the user's answer or a `no-user-answer` row. When the review shows
+`R7 Q7: mutation run did not execute — <leaf>`, write a `mutation-not-run` row for
+that leaf. At the end of Phase 4, write each `PREP-DEFERRED` item that is still open
+as a `prep` row, with the same rule for who.
 
 **Cluster routing**: report entries marked 🔗 CLUSTER (≥2 hunters converging on one
 anchor) are fixed design-first, never member-by-member — partial fixes undo each
@@ -278,7 +278,9 @@ before.
    @documentation applies the verdicts and re-critiques once — R3 routes from the
    critic go back through @refactoring like any R3 finding).
 2. Commit. When tests (`npx vitest run`) and lint (Phase 3) are green and the tree
-   is dirty, commit the slice with the ship summary as the message. A green slice left
+   is dirty, commit the slice with the ship summary as the message. Before the commit,
+   run `ldd-ledger.sh show` and paste its output into the summary (`<deferral_ledger>`).
+   A green slice left
    uncommitted "for the user" is the one state this workflow never ends in: the user
    can amend, split or revert a commit; an uncommitted tree evaporates with the
    session. Prep commits (Phase 1.5) stay separate.
@@ -287,21 +289,21 @@ before.
    `Stop check` block verbatim: the six labelled lines (`1 gates` … `6 commit`), not
    a prose account of them. The block is a precondition of the summary, not an
    ornament: no block, or fewer than six lines, means the refactoring did not finish —
-   run its `<stopping_criteria>` now, render the block, then present. Run
-   `ldd-ledger.sh show` when you write the summary, and paste its output. User decides only about the deferred
+   run its `<stopping_criteria>` now, render the block, then present. Keep the
+   `ldd-ledger.sh show` output from step 2. User decides only about the deferred
    advisory findings: fix them now or later.
 </phase_5_ship>
 
 <deferral_ledger>
-The ledger is a file that keeps deferred work when the context is compacted. Write a
-row with `bash <this skill dir>/../../scripts/ldd-ledger.sh add <kind> <who> '<text>'`.
+The ledger is a file that keeps deferred work when Claude Code compacts the context.
+Write a row with `bash <this skill dir>/../../scripts/ldd-ledger.sh add <kind> <who> '<text>'`.
 The kind is `finding`, `prep` or `mutation-not-run`. The who is `user` or
 `no-user-answer`. Every closing report prints the ledger: the ship summary, the PR body
 and the final message of the session. Run `ldd-ledger.sh show` when you write the
-report, and paste its output. Never write that all items
-are closed while the ledger has rows. Only the user clears the ledger
-(`ldd-ledger.sh clear`), after each row is fixed or accepted as debt. The workflow
-never runs `ldd-ledger.sh clear`.
+report, and paste its output. Never write that all items are closed while the ledger
+has rows. When the ledger has rows, tell the user: "When each row is fixed or accepted
+as debt, ask: clear the ledger." Run `ldd-ledger.sh clear` only when the user asks for
+it.
 </deferral_ledger>
 
 <success_criteria>

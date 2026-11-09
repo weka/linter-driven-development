@@ -124,8 +124,9 @@ private-function test.
   `gremlins unleash ./<leaf>`; with no task runner, propose that `go install` line for
   the developer to run. Ask first, never install silently, and never substitute a
   different invocation: a report whose mutants all timed out, with no `LIVED` and no
-  `KILLED` line, is a broken run, not a clean one. A run that did not execute is a
-  ledger row of kind `mutation-not-run`. gremlins never mutates an equality
+  `KILLED` line, is a broken run, not a clean one. The main agent writes each run
+  that did not execute to the deferral ledger with
+  `ldd-ledger.sh add mutation-not-run`. gremlins never mutates an equality
   (`==`, `!=`) or a literal constant, so it cannot ask for the row where an element
   sorts below the needle or the row on the far side of a limit; the hand check's row
   at each boundary and one past it covers those two on purpose, not by accident.
@@ -237,6 +238,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    leaf's comparisons and boolean conditions, check the table for a row at each
    boundary value and on each side of each condition, and name the row that is
    missing.
+   When the tool run did not execute for a leaf, also when the hand check then judged
+   it, the receipt says so on its own line: `R7 Q7: mutation run did not execute — <leaf>`.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,

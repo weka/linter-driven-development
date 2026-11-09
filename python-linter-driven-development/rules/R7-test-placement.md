@@ -138,8 +138,9 @@ one function asserts values, one asserts the raise, and neither case body branch
   beside `test` and `lint` in the repository's Taskfile or Makefile that runs
   `mutmut run && mutmut results`; with no task runner and no dev group, propose
   `pipx install mutmut` for the developer to run. Ask first, never install silently,
-  and never read a run that did not execute as a clean one. A run that did not
-  execute is a ledger row of kind `mutation-not-run`.
+  and never read a run that did not execute as a clean one. The main agent writes
+  each run that did not execute to the deferral ledger with
+  `ldd-ledger.sh add mutation-not-run`.
 - **Orchestrating types**: integration-style tests wiring real collaborators — real
   store over an embedded DB, real client against an in-process HTTP server — never
   interface-injected doubles (`R6-test-only-interfaces.md`). They cover the seams;
@@ -265,6 +266,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    only where a hit row points. An assertion that matches only a word all the
    leaf's errors share (`match="tenant"`) cannot tell one error path from another, so
    a removed check or a changed message survives.
+   When the tool run did not execute for a leaf, also when the hand check then judged
+   it, the receipt says so on its own line: `R7 Q7: mutation run did not execute — <leaf>`.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,

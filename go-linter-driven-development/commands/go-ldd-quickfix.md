@@ -89,8 +89,8 @@ isolated context, spawned with the package list)
 summary with the hash, the scope line, the lint-fixer's `FIXED:` / `ESCALATED:`
 tallies and — when @refactoring ran — its `Stop check` block verbatim, six labelled
 lines; without the block the refactoring did not finish and the summary is not final.
-Run `ldd-ledger.sh show` when you write the summary, and paste its output at the end.
-Never write that all items are closed while the ledger has rows.
+Paste the `ldd-ledger.sh show` output at the end of the summary (`<deferral_ledger>` in
+the skill). Never write that all items are closed while the ledger has rows.
 
 **Loop until**:
 ✅ Tests pass | ✅ `LINT STATUS: green` over the scope | ✅ @pre-commit-review INCREMENTAL delta clean (or findings deferred by the user or with `no-user-answer`, each one a ledger row)

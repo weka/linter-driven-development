@@ -34,7 +34,8 @@ Display current implementation status:
   line as given. When it printed nothing, leave this part out.]
 
 ⏸️ Deferral ledger:
-  [Copy the `ldd-ledger.sh show` output as given. Only the user clears it.]
+  [Copy the `ldd-ledger.sh show` output as given. When it has rows, add: "When each
+  row is fixed or accepted as debt, ask: clear the ledger."]
 
 🎯 Next Action:
   [What happens next in the workflow]

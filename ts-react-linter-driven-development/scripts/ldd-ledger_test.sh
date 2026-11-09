@@ -140,6 +140,23 @@ run "$TMP/r" add finding user
 if (( CODE == 2 )); then ok; else bad "expected exit 2"; fi
 finish
 
+begin "text that starts with a dash stays literal"
+new_repo "$TMP/r"
+run "$TMP/r" add finding user "-n --flag text"
+add_code=$CODE
+run "$TMP/r" show
+if (( add_code == 0 )) && printf '%s\n' "$OUT" | grep -qF -- "-n --flag text"; then ok
+else bad "expected the dash text in the row (add exit=$add_code)"; fi
+finish
+
+begin "show or clear with an extra argument exits 2"
+new_repo "$TMP/r"
+run "$TMP/r" show extra; show_code=$CODE
+run "$TMP/r" clear extra
+if (( show_code == 2 && CODE == 2 )); then ok
+else bad "expected exit 2 from both (show exit=$show_code)"; fi
+finish
+
 begin "an unknown command exits 2"
 new_repo "$TMP/r"
 run "$TMP/r" list

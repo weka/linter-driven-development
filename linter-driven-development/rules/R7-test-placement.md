@@ -103,7 +103,8 @@ private-function test.
   installs a pinned version and runs it over one leaf package, and where there is no
   task runner propose the local install command for the developer to run; ask before
   installing, never install silently, and never read a run that did not execute as a
-  pass. A run that did not execute is a ledger row of kind `mutation-not-run`.
+  pass. The main agent writes each run that did not execute to the deferral ledger
+  with `ldd-ledger.sh add mutation-not-run`.
   When the language has no maintained mutation tool, the check is done by hand and stays cheap because a
   leaf is small: for every comparison in the leaf the table holds a row at the
   boundary value and one just past it, for every boolean condition a row on each
@@ -225,6 +226,8 @@ Test files are the ones the repository's test runner picks up (`*<test-file suff
    and boolean conditions, check the table for a row at each boundary value and on
    each side of each condition, and hand-flip any operator whose rows are missing
    (`<` to `<=`, `>` to `>=`, a condition negated), run the leaf's tests, revert.
+   When the tool run did not execute for a leaf, also when the hand check then judged
+   it, the receipt says so on its own line: `R7 Q7: mutation run did not execute — <leaf>`.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,
