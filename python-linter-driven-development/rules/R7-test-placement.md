@@ -167,7 +167,9 @@ one function asserts values, one asserts the raise, and neither case body branch
 
 - **Move the behavior down a rung**: rewrite the big-object test as a leaf unit test
   with literal inputs; if the leaf doesn't exist yet, that is an R1/R3 extraction
-  first (`../examples/storify-leaf-type.md` shows the pair).
+  first (`../examples/storify-leaf-type.md` shows the pair). When an
+  underscore-prefixed leaf is in a package that does I/O, apply "Split the pure leaf out of an
+  I/O package" (`R4-helper-placement.md`) first.
 - **Split Success and Error Tables**: one function asserting values, one asserting
   errors — complexity 1 in both.
 - **Kill the surviving mutant**: add the table row whose literal input distinguishes
@@ -215,9 +217,17 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect: judgment
    Detection: for each new public method on a leaf type,
    `grep -rn '<method>' --include='test_*.py' --include='*_test.py' .` — is it
-   exercised directly, or only through an orchestrator's test?
+   exercised directly, or only through an orchestrator's test? Then list the new or
+   changed underscore-prefixed functions and classes:
+   `grep -nE '^\s*(async def|def|class) _[a-zA-Z]'` in the changed files. Score each one
+   with the scorecard in `R1-primitive-obsession.md`. For a score of 4 or more, find
+   the tests that reach it. A helper with a score of 3 or less is not judged here. A
+   test that imports it is a Q2 finding.
    Violation: leaf behavior reached only from above — add the rung-0 test; the
-   orchestrator test keeps only the seam.
+   orchestrator test keeps only the seam. An underscore-prefixed leaf with a score of 4
+   or more is also a violation when only tests that build a server, files or a
+   database reach it. Fix it with R4's "Split the pure leaf out of an I/O package",
+   then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `assert_called|assert_any_call|assert_has_calls|\.call_count|\.call_args|\.mock_calls|\.calls\b` files=test
@@ -237,8 +247,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*len\b)|\blen\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)handlers/,(^|/)__main__\.py$,(^|/)main\.py$,(^|/)cli\.py$
    Detection: for each new or changed leaf package, with `paths_to_mutate` under
    `[tool.mutmut]` naming that package only, `mutmut run` then `mutmut results`;
-   skip orchestrators, the top rung and any module that does I/O. `mutmut` not
-   installed: propose the install the mechanics bullet describes before hunting; no
+   skip orchestrators, the top rung and any module that does I/O. A pure leaf inside
+   such a module is a Q4 finding, not a skip. `mutmut` not installed: propose the install the mechanics bullet describes before hunting; no
    survivors from a run that did not execute is not a pass. In a read-only review,
    where no tests may run, take the hand check instead: list the leaf's comparisons
    and boolean conditions, check the parametrize table for a row at each boundary

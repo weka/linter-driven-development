@@ -131,7 +131,9 @@ private-function test.
 
 - **Move the behavior down a rung**: rewrite the big-object test as a leaf unit test
   with literal inputs; if the leaf doesn't exist yet, that is an R1/R3 extraction
-  first (`../examples/storify-leaf-type.md` shows the pair).
+  first (`../examples/storify-leaf-type.md` shows the pair). When an
+  internal leaf is in a package that does I/O, apply "Split the pure leaf out of an
+  I/O package" (`R4-helper-placement.md`) first.
 - **Split Success and Error Tables**: one function asserting values, one asserting
   errors — complexity 1 in both.
 - **Kill the surviving mutant**: add the table row whose literal input distinguishes
@@ -179,8 +181,15 @@ Test files are the ones the repository's test runner picks up (`*<test-file suff
    Detect: judgment
    Detection: for each new public method on a leaf type, search the test files for
    its name — is it exercised directly, or only through an orchestrator's test?
+   Then search the changed source for new or changed internal functions and
+   types. Score each one with the scorecard in `R1-primitive-obsession.md`. For a
+   score of 4 or more, find the tests that reach it. A helper with a score of 3 or
+   less is not judged here. A test that calls an internal name is a Q2 finding.
    Violation: leaf behavior reached only from above — add the rung-0 test; the
-   orchestrator test keeps only the seam.
+   orchestrator test keeps only the seam. An internal leaf with a score of 4 or
+   more is also a violation when only tests that build a server, files, a database or
+   a rendered tree reach it. Fix it with R4's "Split the pure leaf out of an I/O
+   package", then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `[Aa]ssert(_?[Cc]alled|_?[Ee]xpectations|_?[Aa]ny_?[Cc]all|_?[Hh]as_?[Cc]alls)|\.call_count|\.mock_calls|\.calls\b` files=test
@@ -203,7 +212,8 @@ Test files are the ones the repository's test runner picks up (`*<test-file suff
    Detection: for each new or changed leaf type, run the repository's mutation
    testing tool over that leaf's package only (the mechanics bullet names the tool
    and the command) and read its list of survivors; skip orchestrators, the top
-   rung and any package that does I/O. A tool the language has but the machine
+   rung and any package that does I/O. A pure leaf inside such a package is a Q4
+   finding, not a skip. A tool the language has but the machine
    lacks is proposed for install as the mechanics bullet says, never skipped and
    never counted as a pass. Without any tool, list the leaf's comparisons
    and boolean conditions, check the table for a row at each boundary value and on

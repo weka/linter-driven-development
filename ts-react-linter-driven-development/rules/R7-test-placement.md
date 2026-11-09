@@ -188,7 +188,9 @@ throw, and neither case body branches.
 
 - **Move the behavior down a rung**: rewrite the big-object test as a leaf unit test
   with literal inputs; if the leaf doesn't exist yet, that is an R1/R3 extraction
-  first (`../examples/storify-leaf-type.md` shows the pair).
+  first (`../examples/storify-leaf-type.md` shows the pair). When an
+  internal leaf is in a package that does I/O, apply "Split the pure leaf out of an
+  I/O package" (`R4-helper-placement.md`) first.
 - **Split Success and Error Tables**: one function asserting values, one asserting
   errors — complexity 1 in both.
 - **Kill the surviving mutant**: add the table row whose literal input distinguishes
@@ -240,9 +242,18 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect: judgment
    Detection: for each new exported function on a leaf module,
    `grep -rn '<function>' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules .` —
-   is it exercised directly, or only through a page's render test?
+   is it exercised directly, or only through a page's render test? Then list the new
+   or changed non-exported functions and classes:
+   `grep -nE '^((async )?function|class) [a-zA-Z]|^const [a-zA-Z]\w* = '` in the
+   changed `.ts` files. Score each one with the scorecard in
+   `R1-primitive-obsession.md`. For a score of 4 or more, find the tests that reach it.
+   A helper with a score of 3 or less is not judged here.
    Violation: leaf behavior reached only from above — add the rung-0 test; the page
-   test keeps only the seam.
+   test keeps only the seam. A non-exported leaf with a score of 4 or more is also a
+   violation when only tests that render a tree, register `server.use` handlers or
+   build a `QueryClient` reach it. Fix it with R4's "Split the pure leaf out of an I/O
+   package", then add the rung-0 test. An `export` added only for the test is a Q2
+   finding, not the fix.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `toHaveBeenCalled(Times|With|Once)?\(|toHaveBeen(Last|Nth)CalledWith|\.mock\.(calls|results|lastCall)` files=test
@@ -271,7 +282,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    each mutant in a sandbox copy under `.stryker-tmp/`, never in the checkout. Read
    the `clear-text` reporter: a `Survived` line carries the file, the line and the
    replacement, and a `CompileError` line is a mutant the types rejected, not a
-   kill. Skip orchestrators, the top rung and any module that does I/O. Stryker
+   kill. Skip orchestrators, the top rung and any module that does I/O. A pure leaf
+   inside such a module is a Q4 finding, not a skip. Stryker
    not installed (`@stryker-mutator/core` absent from `devDependencies`): propose
    the install the mechanics bullet describes before hunting; no survivors from a
    run that did not execute is not a pass. In a read-only review, where no tests
