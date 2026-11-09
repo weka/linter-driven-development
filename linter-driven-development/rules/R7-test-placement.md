@@ -103,7 +103,8 @@ private-function test.
   installs a pinned version and runs it over one leaf package, and where there is no
   task runner propose the local install command for the developer to run; ask before
   installing, never install silently, and never read a run that did not execute as a
-  pass. When the language has no maintained mutation tool, the check is done by hand and stays cheap because a
+  pass. A run that did not execute is a ledger row of kind `mutation-not-run`.
+  When the language has no maintained mutation tool, the check is done by hand and stays cheap because a
   leaf is small: for every comparison in the leaf the table holds a row at the
   boundary value and one just past it, for every boolean condition a row on each
   side, and a suspected gap is confirmed by flipping the operator, running the

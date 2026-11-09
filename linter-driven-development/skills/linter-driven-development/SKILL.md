@@ -11,6 +11,7 @@ allowed-tools:
   - Skill(linter-driven-development:pre-commit-review)
   - Skill(linter-driven-development:documentation)
   - Agent
+  - Bash(bash *ldd-ledger.sh *)
 ---
 
 <objective>
@@ -167,6 +168,9 @@ Deferred to Phase 4: [finding — failed gate]
 Feature landing shape after prep: [add-only / near-add-only / unchanged]
 ```
 
+Write each `Deferred to Phase 4` line to the ledger at once (`<deferral_ledger>`), as
+`ldd-ledger.sh add prep no-user-answer '<finding — failed gate>'`.
+
 Zero findings passing the gates is the common case — say so in one line and move on.
 
 Inverse trap: reshaping files the plan does not touch is litter-pickup wearing prep's
@@ -254,6 +258,11 @@ advisory. Fix bugs and user-accepted findings via @refactoring — except accept
 (documentation-network) findings, whose fixer is @documentation — then re-invoke
 @pre-commit-review in INCREMENTAL mode until the delta reports clean.
 
+Defer a finding only on the user's answer. Write each deferral to the ledger at once
+(`<deferral_ledger>`), with who `user`. When no user can answer (a non-interactive
+run), write it with `no-user-answer`. Never defer a skeptic-CONFIRMED finding without
+one of the two.
+
 **Cluster routing**: report entries marked 🔗 CLUSTER (≥2 hunters converging on one
 anchor) are fixed design-first, never member-by-member — partial fixes undo each
 other (R1 names an enum that R11's move then replaces; R2 places validation that
@@ -282,9 +291,21 @@ before.
    `Stop check` block verbatim: the six labelled lines (`1 gates` … `6 commit`), not
    a prose account of them. The block is a precondition of the summary, not an
    ornament: no block, or fewer than six lines, means the refactoring did not finish —
-   run its `<stopping_criteria>` now, render the block, then present. User decides
-   only about the deferred advisory findings: fix them now or later.
+   run its `<stopping_criteria>` now, render the block, then present. The ship
+   summary prints `ldd-ledger.sh show` verbatim. User decides only about the deferred
+   advisory findings: fix them now or later.
 </phase_5_ship>
+
+<deferral_ledger>
+The ledger is a file that keeps deferred work when the context is compacted. Write a
+row with `bash <this skill dir>/../../scripts/ldd-ledger.sh add <kind> <who> '<text>'`.
+The kind is `finding`, `prep` or `mutation-not-run`. The who is `user` or
+`no-user-answer`. Every closing report prints `ldd-ledger.sh show` verbatim: the ship
+summary, the PR body and the final message of the session. Never write that all items
+are closed while the ledger has rows. Only the user clears the ledger
+(`ldd-ledger.sh clear`), after each row is fixed or accepted as debt. The workflow
+never runs `ldd-ledger.sh clear`.
+</deferral_ledger>
 
 <success_criteria>
 - [ ] Design plan user-approved before the first RED
@@ -293,9 +314,10 @@ before.
 - [ ] Every behavior completed a RED → GREEN → REFACTOR cycle
 - [ ] Package-scoped lint + rule greps clean after each cycle
 - [ ] lint-fixer reported `LINT STATUS: green`; all escalations resolved via @refactoring
-- [ ] @pre-commit-review INCREMENTAL delta clean, or findings explicitly deferred by user
+- [ ] @pre-commit-review INCREMENTAL delta clean, or findings deferred by the user's
+      answer (or `no-user-answer`), each one a ledger row
 - [ ] @documentation (FEATURE mode) done — docs wired into the network, R9 self-check
       clean, comment-critic critique loop applied and confirmed clean (or remainder
       reported); the green slice committed and the ship summary presented with its
-      hash, deferred advisory findings listed
+      hash and the `ldd-ledger.sh show` output
 </success_criteria>

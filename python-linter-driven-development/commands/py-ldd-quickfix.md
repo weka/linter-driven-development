@@ -89,9 +89,11 @@ isolated context, spawned with the package list)
 summary with the hash, the scope line, the lint-fixer's `FIXED:` / `ESCALATED:`
 tallies and — when @refactoring ran — its `Stop check` block verbatim, six labelled
 lines; without the block the refactoring did not finish and the summary is not final.
+The summary ends with the `ldd-ledger.sh show` output verbatim; never write that all
+items are closed while it has rows.
 
 **Loop until**:
-✅ Tests pass | ✅ `LINT STATUS: green` over the scope | ✅ @pre-commit-review INCREMENTAL delta clean (or findings explicitly deferred)
+✅ Tests pass | ✅ `LINT STATUS: green` over the scope | ✅ @pre-commit-review INCREMENTAL delta clean (or findings deferred by the user, each one a ledger row)
 
 Use this when code is already written and needs to pass quality gates: your branch
 before a PR, a reviewer's findings, one package you name. It goes straight to fixing

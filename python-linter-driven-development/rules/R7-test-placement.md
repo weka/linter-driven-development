@@ -138,7 +138,8 @@ one function asserts values, one asserts the raise, and neither case body branch
   beside `test` and `lint` in the repository's Taskfile or Makefile that runs
   `mutmut run && mutmut results`; with no task runner and no dev group, propose
   `pipx install mutmut` for the developer to run. Ask first, never install silently,
-  and never read a run that did not execute as a clean one.
+  and never read a run that did not execute as a clean one. A run that did not
+  execute is a ledger row of kind `mutation-not-run`.
 - **Orchestrating types**: integration-style tests wiring real collaborators — real
   store over an embedded DB, real client against an in-process HTTP server — never
   interface-injected doubles (`R6-test-only-interfaces.md`). They cover the seams;

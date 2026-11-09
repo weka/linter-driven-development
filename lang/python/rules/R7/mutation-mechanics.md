@@ -8,4 +8,5 @@
   beside `test` and `lint` in the repository's Taskfile or Makefile that runs
   `mutmut run && mutmut results`; with no task runner and no dev group, propose
   `pipx install mutmut` for the developer to run. Ask first, never install silently,
-  and never read a run that did not execute as a clean one.
+  and never read a run that did not execute as a clean one. A run that did not
+  execute is a ledger row of kind `mutation-not-run`.

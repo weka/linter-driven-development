@@ -155,6 +155,7 @@ throw, and neither case body branches.
   `lint` in `package.json` that runs `stryker run`; check the runner's supported
   Vitest major against the repository's before proposing it. Ask first, never
   install silently, and never read a run that did not execute as a clean one.
+  A run that did not execute is a ledger row of kind `mutation-not-run`.
   Stryker mutates equality, relational and logical operators, literals and optional
   chaining, so the hand check's boundary rows mostly confirm its report rather than
   cover a blind spot.
