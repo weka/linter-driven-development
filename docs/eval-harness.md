@@ -71,7 +71,7 @@ Tiers are tags in each case's frontmatter, selected with `--tag`.
 
 | Tier | Agent may | Cases | Runs | Cost per run |
 |---|---|---|---|---|
-| cheap | read only, write a report | two trigger cases (the workflow fires on the suite's language and stays quiet on the other), the whole-repo review, six scoped reviews (Cases A–F), the centerpiece review, the private-leaf review (Case H) and design case, two clean-tree controls (review and quickfix say "nothing in scope" and touch nothing) | 2–3 | $0.06 (trigger) to $15 (whole-repo review) |
+| cheap | read only, write a report | two trigger cases (the workflow fires on the suite's language and stays quiet on the other), the whole-repo review, six scoped reviews (Cases A–F), the centerpiece review, Case H (the private-leaf review) and its design case, two clean-tree controls (review and quickfix say "nothing in scope" and touch nothing) | 2–3 | $0.06 (trigger) to $15 (whole-repo review) |
 | medium | edit code | quickfix over two packages of the red-lint scaffold, prepare, wire-repo-brain, six refactors (A–F), the centerpiece refactor, the private-leaf promotion | 1 | $1–8 |
 | expensive | run the whole workflow unattended | autopilot on an SMS-channel spec | 1 | $30 or more; runs only on explicit approval |
 

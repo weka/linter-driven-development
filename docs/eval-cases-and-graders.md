@@ -121,14 +121,31 @@ Three cases per suite measure the placement ladder for a private leaf. They all 
 the `R7.Q4.private-leaf-in-io` plant and its control from
 [eval-fixture.md](eval-fixture.md).
 
-| Case | Tier | Asks | Expected shape |
-|---|---|---|---|
-| `case-h-private-leaf-review` | cheap | a scoped review of the webhook file and its test | the leaf is a finding with the fix "Split the pure leaf out of an I/O package"; the trivial helper is not a finding; no test-only door is proposed |
-| `design-private-leaf` | cheap | a code-designing plan for a webhook spec that has an expansion leaf, a reply classifier and an I/O probe; no code | every type has a placement line with an R1 score and a rung; each type scored 4 or more goes on rung 2 or 3, or has a written reason for rung 1; the probe that does the I/O stays in the feature package |
-| `promote-private-leaf` | medium | a quickfix that accepts every R4 and R7 finding | the leaf moves into a rung-2 package or module with direct tests and full coverage, the old name is gone, no test-only export exists, the trivial helper stays private, and the Go case runs the mutation tool over the new package |
+| Case | Tier | Asks |
+|---|---|---|
+| `case-h-private-leaf-review` | cheap | a scoped review of the webhook file and its test |
+| `design-private-leaf` | cheap | a code-designing plan for the webhook spec; no code |
+| `promote-private-leaf` | medium | a quickfix that accepts every R4 and R7 finding |
 
-The medium case also expects the closing report to print the deferral ledger. Its
-postcheck builds, tests, checks coverage of the new package and counts the commits.
+The review case expects the leaf as a finding with the fix "Split the pure leaf out of
+an I/O package". The trivial helper is not a finding. No report proposes a test-only
+export.
+
+The webhook spec has an expansion leaf, a reply classifier and an I/O probe. The design
+case expects a placement line for every type. Each line has an
+[R1 score](../core/rules/R1-primitive-obsession.md) and a rung. A type with a score of 4
+or more goes on
+[rung 2 or 3](../core/rules/R4-helper-placement.md), or has a written reason for rung 1.
+The probe stays in the feature package.
+
+The promotion case expects the leaf in a rung-2 package or module. The new package has
+direct tests and full coverage. The old name is gone. No test-only export exists. The
+trivial helper stays private. The Go case runs the mutation tool over the new package.
+
+The medium case also expects the closing report to print the
+[deferral ledger](quick-start.md). Its postcheck builds and tests the code. It checks
+the coverage of the new package. It checks that the old private name is gone, that no test-only export file exists and that the tree is clean.
+It checks that at least one commit exists.
 
 ## Postcheck
 Graders read the transcript and the tree; they do not run commands. A medium case
