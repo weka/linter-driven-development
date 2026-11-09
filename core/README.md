@@ -212,10 +212,12 @@ differently from the other bindings:
   no linter is installed; where one is, a case checks the doctor against it.
 - `scripts/ldd-ledger.sh` and `scripts/ldd-ledger_test.sh`, the deferral ledger and
   its fixture matrix, are core templates with no includes. The ledger is one file for
-  each branch, at `git rev-parse --git-path ldd/<branch>.md`. A row is a deferred
-  finding, a deferred prep move, or a mutation run that did not execute. Every closing
-  report prints the ledger. The skills and the status command run `add` and `show`
-  with no permission prompt. The agent runs `clear` only when the user asks for it.
+  each branch, in the `ldd/` directory of the repository's common git directory. A
+  row stays when a linked worktree is removed. A row is a deferred finding, a deferred
+  prep move, or a mutation run that did not execute. Every closing report prints the
+  ledger. The workflow skills and the prepare command run `add` and `show` with no
+  permission prompt; the status command runs `show` only. The agent runs `clear` only
+  when the user asks for it.
 - `setup/golangci.yaml`, `setup/ruff.toml` and `setup/eslint.config.ldd.mjs`, the
   recommended linter configurations, are core templates rendered into every plugin,
   so the generic plugin carries all three for the languages it reviews. Each enables

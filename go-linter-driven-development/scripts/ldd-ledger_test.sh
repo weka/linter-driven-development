@@ -131,6 +131,57 @@ run "$TMP/r" add prep
 if (( c1 == 2 && CODE == 2 )); then ok; else bad "expected exit 2 from both (finding exit=$c1)"; fi
 finish
 
+begin "add reads the text from a file on stdin"
+new_repo "$TMP/r"
+printf 'from a file\n' > "$TMP/row.txt"
+run_stdin "$TMP/r" add prep < "$TMP/row.txt"
+if (( CODE == 0 )) && [[ "$OUT" == "- prep · from a file" ]]; then ok
+else bad "expected '- prep · from a file'"; fi
+finish
+
+begin "add with no text and stdin from an open socket exits 2 at once"
+new_repo "$TMP/r"
+sock=$(cd "$TMP/r" && python3 -I -c '
+import socket, subprocess, sys
+a, b = socket.socketpair()
+try:
+    r = subprocess.run(["bash", sys.argv[1], "add", "prep"], stdin=a, capture_output=True, timeout=10)
+    print(r.returncode)
+except subprocess.TimeoutExpired:
+    print("timeout")
+' "$LEDGER")
+run "$TMP/r" show
+if [[ "$sock" == "2" ]] && [[ "$OUT" == "Deferred: none" ]]; then ok
+else bad "expected exit 2 and no row (add with a socket stdin: $sock)"; fi
+finish
+
+begin "a new row that is part of an old row is a new row"
+new_repo "$TMP/r"
+run "$TMP/r" add prep "split the leaf out"
+run "$TMP/r" add prep "split the leaf"; c2=$CODE
+run "$TMP/r" show
+if (( c2 == 0 )) && [[ "$(rows)" == "- prep · split the leaf out
+- prep · split the leaf" ]]; then ok
+else bad "expected two rows (second add exit=$c2)"; fi
+finish
+
+begin "leading and trailing spaces are trimmed"
+new_repo "$TMP/r"
+run "$TMP/r" add prep "   lead and trail   "
+add_code=$CODE add_out=$OUT
+if (( add_code == 0 )) && [[ "$add_out" == "- prep · lead and trail" ]]; then ok
+else bad "expected '- prep · lead and trail'"; fi
+finish
+
+begin "add finding with no who exits 2 and writes no row"
+new_repo "$TMP/r"
+run "$TMP/r" add finding; c1=$CODE
+run "$TMP/r" add finding "R1 Q4 text with no who"; c2=$CODE
+run "$TMP/r" show
+if (( c1 == 2 && c2 == 2 )) && [[ "$OUT" == "Deferred: none" ]]; then ok
+else bad "expected exit 2 from both and no row (exits $c1 $c2)"; fi
+finish
+
 begin "add from a subdirectory writes the same ledger"
 new_repo "$TMP/r"
 mkdir -p "$TMP/r/a/b"
@@ -156,34 +207,58 @@ if [[ "$fresh" == "Deferred: none" ]] \
 - finding · user · on feature" ]] \
   && [[ "$OUT" == "Deferred:
 - finding · user · on main" ]] \
-  && [[ ! -d "$TMP/r/.git/ldd/feature" ]] \
+  && [[ -f "$TMP/r/.git/ldd/feature%2Fx.md" && -f "$TMP/r/.git/ldd/main.md" ]] \
   && [[ "$(find "$TMP/r/.git/ldd" -type f | wc -l | tr -d ' ')" == "2" ]]; then ok
-else OUT="new branch: $fresh | feature: $feature | main: $OUT"; bad "expected one flat file per branch"; fi
+else OUT="new branch: $fresh | feature: $feature | main: $OUT"; bad "expected ldd/main.md and ldd/feature%2Fx.md only"; fi
 finish
 
-begin "a detached HEAD writes the detached ledger"
+begin "feat/x and feat%2Fx have separate ledgers"
 new_repo "$TMP/r"
+git_in "$TMP/r" checkout -q -b feat/x
+run "$TMP/r" add prep "slash"
+git_in "$TMP/r" checkout -q -b 'feat%2Fx'
+run "$TMP/r" add prep "percent"
+run "$TMP/r" show; percent=$OUT
+git_in "$TMP/r" checkout -q feat/x
+run "$TMP/r" show
+if [[ "$OUT" == "Deferred:
+- prep · slash" ]] && [[ "$percent" == "Deferred:
+- prep · percent" ]] \
+  && [[ -f "$TMP/r/.git/ldd/feat%2Fx.md" && -f "$TMP/r/.git/ldd/feat%252Fx.md" ]]; then ok
+else OUT="feat/x: $OUT | feat%2Fx: $percent"; bad "expected two files, one row each"; fi
+finish
+
+begin "a detached HEAD and a branch named detached have separate ledgers"
+new_repo "$TMP/r"
+git_in "$TMP/r" checkout -q -b detached
+run "$TMP/r" add prep "on the branch"
 git_in "$TMP/r" checkout -q --detach
-run "$TMP/r" add prep "detached row"
+run "$TMP/r" show; head_fresh=$OUT
+run "$TMP/r" add prep "on the head"
 add_code=$CODE
-if (( add_code == 0 )) && [[ -f "$TMP/r/.git/ldd/detached.md" ]]; then ok
-else bad "expected .git/ldd/detached.md"; fi
+git_in "$TMP/r" checkout -q detached
+run "$TMP/r" show
+if (( add_code == 0 )) && [[ "$head_fresh" == "Deferred: none" ]] \
+  && [[ "$OUT" == "Deferred:
+- prep · on the branch" ]] \
+  && [[ -f "$TMP/r/.git/ldd/HEAD.md" && -f "$TMP/r/.git/ldd/detached.md" ]]; then ok
+else OUT="detached HEAD before add: $head_fresh | branch detached: $OUT"; bad "expected ldd/HEAD.md and ldd/detached.md, one row each"; fi
 finish
 
-begin "a git worktree checkout has its own ledger under the main .git"
+begin "a row added in a linked worktree stays after the worktree is removed"
 new_repo "$TMP/r"
-git_in "$TMP/r" worktree add -q "$TMP/wt"
+git_in "$TMP/r" worktree add -q -b topic "$TMP/wt"
 run "$TMP/wt" add finding user "in the worktree"
 add_code=$CODE
-run "$TMP/wt" show
-wt_out=$OUT wt_code=$CODE
+run "$TMP/r" show; main_out=$OUT
+git_in "$TMP/r" worktree remove "$TMP/wt"
+git_in "$TMP/r" checkout -q topic
 run "$TMP/r" show
-if (( add_code == 0 && wt_code == 0 )) \
-  && printf '%s\n' "$wt_out" | grep -qF "in the worktree" \
-  && [[ "$OUT" == "Deferred: none" ]] \
-  && [[ -f "$TMP/wt/.git" && ! -e "$TMP/wt/ldd" ]] \
-  && ls "$TMP/r/.git/worktrees/"*/ldd/*.md >/dev/null 2>&1; then ok
-else OUT="worktree: $wt_out | main: $OUT"; bad "expected the row in .git/worktrees/<name>/ldd/ only"; fi
+if (( add_code == 0 )) && [[ "$main_out" == "Deferred: none" ]] \
+  && [[ "$OUT" == "Deferred:
+- finding · user · in the worktree" ]] \
+  && [[ ! -e "$TMP/wt" && -f "$TMP/r/.git/ldd/topic.md" ]]; then ok
+else OUT="main before: $main_out | topic after removal: $OUT"; bad "expected the row in .git/ldd/topic.md after the worktree is gone"; fi
 finish
 
 begin "a write failure exits 1, writes no row, and show stays true"

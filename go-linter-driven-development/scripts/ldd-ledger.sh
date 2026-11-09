@@ -2,13 +2,15 @@
 # Deferral ledger of the go-linter-driven-development plugin.
 #
 # Keeps the deferred work of a branch in a file. The file stays when Claude
-# Code compacts the conversation. Every closing report prints `show`. The agent
-# runs `clear` only when the user asks for it.
+# Code compacts the conversation, and when a linked worktree is removed. Every
+# closing report prints `show`. The agent runs `clear` only when the user asks
+# for it.
 #
 # Usage:  bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh add finding <user|no-user-answer> [<text>...]
 #         bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh add prep [<text>...]
 #         bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh add mutation-not-run [<text>...]
-#           with no text argument, add reads the text from stdin
+#           with no text argument, add reads the text from a pipe, a heredoc or a
+#           file on stdin; any other stdin is bad usage
 #           add prints the row; it does not write a row that is already there
 #         bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh show
 #           prints "Deferred:" and one line per row, or "Deferred: none"
@@ -16,8 +18,9 @@
 # Rows:   - finding · <who> · <text>
 #         - prep · <text>
 #         - mutation-not-run · <text>
-# File:   $(git rev-parse --git-path ldd/<branch>.md), one file for each branch;
-#         a `/` in the branch name becomes `%2F`; a detached HEAD uses `detached`
+# File:   $(git rev-parse --path-format=absolute --git-common-dir)/ldd/<branch>.md,
+#         one file for each branch; in the branch name `%` becomes `%25`, then `/`
+#         becomes `%2F`; a detached HEAD uses `HEAD`
 # Exit:   0 done · 1 a read or write of the file failed · 2 bad usage, or no git repository
 
 set -euo pipefail
@@ -25,10 +28,11 @@ set -euo pipefail
 usage() { sed -n '/^# Usage:/,/^# Exit:/p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
 fail() { echo "ldd-ledger: $*" >&2; exit 1; }
 
-git rev-parse --git-dir >/dev/null \
+common=$(git rev-parse --path-format=absolute --git-common-dir) \
   || { echo "ldd-ledger: not inside a git repository" >&2; exit 2; }
-branch=$(git symbolic-ref --short -q HEAD) || branch=detached
-ledger=$(git rev-parse --git-path "ldd/${branch//\//%2F}.md")
+branch=$(git symbolic-ref --short -q HEAD) || branch=HEAD
+branch=${branch//\%/%25}
+ledger="$common/ldd/${branch//\//%2F}.md"
 
 cmd="${1:-}"
 case "$cmd" in
@@ -52,7 +56,7 @@ case "$cmd" in
     if (( $# > 0 )); then
       text=$(printf '%s ' "$@")
     else
-      [[ -t 0 ]] && usage
+      [[ -p /dev/stdin || -f /dev/stdin ]] || usage
       text=$(cat)
     fi
     text=$(printf '%s' "$text" | tr '\n\r\t' '   ' | sed 's/  */ /g; s/^ //; s/ $//')
