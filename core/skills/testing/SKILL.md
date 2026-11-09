@@ -57,12 +57,15 @@ Writes tests autonomously based on code structure and type design, and serves as
 - Rung 0 (leaf types): 100% unit test coverage, and no untriaged survivor when the
   mutation tool runs over the leaf's package (`../../rules/R7-test-placement.md`,
   Mutation score on leaf types only) — coverage is the floor, the mutation score the claim.
-  A run that did not execute is not a pass. Write it to the ledger, and read the exit code:
-  ```bash
-  bash <this skill dir>/../../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
-  <leaf> — <why the run did not execute>
-  ROW
-  ```
+  A run that did not execute is not a pass. Write it to the ledger, and read the exit
+  code. Write each line of this call at the start of its line, with no indent:
+
+```bash
+bash <this skill dir>/../../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
+<leaf> — <why the run did not execute>
+ROW
+```
+
 - Higher rungs (orchestrating types): cover the delta each rung adds — its seams and emergent behaviors
 - Critical workflows: top-rung (system) tests
 

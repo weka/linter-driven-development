@@ -22,6 +22,7 @@ CASE="" OUT="" CODE=0 TMP=""
 begin() { CASE="$1"; TMP=$(mktemp -d); }
 finish() { chmod -R u+rwx "$TMP" 2>/dev/null; rm -rf "$TMP"; }
 ok()  { pass=$((pass + 1)); echo "PASS  $CASE"; }
+skip() { echo "SKIP  $CASE — $1"; }
 bad() { failed=$((failed + 1)); echo "FAIL  $CASE — $1"; echo "      exit=$CODE"; printf '%s\n' "$OUT" | sed 's/^/      | /'; }
 
 new_repo() {
@@ -186,6 +187,7 @@ else OUT="worktree: $wt_out | main: $OUT"; bad "expected the row in .git/worktre
 finish
 
 begin "a write failure exits 1, writes no row, and show stays true"
+if (( $(id -u) == 0 )); then skip "root ignores file modes"; else
 new_repo "$TMP/r"
 run "$TMP/r" add finding user "kept"
 dir=$(dirname "$(find "$TMP/r/.git/ldd" -type f)")
@@ -197,9 +199,11 @@ if (( add_code == 1 )) && printf '%s\n' "$add_out" | grep -q '^ldd-ledger: ' \
   && [[ "$OUT" == "Deferred:
 - finding · user · kept" ]]; then ok
 else OUT="add: $add_out | show: $OUT"; CODE=$add_code; bad "expected exit 1 with an ldd-ledger: line and the one old row"; fi
+fi
 finish
 
 begin "show of an unreadable ledger exits 1 and prints nothing to stdout"
+if (( $(id -u) == 0 )); then skip "root ignores file modes"; else
 new_repo "$TMP/r"
 run "$TMP/r" add finding user "hidden"
 chmod a-r "$(find "$TMP/r/.git/ldd" -type f)"
@@ -208,6 +212,7 @@ stderr=$(cd "$TMP/r" && bash "$LEDGER" show 2>&1 >/dev/null </dev/null)
 OUT="stdout: $stdout | stderr: $stderr"
 if (( CODE == 1 )) && [[ -z "$stdout" ]] && [[ "$stderr" == *"ldd-ledger: "* ]]; then ok
 else bad "expected exit 1, an empty stdout and an ldd-ledger: line"; fi
+fi
 finish
 
 begin "clear empties the ledger"
