@@ -53,14 +53,15 @@ lock="$ledger.lock"
 
 # mkdir is atomic, and macOS has no flock.
 take_lock() {
-  local tries=0
-  mkdir -p -- "$(dirname -- "$ledger")" || fail "cannot create the directory of $ledger"
+  local tries=0 dir
+  dir=$(dirname -- "$ledger")
+  mkdir -p -- "$dir" || fail "cannot create the directory of $ledger"
   while ! mkdir -- "$lock" 2>/dev/null; do
-    if [[ ! -e "$lock" ]]; then
-      mkdir -- "$lock" && break
-      fail "cannot create the lock $lock"
+    [[ -w "$dir" ]] || fail "cannot create the lock $lock: its directory is not writable"
+    if (( tries++ >= 50 )); then
+      [[ -e "$lock" ]] || fail "cannot create the lock $lock"
+      fail "the lock $lock stayed taken for 5 seconds; when no add or clear runs, remove it: rmdir -- $(printf '%q' "$lock")"
     fi
-    (( tries++ < 50 )) || fail "the lock $lock stayed taken for 5 seconds; when no add or clear runs, remove it: rmdir -- $(printf '%q' "$lock")"
     sleep 0.1
   done
   trap 'rmdir -- "$lock" 2>/dev/null || true' EXIT

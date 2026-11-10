@@ -378,16 +378,17 @@ finish
 
 lock_of() { echo "$(git -C "$1" rev-parse --path-format=absolute --git-common-dir)/ldd/main.md.lock"; }
 
-begin "twenty adds of one row at the same moment write one row and leave no lock"
+begin "twenty adds of one row at the same moment all exit 0, write one row and leave no lock"
 new_repo "$TMP/r"
-for _ in $(seq 1 20); do
-  (cd "$TMP/r" && bash "$LEDGER" add prep "one row" >/dev/null 2>&1 </dev/null) &
+for i in $(seq 1 20); do
+  (cd "$TMP/r" && bash "$LEDGER" add prep "one row" >/dev/null 2>&1 </dev/null; echo $? >"$TMP/code.$i") &
 done
 wait
+codes=$(cat "$TMP"/code.* | sort -u | tr '\n' ' ')
 run "$TMP/r" show
-if [[ "$OUT" == "Deferred:
+if [[ "$codes" == "0 " ]] && [[ "$OUT" == "Deferred:
 - prep · one row" ]] && [[ ! -e "$(lock_of "$TMP/r")" ]]; then ok
-else bad "expected one row and no lock directory"; fi
+else bad "expected every add to exit 0, one row and no lock directory (exit codes: $codes)"; fi
 finish
 
 begin "a fresh lock makes add exit 1, writes no row and keeps the lock"
