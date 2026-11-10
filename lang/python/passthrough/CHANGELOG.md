@@ -20,6 +20,31 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
   limit the script cannot read from the config is measured at the plugin's default,
   and the threshold line says so. Without the flag, the script still measures none
   there. R5 Q6 no longer tells the hunter to list the longest files with `wc -l`.
+- **A juicy private helper gets its own package.** The R4 placement ladder has three
+  rungs. A helper with an R1 score of 0–3 stays private in its package. A helper with
+  a score of 4 or more moves to a package or module nested under the feature, with
+  public names and direct tests. It moves to a top-level shared package only when a
+  second package imports it. The new fix pattern "Split the pure leaf out of an I/O
+  package" moves a pure helper out of code that does I/O.
+- **A deferral ledger.** `scripts/ldd-ledger.sh` records the review findings that the
+  user defers, the deferred preparation moves, and the mutation runs that did not
+  execute. It keeps one file for each branch in the common git directory, so a row
+  stays after a worktree is removed. The ship summary, the final message and
+  `/py-ldd-status` print it. `clear` runs only when the user asks. The script needs
+  git 2.31 or later.
+
+### Changed
+
+- **R7 Q4 judges private leaves.** A private function or type with an R1 score of 4
+  or more and no direct test is a finding, whatever code reaches it. R7 Q7 sends a
+  pure leaf inside an I/O package to Q4 and does not skip it.
+- **No test-only door to a private name.** The over-abstraction skeptic never offers
+  a test-only export of a private name as the cheaper alternative. It offers a test
+  through the parent's public entry for a score of 0–3, and its own package for a
+  score of 4 or more.
+- **The design placement block gives a score and a rung for each type.**
+- **`/py-ldd-quickfix` runs the mutation tool** (mutmut) on a leaf that the fix
+  changes. When the tool cannot run, it writes a ledger row.
 
 ## [0.6.0] - 2026-10-29
 
