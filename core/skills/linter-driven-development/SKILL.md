@@ -232,11 +232,10 @@ advisory. Fix bugs and user-accepted findings via @refactoring — except accept
 (documentation-network) findings, whose fixer is @documentation — then re-invoke
 @pre-commit-review in INCREMENTAL mode until the delta reports clean.
 
-Defer a finding only on the user's answer. Write each deferral to the ledger at once
-(`<deferral_ledger>`) as a `finding` row with who `user`. A run is non-interactive
-only when the prompt or the system says that no user can answer. Never decide this
-yourself. In a non-interactive run, write the row with who `no-user-answer`. Never
-defer a skeptic-CONFIRMED finding without the user's answer or a `no-user-answer` row.
+Defer a finding only when the user says to defer it. Write each deferral to the
+ledger at once (`<deferral_ledger>`) as a `finding` row. When the prompt or the system
+says that no user can answer, fix every finding and defer none. Never decide yourself
+that no user can answer.
 
 **Cluster routing**: report entries marked 🔗 CLUSTER (≥2 hunters converging on one
 anchor) are fixed design-first, never member-by-member — partial fixes undo each
@@ -279,7 +278,7 @@ compacts the conversation. Write a row with one of these calls. Put the text on 
 line between `<<'ROW'` and `ROW`:
 
 ```bash
-bash <this skill dir>/../../scripts/ldd-ledger.sh add finding <user|no-user-answer> <<'ROW'
+bash <this skill dir>/../../scripts/ldd-ledger.sh add finding <<'ROW'
 <rule and question> <file:line> — <the fix>
 ROW
 bash <this skill dir>/../../scripts/ldd-ledger.sh add prep <<'ROW'
@@ -307,8 +306,8 @@ it.
 - [ ] Every behavior completed a RED → GREEN → REFACTOR cycle
 - [ ] Package-scoped lint + rule greps clean after each cycle
 - [ ] lint-fixer reported `LINT STATUS: green`; all escalations resolved via @refactoring
-- [ ] @pre-commit-review INCREMENTAL delta clean, or findings deferred by the user's
-      answer (or `no-user-answer`), each one a ledger row
+- [ ] @pre-commit-review INCREMENTAL delta clean, or findings that the user said to
+      defer, each one a ledger row
 - [ ] @documentation (FEATURE mode) done — docs wired into the network, R9 self-check
       clean, comment-critic critique loop applied and confirmed clean (or remainder
       reported); the green slice committed and the ship summary presented with its

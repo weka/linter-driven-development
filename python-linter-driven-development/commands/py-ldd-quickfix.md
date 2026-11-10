@@ -95,6 +95,9 @@ ROW
   never member-by-member
 - Fix bugs and user-accepted singleton findings via @refactoring, then re-invoke
   @pre-commit-review in INCREMENTAL mode
+- Defer a finding only when the user says to defer it, and write it as a `finding`
+  row (`<deferral_ledger>` in the skill). When the prompt or the system says that no
+  user can answer, fix every finding and defer none.
 
 **Phase 5 — SHIP**: tests and lint green and the tree dirty → commit, then the ship
 summary with the hash, the scope line, the lint-fixer's `FIXED:` / `ESCALATED:`
@@ -104,7 +107,7 @@ Paste the `ldd-ledger.sh show` output at the end of the summary (`<deferral_ledg
 the skill). Never write that all items are closed while the ledger has rows.
 
 **Loop until**:
-✅ Tests pass | ✅ `LINT STATUS: green` over the scope | ✅ @pre-commit-review INCREMENTAL delta clean (or findings deferred by the user or with `no-user-answer`, each one a ledger row)
+✅ Tests pass | ✅ `LINT STATUS: green` over the scope | ✅ @pre-commit-review INCREMENTAL delta clean (or findings that the user said to defer, each one a ledger row)
 
 Use this when code is already written and needs to pass quality gates: your branch
 before a PR, a reviewer's findings, one package you name. It goes straight to fixing

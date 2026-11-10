@@ -51,69 +51,68 @@ finish
 
 begin "each kind writes its exact row, and add prints it"
 new_repo "$TMP/r"
-run "$TMP/r" add finding user "R1 Q4 internal/x:12 — Extract Leaf Type"; c1=$CODE o1=$OUT
-run "$TMP/r" add finding no-user-answer "second"; c2=$CODE o2=$OUT
+run "$TMP/r" add finding "R1 Q4 internal/x:12 — Extract Leaf Type"; c1=$CODE o1=$OUT
 run "$TMP/r" add prep "Split the pure leaf — bounded L"; c3=$CODE o3=$OUT
 run "$TMP/r" add mutation-not-run "internal/x/leaf — gremlins not on PATH"; c4=$CODE o4=$OUT
 run "$TMP/r" show
 want="Deferred:
-- finding · user · R1 Q4 internal/x:12 — Extract Leaf Type
-- finding · no-user-answer · second
+- finding · R1 Q4 internal/x:12 — Extract Leaf Type
 - prep · Split the pure leaf — bounded L
 - mutation-not-run · internal/x/leaf — gremlins not on PATH"
-if (( c1 == 0 && c2 == 0 && c3 == 0 && c4 == 0 && CODE == 0 )) && [[ "$OUT" == "$want" ]] \
-  && [[ "$o1" == "- finding · user · R1 Q4 internal/x:12 — Extract Leaf Type" ]] \
+if (( c1 == 0 && c3 == 0 && c4 == 0 && CODE == 0 )) && [[ "$OUT" == "$want" ]] \
+  && [[ "$o1" == "- finding · R1 Q4 internal/x:12 — Extract Leaf Type" ]] \
   && [[ "$o3" == "- prep · Split the pure leaf — bounded L" ]] \
   && [[ "$o4" == "- mutation-not-run · internal/x/leaf — gremlins not on PATH" ]]; then ok
-else bad "expected four exact rows (exits $c1 $c2 $c3 $c4; add output: $o1 | $o2 | $o3 | $o4)"; fi
+else bad "expected three exact rows (exits $c1 $c3 $c4; add output: $o1 | $o3 | $o4)"; fi
 finish
 
-begin "a who on a prep or mutation-not-run row exits 2 and writes no row"
+begin "the word user is text in every kind of row"
 new_repo "$TMP/r"
-run "$TMP/r" add prep no-user-answer "text"; c1=$CODE
-run "$TMP/r" add mutation-not-run user "text"; c2=$CODE
-run "$TMP/r" show
-if (( c1 == 2 && c2 == 2 )) && [[ "$OUT" == "Deferred: none" ]]; then ok
-else bad "expected exit 2 from both and no row (exits $c1 $c2)"; fi
+run "$TMP/r" add finding user "x"; c1=$CODE o1=$OUT
+run "$TMP/r" add prep user "x"; c2=$CODE o2=$OUT
+run "$TMP/r" add mutation-not-run user "x"; c3=$CODE o3=$OUT
+if (( c1 == 0 && c2 == 0 && c3 == 0 )) && [[ "$o1" == "- finding · user x" ]] \
+  && [[ "$o2" == "- prep · user x" ]] && [[ "$o3" == "- mutation-not-run · user x" ]]; then ok
+else bad "expected three rows that keep 'user x' as text (exits $c1 $c2 $c3; add output: $o1 | $o2 | $o3)"; fi
 finish
 
 begin "the same row added twice is one row, and the second add prints it"
 new_repo "$TMP/r"
-run "$TMP/r" add finding user "twice"
-run "$TMP/r" add finding user "twice"; c2=$CODE o2=$OUT
+run "$TMP/r" add finding "twice"
+run "$TMP/r" add finding "twice"; c2=$CODE o2=$OUT
 run "$TMP/r" show
-if (( c2 == 0 )) && [[ "$o2" == "- finding · user · twice" ]] \
-  && [[ "$(rows)" == "- finding · user · twice" ]]; then ok
+if (( c2 == 0 )) && [[ "$o2" == "- finding · twice" ]] \
+  && [[ "$(rows)" == "- finding · twice" ]]; then ok
 else bad "expected one row (second add exit=$c2, output: $o2)"; fi
 finish
 
 begin "text from a quoted heredoc stays literal and runs nothing"
 new_repo "$TMP/r"
-run_stdin "$TMP/r" add finding user <<'ROW'
+run_stdin "$TMP/r" add finding <<'ROW'
 it's $(touch pwned); echo x > made.txt `touch tick`
 ROW
 add_code=$CODE add_out=$OUT
 run "$TMP/r" show
 if (( add_code == 0 )) \
-  && [[ "$(rows)" == "- finding · user · it's \$(touch pwned); echo x > made.txt \`touch tick\`" ]] \
+  && [[ "$(rows)" == "- finding · it's \$(touch pwned); echo x > made.txt \`touch tick\`" ]] \
   && [[ ! -e "$TMP/r/pwned" && ! -e "$TMP/r/made.txt" && ! -e "$TMP/r/tick" ]]; then ok
 else bad "expected the literal text and no new file (add exit=$add_code, output: $add_out)"; fi
 finish
 
 begin "text with spaces, a percent sign, a tab and a newline stays one row"
 new_repo "$TMP/r"
-run "$TMP/r" add finding user "50% of" "the leaf
+run "$TMP/r" add finding "50% of" "the leaf
 is	untested"
 add_code=$CODE
 run "$TMP/r" show
-if (( add_code == 0 )) && [[ "$(rows)" == "- finding · user · 50% of the leaf is untested" ]]; then ok
+if (( add_code == 0 )) && [[ "$(rows)" == "- finding · 50% of the leaf is untested" ]]; then ok
 else bad "expected one row with the joined text"; fi
 finish
 
 begin "text of spaces or tabs only exits 2 and writes no row"
 new_repo "$TMP/r"
-run "$TMP/r" add finding user "   "; c1=$CODE
-run "$TMP/r" add finding user "	"; c4=$CODE
+run "$TMP/r" add finding "   "; c1=$CODE
+run "$TMP/r" add finding "	"; c4=$CODE
 run "$TMP/r" add prep "	 	"; c2=$CODE
 run_stdin "$TMP/r" add mutation-not-run <<'ROW'
 
@@ -126,7 +125,7 @@ finish
 
 begin "add with no text and empty stdin exits 2"
 new_repo "$TMP/r"
-run "$TMP/r" add finding user; c1=$CODE
+run "$TMP/r" add finding; c1=$CODE
 run "$TMP/r" add prep
 if (( c1 == 2 && CODE == 2 )); then ok; else bad "expected exit 2 from both (finding exit=$c1)"; fi
 finish
@@ -172,6 +171,31 @@ if [[ "$pipe" == "2" ]] && [[ "$OUT" == "Deferred: none" ]]; then ok
 else bad "expected exit 2 and no row (add with an open pipe: $pipe)"; fi
 finish
 
+begin "add with stdin from a pipe that sends a line every 0.5 seconds exits 2, no row"
+new_repo "$TMP/r"
+drip=$(cd "$TMP/r" && python3 -I -c '
+import os, subprocess, sys, time
+r, w = os.pipe()
+p = subprocess.Popen(["bash", sys.argv[1], "add", "prep"], stdin=r, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+os.close(r)
+end = time.monotonic() + 20
+while p.poll() is None and time.monotonic() < end:
+    try:
+        os.write(w, b"one more line\n")
+    except BrokenPipeError:
+        break
+    time.sleep(0.5)
+try:
+    print(p.wait(timeout=max(0, end - time.monotonic())))
+except subprocess.TimeoutExpired:
+    p.kill()
+    print("timeout")
+' "$LEDGER")
+run "$TMP/r" show
+if [[ "$drip" == "2" ]] && [[ "$OUT" == "Deferred: none" ]]; then ok
+else bad "expected exit 2 and no row (add with a slow pipe: $drip)"; fi
+finish
+
 begin "a new row that is part of an old row is a new row"
 new_repo "$TMP/r"
 run "$TMP/r" add prep "split the leaf out"
@@ -190,15 +214,6 @@ if (( add_code == 0 )) && [[ "$add_out" == "- prep · lead and trail" ]]; then o
 else bad "expected '- prep · lead and trail'"; fi
 finish
 
-begin "add finding with no who exits 2 and writes no row"
-new_repo "$TMP/r"
-run "$TMP/r" add finding; c1=$CODE
-run "$TMP/r" add finding "R1 Q4 text with no who"; c2=$CODE
-run "$TMP/r" show
-if (( c1 == 2 && c2 == 2 )) && [[ "$OUT" == "Deferred: none" ]]; then ok
-else bad "expected exit 2 from both and no row (exits $c1 $c2)"; fi
-finish
-
 begin "add from a subdirectory writes the same ledger"
 new_repo "$TMP/r"
 mkdir -p "$TMP/r/a/b"
@@ -212,18 +227,18 @@ finish
 
 begin "each branch has its own ledger"
 new_repo "$TMP/r"
-run "$TMP/r" add finding user "on main"
+run "$TMP/r" add finding "on main"
 git_in "$TMP/r" checkout -q -b feature/x
 run "$TMP/r" show; fresh=$OUT
-run "$TMP/r" add finding user "on feature"
+run "$TMP/r" add finding "on feature"
 run "$TMP/r" show; feature=$OUT
 git_in "$TMP/r" checkout -q main
 run "$TMP/r" show
 if [[ "$fresh" == "Deferred: none" ]] \
   && [[ "$feature" == "Deferred:
-- finding · user · on feature" ]] \
+- finding · on feature" ]] \
   && [[ "$OUT" == "Deferred:
-- finding · user · on main" ]] \
+- finding · on main" ]] \
   && [[ -f "$TMP/r/.git/ldd/feature%2Fx.md" && -f "$TMP/r/.git/ldd/main.md" ]] \
   && [[ "$(find "$TMP/r/.git/ldd" -type f | wc -l | tr -d ' ')" == "2" ]]; then ok
 else OUT="new branch: $fresh | feature: $feature | main: $OUT"; bad "expected ldd/main.md and ldd/feature%2Fx.md only"; fi
@@ -265,7 +280,7 @@ finish
 begin "a row added in a linked worktree stays after the worktree is removed"
 new_repo "$TMP/r"
 git_in "$TMP/r" worktree add -q -b topic "$TMP/wt"
-run "$TMP/wt" add finding user "in the worktree"
+run "$TMP/wt" add finding "in the worktree"
 add_code=$CODE
 run "$TMP/r" show; main_out=$OUT
 git_in "$TMP/r" worktree remove "$TMP/wt"
@@ -273,7 +288,7 @@ git_in "$TMP/r" checkout -q topic
 run "$TMP/r" show
 if (( add_code == 0 )) && [[ "$main_out" == "Deferred: none" ]] \
   && [[ "$OUT" == "Deferred:
-- finding · user · in the worktree" ]] \
+- finding · in the worktree" ]] \
   && [[ ! -e "$TMP/wt" && -f "$TMP/r/.git/ldd/topic.md" ]]; then ok
 else OUT="main before: $main_out | topic after removal: $OUT"; bad "expected the row in .git/ldd/topic.md after the worktree is gone"; fi
 finish
@@ -281,15 +296,15 @@ finish
 begin "a write failure exits 1, writes no row, and show stays true"
 if (( $(id -u) == 0 )); then skip "root ignores file modes"; else
 new_repo "$TMP/r"
-run "$TMP/r" add finding user "kept"
+run "$TMP/r" add finding "kept"
 dir=$(dirname "$(find "$TMP/r/.git/ldd" -type f)")
 chmod a-w "$dir" "$dir"/*.md
-run "$TMP/r" add finding user "lost"
+run "$TMP/r" add finding "lost"
 add_code=$CODE add_out=$OUT
 run "$TMP/r" show
 if (( add_code == 1 )) && printf '%s\n' "$add_out" | grep -q '^ldd-ledger: ' \
   && [[ "$OUT" == "Deferred:
-- finding · user · kept" ]]; then ok
+- finding · kept" ]]; then ok
 else OUT="add: $add_out | show: $OUT"; CODE=$add_code; bad "expected exit 1 with an ldd-ledger: line and the one old row"; fi
 fi
 finish
@@ -297,7 +312,7 @@ finish
 begin "show of an unreadable ledger exits 1 and prints nothing to stdout"
 if (( $(id -u) == 0 )); then skip "root ignores file modes"; else
 new_repo "$TMP/r"
-run "$TMP/r" add finding user "hidden"
+run "$TMP/r" add finding "hidden"
 chmod a-r "$(find "$TMP/r/.git/ldd" -type f)"
 stdout=$(cd "$TMP/r" && bash "$LEDGER" show 2>/dev/null </dev/null); CODE=$?
 stderr=$(cd "$TMP/r" && bash "$LEDGER" show 2>&1 >/dev/null </dev/null)
@@ -309,7 +324,7 @@ finish
 
 begin "clear empties the ledger"
 new_repo "$TMP/r"
-run "$TMP/r" add finding user "to clear"
+run "$TMP/r" add finding "to clear"
 run "$TMP/r" clear
 clear_code=$CODE
 run "$TMP/r" show
@@ -332,21 +347,12 @@ if (( add_code == 2 )) && [[ "$OUT" == "Deferred: none" ]]; then ok
 else CODE=$add_code; bad "expected exit 2 and no row"; fi
 finish
 
-begin "a bad who on a finding exits 2 and writes no row"
-new_repo "$TMP/r"
-run "$TMP/r" add finding agent "text"
-add_code=$CODE
-run "$TMP/r" show
-if (( add_code == 2 )) && [[ "$OUT" == "Deferred: none" ]]; then ok
-else CODE=$add_code; bad "expected exit 2 and no row"; fi
-finish
-
 begin "text that starts with a dash stays literal"
 new_repo "$TMP/r"
-run "$TMP/r" add finding user "-n --flag text"
+run "$TMP/r" add finding "-n --flag text"
 add_code=$CODE
 run "$TMP/r" show
-if (( add_code == 0 )) && [[ "$(rows)" == "- finding · user · -n --flag text" ]]; then ok
+if (( add_code == 0 )) && [[ "$(rows)" == "- finding · -n --flag text" ]]; then ok
 else bad "expected the dash text in the row (add exit=$add_code)"; fi
 finish
 

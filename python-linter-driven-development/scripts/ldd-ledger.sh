@@ -6,7 +6,7 @@
 # closing report prints `show`. The agent runs `clear` only when the user asks
 # for it.
 #
-# Usage:  bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh add finding <user|no-user-answer> [<text>...]
+# Usage:  bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh add finding [<text>...]
 #         bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh add prep [<text>...]
 #         bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh add mutation-not-run [<text>...]
 #           with no text argument, add reads the text from a pipe, a heredoc or a
@@ -15,7 +15,7 @@
 #         bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh show
 #           prints "Deferred:" and one line per row, or "Deferred: none"
 #         bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh clear
-# Rows:   - finding · <who> · <text>
+# Rows:   - finding · <text>
 #         - prep · <text>
 #         - mutation-not-run · <text>
 # File:   $(git rev-parse --path-format=absolute --git-common-dir)/ldd/<branch>.md,
@@ -28,13 +28,16 @@ set -euo pipefail
 usage() { sed -n '/^# Usage:/,/^# Exit:/p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
 fail() { echo "ldd-ledger: $*" >&2; exit 1; }
 
-# A writer that keeps the pipe open and sends no end of input is bad usage.
-# The clock check also catches bash 3.2, whose read -t gives no timeout status.
+# A writer that sends no end of input in 5 seconds is bad usage. The limit is
+# for all of the input, not for each line. The clock check also catches
+# bash 3.2, whose read -t gives no timeout status.
 read_stdin() {
-  local line start=$SECONDS
+  local line left deadline=$((SECONDS + 5))
   text=""
-  while IFS= read -r -t 5 line; do text+="$line"$'\n'; done
-  (( SECONDS - start < 5 )) || { echo "ldd-ledger: no end of input on stdin in 5 seconds" >&2; usage; }
+  while left=$((deadline - SECONDS)); (( left > 0 )) && IFS= read -r -t "$left" line; do
+    text+="$line"$'\n'
+  done
+  (( SECONDS < deadline )) || { echo "ldd-ledger: no end of input on stdin in 5 seconds" >&2; usage; }
   text+="$line"
 }
 
@@ -50,14 +53,7 @@ case "$cmd" in
     (( $# >= 2 )) || usage
     kind="$2"
     case "$kind" in
-      finding)
-        (( $# >= 3 )) || usage
-        case "$3" in user|no-user-answer) ;; *) echo "ldd-ledger: bad who: $3" >&2; usage ;; esac
-        head="- finding · $3 · "
-        shift 3
-        ;;
-      prep|mutation-not-run)
-        case "${3:-}" in user|no-user-answer) echo "ldd-ledger: a $kind row takes no who" >&2; usage ;; esac
+      finding|prep|mutation-not-run)
         head="- $kind · "
         shift 2
         ;;
