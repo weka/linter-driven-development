@@ -302,7 +302,7 @@ chmod a-w "$dir" "$dir"/*.md
 run "$TMP/r" add finding "lost"
 add_code=$CODE add_out=$OUT
 run "$TMP/r" show
-if (( add_code == 1 )) && printf '%s\n' "$add_out" | grep -q '^ldd-ledger: ' \
+if (( add_code == 1 )) && printf '%s\n' "$add_out" | grep -q '^ldd-ledger: cannot create the lock' \
   && [[ "$OUT" == "Deferred:
 - finding · kept" ]]; then ok
 else OUT="add: $add_out | show: $OUT"; CODE=$add_code; bad "expected exit 1 with an ldd-ledger: line and the one old row"; fi
@@ -417,9 +417,21 @@ new_repo "$TMP/r"
 lock=$(lock_of "$TMP/r"); mkdir -p "$lock"; touch -t 202001010000 "$lock"
 run "$TMP/r" add prep "after an old lock"; add_code=$CODE add_out=$OUT
 run "$TMP/r" show
-if (( add_code == 1 )) && [[ "$add_out" == *"rmdir '$lock'"* ]] \
+if (( add_code == 1 )) && [[ "$add_out" == *"rmdir -- $(printf '%q' "$lock")"* ]] \
   && [[ "$OUT" == "Deferred: none" ]] && [[ -d "$lock" ]]; then ok
 else CODE=$add_code; bad "expected exit 1, the rmdir command, no row, the lock kept"; fi
+finish
+
+begin "the rmdir command for a lock is safe to paste when the branch has quotes"
+new_repo "$TMP/r"
+git_in "$TMP/r" checkout -q -b "it's;true>PWNED"
+common=$(git -C "$TMP/r" rev-parse --path-format=absolute --git-common-dir)
+lock="$common/ldd/it's;true>PWNED.md.lock"; mkdir -p "$lock"
+run "$TMP/r" add prep "blocked"; add_code=$CODE
+cmd=${OUT##*remove it: }
+(cd "$TMP/r" && eval "$cmd")
+if (( add_code == 1 )) && [[ ! -e "$lock" ]] && [[ ! -e "$TMP/r/PWNED" ]]; then ok
+else CODE=$add_code; bad "expected the printed command to remove the lock and run nothing else"; fi
 finish
 
 echo

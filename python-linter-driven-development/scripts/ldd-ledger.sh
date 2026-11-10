@@ -55,8 +55,12 @@ lock="$ledger.lock"
 take_lock() {
   local tries=0
   mkdir -p -- "$(dirname -- "$ledger")" || fail "cannot create the directory of $ledger"
-  until mkdir -- "$lock" 2>/dev/null; do
-    (( tries++ < 50 )) || fail "the lock $lock stayed taken for 5 seconds; when no add or clear runs, remove it: rmdir '$lock'"
+  while ! mkdir -- "$lock" 2>/dev/null; do
+    if [[ ! -e "$lock" ]]; then
+      mkdir -- "$lock" && break
+      fail "cannot create the lock $lock"
+    fi
+    (( tries++ < 50 )) || fail "the lock $lock stayed taken for 5 seconds; when no add or clear runs, remove it: rmdir -- $(printf '%q' "$lock")"
     sleep 0.1
   done
   trap 'rmdir -- "$lock" 2>/dev/null || true' EXIT
