@@ -217,6 +217,8 @@ questions_in_rules() {
 #                                    no skip option
 #   fx_write_linter_config_nolimit   a config that names the file-length rule and
 #                                    sets no limit that the gap linter can read
+#   fx_write_linter_config_value <text>  the config of fx_write_linter_config with
+#                                    <text> as the limit, such as 1_000
 FX_ROWS="go"
 FX_NATIVE="go"
 
@@ -295,6 +297,10 @@ fx_write_linter_config_skip() { # <both|comments>
   local opts='skip-comments: true, skip-blank-lines: true'
   [[ "$1" == comments ]] && opts='skip-comments: true'
   printf 'version: "2"\nlinters:\n  settings:\n    revive:\n      rules:\n        - name: file-length-limit\n          arguments: [{max: 400, %s}]\n' "$opts" > "$REPO/.golangci.yaml"
+}
+
+fx_write_linter_config_value() { # <limit text>
+  printf 'version: "2"\nlinters:\n  settings:\n    revive:\n      rules:\n        - name: file-length-limit\n          arguments: [{max: %s}]\n' "$1" > "$REPO/.golangci.yaml"
 }
 
 fx_write_linter_config_nolimit() {

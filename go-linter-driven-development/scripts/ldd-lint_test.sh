@@ -163,6 +163,8 @@ fill_dir() {
 #                                    no skip option
 #   fx_write_linter_config_nolimit   a config that names the file-length rule and
 #                                    sets no limit that the gap linter can read
+#   fx_write_linter_config_value <text>  the config of fx_write_linter_config with
+#                                    <text> as the limit, such as 1_000
 FX_ROWS="go"
 FX_NATIVE="go"
 
@@ -241,6 +243,10 @@ fx_write_linter_config_skip() { # <both|comments>
   local opts='skip-comments: true, skip-blank-lines: true'
   [[ "$1" == comments ]] && opts='skip-comments: true'
   printf 'version: "2"\nlinters:\n  settings:\n    revive:\n      rules:\n        - name: file-length-limit\n          arguments: [{max: 400, %s}]\n' "$opts" > "$REPO/.golangci.yaml"
+}
+
+fx_write_linter_config_value() { # <limit text>
+  printf 'version: "2"\nlinters:\n  settings:\n    revive:\n      rules:\n        - name: file-length-limit\n          arguments: [{max: %s}]\n' "$1" > "$REPO/.golangci.yaml"
 }
 
 fx_write_linter_config_nolimit() {
@@ -471,7 +477,7 @@ _lint_entry_block() {
     indent($0) < ind { exit }
     $0 ~ ("^[ \t]*-?[ \t]*[\"" q "]?" name) { exit }
     /^[ \t]*\[\[?[A-Za-z]/ { exit }
-    { out = out " " $0 }
+    { out = out " , " $0 }
     END { if (!found) exit 1; print out }'
 }
 
@@ -500,9 +506,10 @@ _lint_entry_brackets() {
     }'
 }
 
-# _lint_opt_number <text> <key ERE> — the whole number after <key>: or <key>=
+# _lint_opt_number <text> <key ERE> — the whole number after <key>: or <key>=;
+# nothing when a value goes on past its digits (1_000, 400 + 200, 400.5)
 _lint_opt_number() {
-  local re="(^|[^a-z0-9_-])$2[\"']?[[:space:]]*[:=][[:space:]]*[\"']?([0-9]+)"
+  local re="(^|[^a-z0-9_-])$2[\"']?[[:space:]]*[:=][[:space:]]*[\"']?([0-9]+)[\"']?[[:space:]]*([],}]|\$)"
   [[ "$1" =~ $re ]] && printf '%s' "${BASH_REMATCH[2]}"
   return 0
 }
@@ -539,7 +546,7 @@ lint_file_length_setting() { # <id> <"<rule> in <config file>">
         *)
           t=$(_lint_entry_brackets "$f" '(^|[^-/a-zA-Z])max-lines([^-a-zA-Z]|$)' | tr 'A-Z' 'a-z')
           max=$(_lint_opt_number "$t" 'max')
-          re='^\[[^,]*,[[:space:]]*([0-9]+)([],]|[[:space:]]|$)'
+          re='^\[[^,]*,[[:space:]]*([0-9]+)[[:space:]]*([],]|$)'
           [[ -n "$max" || ! "$t" =~ $re ]] || max="${BASH_REMATCH[1]}"
           _lint_opt_true "$t" 'skipcomments' && sc=1
           _lint_opt_true "$t" 'skipblanklines' && sb=1 ;;
@@ -1697,6 +1704,43 @@ expect_exit 0 \
   && expect_has "src/over$FX_EXT: $((MAX_LINES + 1)) code lines (limit $MAX_LINES, profile default)" \
   && expect_not "src/at$FX_EXT:" && ok
 finish
+
+begin "--measure-held reads a limit only as a whole number: an expression or a separator is unreadable"
+write_src "src/over$FX_EXT" $((MAX_LINES + 1))
+bad_value=""
+for v in '1_000' '400 + 200' '400.5'; do
+  fx_write_linter_config_value "$v"
+  run_lint file-length --measure-held
+  expect_exit 0 && expect_has "cannot read its limit from $FX_LINTER_CONFIG" \
+    && expect_has "src/over$FX_EXT: $((MAX_LINES + 1)) code lines (limit $MAX_LINES, profile default)" || { bad_value="$v"; break; }
+done
+[[ -z "$bad_value" ]] && ok
+finish
+
+begin "--measure-held reads a limit that stands before a comma, a brace or the end"
+fx_write_linter_config_value 400
+write_src "src/over$FX_EXT" 401
+run_lint file-length --measure-held
+expect_exit 0 && expect_has "src/over$FX_EXT: 401 $FX_HELD_COUNT (limit 400, " && ok
+finish
+
+begin "a carriage return does not make a blank line a code line"
+mkdir -p "$REPO/src"
+write_src "src/crlf$FX_EXT" $((MAX_LINES - 10)) 0 30
+awk '{ printf "%s\r\n", $0 }' "$REPO/src/crlf$FX_EXT" > "$REPO/src/crlf.tmp" && mv "$REPO/src/crlf.tmp" "$REPO/src/crlf$FX_EXT"
+run_lint file-length
+expect_exit 0 && expect_no_finding && ok
+finish
+
+begin "--measure-held does not count a blank line of a CRLF file when the config skips blank lines"
+if ! fx_write_linter_config_skip both; then skip "the language's linter has no skip option"; finish
+else
+  write_src "src/crlf$FX_EXT" 390 0 20
+  awk '{ printf "%s\r\n", $0 }' "$REPO/src/crlf$FX_EXT" > "$REPO/src/crlf.tmp" && mv "$REPO/src/crlf.tmp" "$REPO/src/crlf$FX_EXT"
+  run_lint file-length --measure-held
+  expect_exit 0 && expect_has "limit 400 code lines" && expect_no_finding && ok
+  finish
+fi
 
 begin "--measure-held does not read a limit from the next rule's options"
 fx_write_linter_config_nolimit

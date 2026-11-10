@@ -217,6 +217,8 @@ questions_in_rules() {
 #                                    no skip option
 #   fx_write_linter_config_nolimit   a config that names the file-length rule and
 #                                    sets no limit that the gap linter can read
+#   fx_write_linter_config_value <text>  the config of fx_write_linter_config with
+#                                    <text> as the limit, such as 1_000
 FX_ROWS="typescript"
 FX_NATIVE="typescript"
 
@@ -297,6 +299,10 @@ fx_write_linter_config_skip() { # <both|comments>
   local opts='skipComments: true, skipBlankLines: true'
   [[ "$1" == comments ]] && opts='skipComments: true'
   printf "export default [{\n  rules: {\n    'max-lines': ['error', { max: 400, %s }],\n  },\n}]\n" "$opts" > "$REPO/eslint.config.mjs"
+}
+
+fx_write_linter_config_value() { # <limit text>
+  printf "export default [{\n  rules: {\n    'sonarjs/max-lines': ['error', { maximum: %s }],\n  },\n}]\n" "$1" > "$REPO/eslint.config.mjs"
 }
 
 fx_write_linter_config_nolimit() {

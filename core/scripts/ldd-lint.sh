@@ -679,7 +679,7 @@ measured() {
 # ---------- file-length ----------
 # code_lines <id> <path> — the lines that keep code after comments are removed
 code_lines() {
-  lint_strip_comments "$(lint_comment_style "$1")" "./$2" | awk 'NF { n++ } END { print n + 0 }'
+  lint_strip_comments "$(lint_comment_style "$1")" "./$2" | awk '/[^ \t\r]/ { n++ } END { print n + 0 }'
 }
 
 # held_label <skip comments> <skip blanks> — what the held linter's count is
@@ -696,8 +696,8 @@ held_label() {
 # <skip comments> is 1 and less the blank lines when <skip blanks> is 1
 held_lines() {
   awk -v sc="$3" -v sb="$4" '
-    FNR == NR { raw[FNR] = ($0 ~ /[^ \t]/); next }
-    { code = ($0 ~ /[^ \t]/)
+    FNR == NR { raw[FNR] = ($0 ~ /[^ \t\r]/); next }
+    { code = ($0 ~ /[^ \t\r]/)
       if (!raw[FNR]) { if (!sb) n++ }
       else if (!code) { if (!sc) n++ }
       else n++ }

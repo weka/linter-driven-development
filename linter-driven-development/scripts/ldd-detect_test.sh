@@ -217,6 +217,8 @@ questions_in_rules() {
 #                                    no skip option
 #   fx_write_linter_config_nolimit   a config that names the file-length rule and
 #                                    sets no limit that the gap linter can read
+#   fx_write_linter_config_value <text>  the config of fx_write_linter_config with
+#                                    <text> as the limit, such as 1_000
 FX_ROWS="go python"
 FX_NATIVE="go python d typescript"
 
@@ -365,6 +367,13 @@ fx_write_linter_config_skip() { # <both|comments>
   case "$ROW" in
     go)     printf 'linters-settings:\n  revive:\n    rules:\n      - name: file-length-limit\n        arguments:\n          - max: 400\n            %s\n' "${opts//, /$'\n            '}" > "$REPO/.golangci.yml" ;;
     python) return 1 ;;
+  esac
+}
+
+fx_write_linter_config_value() { # <limit text>
+  case "$ROW" in
+    go)     printf 'linters-settings:\n  revive:\n    rules:\n      - name: file-length-limit\n        arguments:\n          - max: %s\n' "$1" > "$REPO/.golangci.yml" ;;
+    python) printf '[MAIN]\nmax-module-lines=%s\n' "$1" > "$REPO/.pylintrc" ;;
   esac
 }
 

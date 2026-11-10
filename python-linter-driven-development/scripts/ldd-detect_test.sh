@@ -217,6 +217,8 @@ questions_in_rules() {
 #                                    no skip option
 #   fx_write_linter_config_nolimit   a config that names the file-length rule and
 #                                    sets no limit that the gap linter can read
+#   fx_write_linter_config_value <text>  the config of fx_write_linter_config with
+#                                    <text> as the limit, such as 1_000
 FX_ROWS="python"
 FX_NATIVE="python"
 
@@ -286,6 +288,10 @@ fx_write_linter_config_other() {
 
 # pylint's max-module-lines counts every line and has no skip option.
 fx_write_linter_config_skip() { return 1; }
+
+fx_write_linter_config_value() { # <limit text>
+  printf '[tool.pylint.format]\nmax-module-lines = %s\n' "$1" > "$REPO/pyproject.toml"
+}
 
 fx_write_linter_config_nolimit() {
   printf '[tool.pylint.format]\nmax-module-lines = none\n' > "$REPO/pyproject.toml"

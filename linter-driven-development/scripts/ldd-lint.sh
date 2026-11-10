@@ -799,7 +799,7 @@ _lint_entry_block() {
     indent($0) < ind { exit }
     $0 ~ ("^[ \t]*-?[ \t]*[\"" q "]?" name) { exit }
     /^[ \t]*\[\[?[A-Za-z]/ { exit }
-    { out = out " " $0 }
+    { out = out " , " $0 }
     END { if (!found) exit 1; print out }'
 }
 
@@ -828,9 +828,10 @@ _lint_entry_brackets() {
     }'
 }
 
-# _lint_opt_number <text> <key ERE> — the whole number after <key>: or <key>=
+# _lint_opt_number <text> <key ERE> — the whole number after <key>: or <key>=;
+# nothing when a value goes on past its digits (1_000, 400 + 200, 400.5)
 _lint_opt_number() {
-  local re="(^|[^a-z0-9_-])$2[\"']?[[:space:]]*[:=][[:space:]]*[\"']?([0-9]+)"
+  local re="(^|[^a-z0-9_-])$2[\"']?[[:space:]]*[:=][[:space:]]*[\"']?([0-9]+)[\"']?[[:space:]]*([],}]|\$)"
   [[ "$1" =~ $re ]] && printf '%s' "${BASH_REMATCH[2]}"
   return 0
 }
@@ -867,7 +868,7 @@ lint_file_length_setting() { # <id> <"<rule> in <config file>">
         *)
           t=$(_lint_entry_brackets "$f" '(^|[^-/a-zA-Z])max-lines([^-a-zA-Z]|$)' | tr 'A-Z' 'a-z')
           max=$(_lint_opt_number "$t" 'max')
-          re='^\[[^,]*,[[:space:]]*([0-9]+)([],]|[[:space:]]|$)'
+          re='^\[[^,]*,[[:space:]]*([0-9]+)[[:space:]]*([],]|$)'
           [[ -n "$max" || ! "$t" =~ $re ]] || max="${BASH_REMATCH[1]}"
           _lint_opt_true "$t" 'skipcomments' && sc=1
           _lint_opt_true "$t" 'skipblanklines' && sb=1 ;;
@@ -1764,7 +1765,7 @@ measured() {
 # ---------- file-length ----------
 # code_lines <id> <path> — the lines that keep code after comments are removed
 code_lines() {
-  lint_strip_comments "$(lint_comment_style "$1")" "./$2" | awk 'NF { n++ } END { print n + 0 }'
+  lint_strip_comments "$(lint_comment_style "$1")" "./$2" | awk '/[^ \t\r]/ { n++ } END { print n + 0 }'
 }
 
 # held_label <skip comments> <skip blanks> — what the held linter's count is
@@ -1781,8 +1782,8 @@ held_label() {
 # <skip comments> is 1 and less the blank lines when <skip blanks> is 1
 held_lines() {
   awk -v sc="$3" -v sb="$4" '
-    FNR == NR { raw[FNR] = ($0 ~ /[^ \t]/); next }
-    { code = ($0 ~ /[^ \t]/)
+    FNR == NR { raw[FNR] = ($0 ~ /[^ \t\r]/); next }
+    { code = ($0 ~ /[^ \t\r]/)
       if (!raw[FNR]) { if (!sb) n++ }
       else if (!code) { if (!sc) n++ }
       else n++ }

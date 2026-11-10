@@ -384,6 +384,43 @@ expect_exit 0 \
   && expect_not "src/at$FX_EXT:" && ok
 finish
 
+begin "--measure-held reads a limit only as a whole number: an expression or a separator is unreadable"
+write_src "src/over$FX_EXT" $((MAX_LINES + 1))
+bad_value=""
+for v in '1_000' '400 + 200' '400.5'; do
+  fx_write_linter_config_value "$v"
+  run_lint file-length --measure-held
+  expect_exit 0 && expect_has "cannot read its limit from $FX_LINTER_CONFIG" \
+    && expect_has "src/over$FX_EXT: $((MAX_LINES + 1)) code lines (limit $MAX_LINES, profile default)" || { bad_value="$v"; break; }
+done
+[[ -z "$bad_value" ]] && ok
+finish
+
+begin "--measure-held reads a limit that stands before a comma, a brace or the end"
+fx_write_linter_config_value 400
+write_src "src/over$FX_EXT" 401
+run_lint file-length --measure-held
+expect_exit 0 && expect_has "src/over$FX_EXT: 401 $FX_HELD_COUNT (limit 400, " && ok
+finish
+
+begin "a carriage return does not make a blank line a code line"
+mkdir -p "$REPO/src"
+write_src "src/crlf$FX_EXT" $((MAX_LINES - 10)) 0 30
+awk '{ printf "%s\r\n", $0 }' "$REPO/src/crlf$FX_EXT" > "$REPO/src/crlf.tmp" && mv "$REPO/src/crlf.tmp" "$REPO/src/crlf$FX_EXT"
+run_lint file-length
+expect_exit 0 && expect_no_finding && ok
+finish
+
+begin "--measure-held does not count a blank line of a CRLF file when the config skips blank lines"
+if ! fx_write_linter_config_skip both; then skip "the language's linter has no skip option"; finish
+else
+  write_src "src/crlf$FX_EXT" 390 0 20
+  awk '{ printf "%s\r\n", $0 }' "$REPO/src/crlf$FX_EXT" > "$REPO/src/crlf.tmp" && mv "$REPO/src/crlf.tmp" "$REPO/src/crlf$FX_EXT"
+  run_lint file-length --measure-held
+  expect_exit 0 && expect_has "limit 400 code lines" && expect_no_finding && ok
+  finish
+fi
+
 begin "--measure-held does not read a limit from the next rule's options"
 fx_write_linter_config_nolimit
 write_src "src/over$FX_EXT" 6
