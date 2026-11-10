@@ -70,10 +70,10 @@ promise is that the generated plugin behaves the same as the hand-written one:
    byte-identical, the suspect is the generator, not the plugin.
 
 ## Choosing the eval scope for a change
-Every change to plugin text or to a shared script gets two kinds of check:
+A change to plugin text or to a shared script can need two kinds of check. The table below selects which ones apply:
 
 - A full check: `review-full`, three runs, on the Go fixture, on both arms (main and the branch). It finds a change in hunter behavior that the text change causes.
-- A narrow check: for each other language that receives the changed text, run only the cases that hold the plants of the touched rules. Run the branch arm only, three runs, against the newest baseline of that language.
+- A narrow check: for each other binding that renders the changed text, run only the cases that hold the plants of the touched rules. Run the branch arm only, three runs, against the newest baseline of that language.
 
 Tests cover what an eval cannot. A rule that works on one fixture does not need a full run on the other fixtures.
 
@@ -81,7 +81,7 @@ Tests cover what an eval cannot. A rule that works on one fixture does not need 
 |---|---|
 | Shared script or generator, plugin text byte-identical | Shell tests and `task check`. No eval. |
 | Core text that all bindings render (rule prose, agents, skills) | Full check on Go. Narrow check on Python and TypeScript. |
-| Text under one `lang/<binding>/` directory | Narrow check on that binding only. |
+| Text under one `lang/<binding>/` directory | Narrow check on each binding that renders it. The generic binding renders the Go `examples/` includes, so a change there reaches Go and generic. |
 | Language-specific script code (for example a suppression pattern) | Shell test for that binding. Narrow check only if a hunter reads its output. |
 | Docs, changelog, README | No eval. |
 
