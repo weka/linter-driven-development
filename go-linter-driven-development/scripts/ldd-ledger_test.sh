@@ -412,14 +412,14 @@ if (( clear_code == 1 )) && [[ "$OUT" == "Deferred:
 else CODE=$clear_code; bad "expected clear exit 1 and the row kept"; fi
 finish
 
-begin "a lock older than one minute is stale: add removes it and writes the row"
+begin "an old lock is never removed: add exits 1 and names the rmdir command"
 new_repo "$TMP/r"
 lock=$(lock_of "$TMP/r"); mkdir -p "$lock"; touch -t 202001010000 "$lock"
-run "$TMP/r" add prep "after a stale lock"; add_code=$CODE
+run "$TMP/r" add prep "after an old lock"; add_code=$CODE add_out=$OUT
 run "$TMP/r" show
-if (( add_code == 0 )) && [[ "$OUT" == "Deferred:
-- prep · after a stale lock" ]] && [[ ! -e "$lock" ]]; then ok
-else CODE=$add_code; bad "expected exit 0, the row, and no lock"; fi
+if (( add_code == 1 )) && [[ "$add_out" == *"rmdir '$lock'"* ]] \
+  && [[ "$OUT" == "Deferred: none" ]] && [[ -d "$lock" ]]; then ok
+else CODE=$add_code; bad "expected exit 1, the rmdir command, no row, the lock kept"; fi
 finish
 
 echo

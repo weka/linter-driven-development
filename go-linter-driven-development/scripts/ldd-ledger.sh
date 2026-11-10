@@ -21,8 +21,8 @@
 # File:   $(git rev-parse --path-format=absolute --git-common-dir)/ldd/<branch>.md,
 #         one file for each branch; in the branch name `%` becomes `%25`, then `/`
 #         becomes `%2F`; a detached HEAD uses `HEAD`
-# Lock:   add and clear take the directory <file>.lock in turns; a lock older
-#         than one minute is from a run that stopped, and the next run removes it
+# Lock:   add and clear take the directory <file>.lock in turns; the script never
+#         removes a lock that it did not take
 # Exit:   0 done · 1 a read or write of the file failed, or the lock stayed taken
 #         for 5 seconds · 2 bad usage, or no git repository
 
@@ -56,11 +56,7 @@ take_lock() {
   local tries=0
   mkdir -p -- "$(dirname -- "$ledger")" || fail "cannot create the directory of $ledger"
   until mkdir -- "$lock" 2>/dev/null; do
-    if [[ -n "$(find "$lock" -maxdepth 0 -mmin +1 2>/dev/null)" ]]; then
-      rmdir -- "$lock" || fail "cannot remove the stale lock $lock"
-      continue
-    fi
-    (( tries++ < 50 )) || fail "the lock $lock stayed taken for 5 seconds; remove it when no add or clear runs"
+    (( tries++ < 50 )) || fail "the lock $lock stayed taken for 5 seconds; when no add or clear runs, remove it: rmdir '$lock'"
     sleep 0.1
   done
   trap 'rmdir -- "$lock" 2>/dev/null || true' EXIT
