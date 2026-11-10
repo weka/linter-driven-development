@@ -70,7 +70,9 @@
 #                message, which carries the measurement and the limit's source.
 #                The linter's threshold lines print under the "R9 gate:" line,
 #                each as "ldd-lint: threshold: ...", so the report shows which
-#                limit applied and whether the repository's own linter holds it
+#                limit applied, whether the repository's own linter holds it,
+#                and, for a held file-length rule read with --measure-held,
+#                that the script measured against that linter's limit
 #   Detect: judgment       no mechanical lead; the hunter runs the prose
 # A question with no detect line, two of them, or a malformed one is an error:
 # the generator's lint-core keeps the rule files honest, and this script refuses

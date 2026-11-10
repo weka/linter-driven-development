@@ -139,6 +139,18 @@ mk_repo() { fx_write_marker "$REPO" fixture; fx_write_code; mk_docs; }
 #                                    similar name and no file-length rule
 #   fx_write_linter_config_in_comment  a linter config that names the file-length
 #                                    rule only inside comments
+#   FX_HELD_RULE       the rule as the gap linter names it when the repository's
+#                      linter holds file length, and FX_HELD_COUNT what that
+#                      linter counts: "lines" or "code lines"
+#   FX_HELD_SKIP_RULE  the rule's name under fx_write_linter_config_skip, when it
+#                      differs from FX_HELD_RULE
+#   fx_write_linter_config_skip <both|comments>  the config of
+#                                    fx_write_linter_config with the linter's skip
+#                                    options set, for comments and blank lines or
+#                                    for comments only; exit 1 when the linter has
+#                                    no skip option
+#   fx_write_linter_config_nolimit   a config that names the file-length rule and
+#                                    sets no limit that the gap linter can read
 FX_ROWS="go"
 FX_NATIVE="go"
 
@@ -151,6 +163,8 @@ use_row() {
   # cyclop is the alternative to gocyclo; package-size is the gap linter's
   FX_ROUTED_SKIP='cyclop package-size'
   FX_LENGTH_RULE='file-length-limit'
+  FX_HELD_RULE='revive file-length-limit'
+  FX_HELD_COUNT='lines'
   FX_LINTER_COMMENT='#'
   FX_EXT='.go'
   FX_LINE_COMMENT='// note'
@@ -209,6 +223,16 @@ fx_write_linter_config_in_comment() {
 
 fx_write_linter_config_other() {
   printf 'version: "2"\nlinters:\n  settings:\n    revive:\n      rules:\n        - name: argument-limit\n          arguments: [4]\n' > "$REPO/.golangci.yaml"
+}
+
+fx_write_linter_config_skip() { # <both|comments>
+  local opts='skip-comments: true, skip-blank-lines: true'
+  [[ "$1" == comments ]] && opts='skip-comments: true'
+  printf 'version: "2"\nlinters:\n  settings:\n    revive:\n      rules:\n        - name: file-length-limit\n          arguments: [{max: 400, %s}]\n' "$opts" > "$REPO/.golangci.yaml"
+}
+
+fx_write_linter_config_nolimit() {
+  printf 'version: "2"\nlinters:\n  settings:\n    revive:\n      rules:\n        - name: file-length-limit\n        - name: argument-limit\n          arguments: [4]\n' > "$REPO/.golangci.yaml"
 }
 
 # ---------- the mixed repository: D, Python, Go and TypeScript in one tree ----------

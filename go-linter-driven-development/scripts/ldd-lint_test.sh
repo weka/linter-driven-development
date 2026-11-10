@@ -151,6 +151,18 @@ fill_dir() {
 #                                    similar name and no file-length rule
 #   fx_write_linter_config_in_comment  a linter config that names the file-length
 #                                    rule only inside comments
+#   FX_HELD_RULE       the rule as the gap linter names it when the repository's
+#                      linter holds file length, and FX_HELD_COUNT what that
+#                      linter counts: "lines" or "code lines"
+#   FX_HELD_SKIP_RULE  the rule's name under fx_write_linter_config_skip, when it
+#                      differs from FX_HELD_RULE
+#   fx_write_linter_config_skip <both|comments>  the config of
+#                                    fx_write_linter_config with the linter's skip
+#                                    options set, for comments and blank lines or
+#                                    for comments only; exit 1 when the linter has
+#                                    no skip option
+#   fx_write_linter_config_nolimit   a config that names the file-length rule and
+#                                    sets no limit that the gap linter can read
 FX_ROWS="go"
 FX_NATIVE="go"
 
@@ -163,6 +175,8 @@ use_row() {
   # cyclop is the alternative to gocyclo; package-size is the gap linter's
   FX_ROUTED_SKIP='cyclop package-size'
   FX_LENGTH_RULE='file-length-limit'
+  FX_HELD_RULE='revive file-length-limit'
+  FX_HELD_COUNT='lines'
   FX_LINTER_COMMENT='#'
   FX_EXT='.go'
   FX_LINE_COMMENT='// note'
@@ -223,6 +237,16 @@ fx_write_linter_config_other() {
   printf 'version: "2"\nlinters:\n  settings:\n    revive:\n      rules:\n        - name: argument-limit\n          arguments: [4]\n' > "$REPO/.golangci.yaml"
 }
 
+fx_write_linter_config_skip() { # <both|comments>
+  local opts='skip-comments: true, skip-blank-lines: true'
+  [[ "$1" == comments ]] && opts='skip-comments: true'
+  printf 'version: "2"\nlinters:\n  settings:\n    revive:\n      rules:\n        - name: file-length-limit\n          arguments: [{max: 400, %s}]\n' "$opts" > "$REPO/.golangci.yaml"
+}
+
+fx_write_linter_config_nolimit() {
+  printf 'version: "2"\nlinters:\n  settings:\n    revive:\n      rules:\n        - name: file-length-limit\n        - name: argument-limit\n          arguments: [4]\n' > "$REPO/.golangci.yaml"
+}
+
 # ==================== linter table ====================
 # What the gap linter needs to know per language id: how a comment is written,
 # which source files a directory count leaves out, and whether the
@@ -246,6 +270,12 @@ fx_write_linter_config_other() {
 #                                   nothing. A named rule belongs to the linter:
 #                                   its limit, its counting and whether it is on
 #                                   are the repository's decision.
+#   lint_file_length_setting <id> <rule>  the limit and the counting of the rule
+#                                   that lint_file_length_rule named, read from
+#                                   its config file as text: "<max> <skip
+#                                   comments> <skip blanks>", each skip 1 or 0;
+#                                   max is "-" when the config sets no whole
+#                                   number above 0 that the reader finds
 #   lint_setup_files                one line per recommended config under the
 #                                   plugin's setup/: file TAB the tool that checks it
 #   lint_setup_check <file> <setup dir> <work dir>  run that tool's own check of
@@ -417,6 +447,109 @@ lint_file_length_rule() {
       f=$(_lint_names '^[[:space:]]*max-module-lines[[:space:]]*=' pyproject.toml .pylintrc pylintrc setup.cfg tox.ini) \
         && printf 'pylint max-module-lines in %s' "$f" ;;
   esac
+  return 0
+}
+
+# _lint_entry_block <file> <anchor ERE> — the text of the config entry that
+# the anchor names, comments removed, on one line: the rest of the anchor's
+# line, then the lines under it, until a line that starts the next rule (a
+# "name" key), a TOML table header, or a line indented less than the anchor's.
+# Exit 1 when the config has no such entry.
+_lint_entry_block() {
+  local f="$1" p="./$1"; [[ "$f" == /* ]] && p="$f"
+  lint_strip_comments "$(_lint_config_style "$f")" "$p" 2>/dev/null | awk -v anchor="$2" -v q="'" '
+    function indent(s) { match(s, /^[ \t]*/); return RLENGTH }
+    BEGIN { name = "name[\"" q "]?[ \t]*[:=]" }
+    !found {
+      if (match($0, anchor)) {
+        found = 1; ind = indent($0); out = substr($0, RSTART + RLENGTH)
+        if (match(out, name)) out = substr(out, 1, RSTART - 1)
+      }
+      next
+    }
+    /^[ \t]*$/ { next }
+    indent($0) < ind { exit }
+    $0 ~ ("^[ \t]*-?[ \t]*[\"" q "]?" name) { exit }
+    /^[ \t]*\[\[?[A-Za-z]/ { exit }
+    { out = out " " $0 }
+    END { if (!found) exit 1; print out }'
+}
+
+# _lint_entry_brackets <file> <anchor ERE> — the "[...]" that follows the
+# first mention of the anchor in a config where a bracket follows (a rule
+# written as ["error", {...}]), comments removed, on one line. Exit 1 when no
+# mention is followed by a bracket: a rule set to a bare severity has no
+# options to read.
+_lint_entry_brackets() {
+  local f="$1" p="./$1"; [[ "$f" == /* ]] && p="$f"
+  lint_strip_comments "$(_lint_config_style "$f")" "$p" 2>/dev/null | awk -v anchor="$2" '
+    { text = text $0 "\n" }
+    END {
+      while (match(text, anchor)) {
+        text = substr(text, RSTART + RLENGTH)
+        s = text; sub(/^[ \t\n]*[:,]?[ \t\n]*/, "", s)
+        if (substr(s, 1, 1) != "[") continue
+        depth = 0
+        for (i = 1; i <= length(s); i++) {
+          c = substr(s, i, 1)
+          if (c == "[") depth++
+          else if (c == "]" && --depth == 0) { out = substr(s, 1, i); gsub(/\n/, " ", out); print out; exit }
+        }
+      }
+      exit 1
+    }'
+}
+
+# _lint_opt_number <text> <key ERE> — the whole number after <key>: or <key>=
+_lint_opt_number() {
+  local re="(^|[^a-z0-9_-])$2[\"']?[[:space:]]*[:=][[:space:]]*[\"']?([0-9]+)"
+  [[ "$1" =~ $re ]] && printf '%s' "${BASH_REMATCH[2]}"
+  return 0
+}
+
+# _lint_opt_true <text> <key ERE> — exit 0 when <key> is set to true
+_lint_opt_true() {
+  local re="(^|[^a-z0-9_-])$2[\"']?[[:space:]]*[:=][[:space:]]*[\"']?true"
+  [[ "$1" =~ $re ]]
+}
+
+# What each linter counts, as far as its config says:
+#   revive file-length-limit  every line, unless skipComments or skipBlankLines
+#                             is set (golangci-lint takes both in kebab case)
+#   pylint max-module-lines   every line; it has no skip option
+#   ESLint max-lines          every line, unless skipComments or skipBlankLines
+#                             is set; a bare number is the limit
+#   sonarjs/max-lines         the lines of code: a blank line and a line that
+#                             holds only a comment are not counted (the S138
+#                             helper of eslint-plugin-sonarjs 3.0.7 skips both,
+#                             and the rule has no skip option)
+lint_file_length_setting() { # <id> <"<rule> in <config file>">
+  local id="$1" f="${2##* in }" name="${2% in *}" t="" max="" sc=0 sb=0 re
+  case "$id" in
+    go)
+      t=$(_lint_entry_block "$f" 'file-length-limit' | tr 'A-Z' 'a-z')
+      max=$(_lint_opt_number "$t" 'max')
+      _lint_opt_true "$t" 'skip[-_]?comments' && sc=1
+      _lint_opt_true "$t" 'skip[-_]?blank[-_]?lines' && sb=1 ;;
+    typescript|javascript)
+      case "$name" in
+        sonarjs/max-lines)
+          t=$(_lint_entry_brackets "$f" 'sonarjs/max-lines([^-a-zA-Z]|$)' | tr 'A-Z' 'a-z')
+          max=$(_lint_opt_number "$t" 'maximum'); sc=1; sb=1 ;;
+        *)
+          t=$(_lint_entry_brackets "$f" '(^|[^-/a-zA-Z])max-lines([^-a-zA-Z]|$)' | tr 'A-Z' 'a-z')
+          max=$(_lint_opt_number "$t" 'max')
+          re='^\[[^,]*,[[:space:]]*([0-9]+)([],]|[[:space:]]|$)'
+          [[ -n "$max" || ! "$t" =~ $re ]] || max="${BASH_REMATCH[1]}"
+          _lint_opt_true "$t" 'skipcomments' && sc=1
+          _lint_opt_true "$t" 'skipblanklines' && sb=1 ;;
+      esac ;;
+    python)
+      max=$(lint_strip_comments "$(_lint_config_style "$f")" "./$f" 2>/dev/null \
+        | sed -n 's/^[[:space:]]*max-module-lines[[:space:]]*=[[:space:]]*\([0-9][0-9]*\)[[:space:]]*$/\1/p' | head -1) ;;
+  esac
+  [[ "$max" =~ ^[0-9]+$ ]] && (( max > 0 )) || { max="-"; sc=0; sb=0; }
+  printf '%s %s %s' "$max" "$sc" "$sb"
   return 0
 }
 
@@ -1490,6 +1623,130 @@ else
   expect_exit 0 && expect_has "held by " && expect_has "in $FX_ADOPTED_CONFIG" && expect_no_finding && ok
   finish
 fi
+
+# ---- --measure-held: the review runs no linter, so the script measures against the held limit ----
+begin "--measure-held reads the held limit and the rule from the config"
+fx_write_linter_config
+write_src "src/over$FX_EXT" 401; write_src "src/at$FX_EXT" 400
+run_lint file-length --measure-held
+expect_exit 0 \
+  && expect_has "held by $FX_HELD_RULE in $FX_LINTER_CONFIG, limit 400 $FX_HELD_COUNT; this script measured the files against that limit because the review runs no linter" \
+  && expect_has "src/over$FX_EXT: 401 $FX_HELD_COUNT (limit 400, $FX_HELD_RULE in $FX_LINTER_CONFIG)" \
+  && expect_not "src/at$FX_EXT:" && expect_not "profile default" && ok
+finish
+
+begin "--measure-held leaves a file at the held limit alone, though the limit is below the default"
+fx_write_linter_config
+write_src "src/at$FX_EXT" 400
+run_lint file-length --measure-held
+expect_exit 0 && expect_has "limit 400 " && expect_no_finding && ok
+finish
+
+begin "--measure-held counts the way the held linter counts"
+fx_write_linter_config
+write_src "src/mixed$FX_EXT" 390 20 20
+run_lint file-length --measure-held
+if [[ "$FX_HELD_COUNT" == "lines" ]]; then
+  expect_exit 0 && expect_has "src/mixed$FX_EXT: 430 lines (limit 400, $FX_HELD_RULE in $FX_LINTER_CONFIG)" && ok
+else
+  expect_exit 0 && expect_no_finding && ok
+fi
+finish
+
+begin "--measure-held counts as the config says: skipped comments and blank lines are not counted"
+if ! fx_write_linter_config_skip both; then skip "the language's linter has no skip option"; finish
+else
+  write_src "src/mixed$FX_EXT" 390 20 20
+  write_src "src/over$FX_EXT" 401 20 20
+  run_lint file-length --measure-held
+  expect_exit 0 && expect_has "limit 400 code lines" \
+    && expect_has "src/over$FX_EXT: 401 code lines (limit 400, ${FX_HELD_SKIP_RULE:-$FX_HELD_RULE} in " \
+    && expect_not "src/mixed$FX_EXT:" && ok
+  finish
+fi
+
+begin "--measure-held says what a count skips when the config skips only comments"
+if ! fx_write_linter_config_skip comments; then skip "the language's linter has no skip option"; finish
+else
+  write_src "src/mixed$FX_EXT" 390 20 20
+  run_lint file-length --measure-held
+  expect_exit 0 && expect_has "limit 400 lines without comment lines" \
+    && expect_has "src/mixed$FX_EXT: 410 lines without comment lines (limit 400, " && ok
+  finish
+fi
+
+begin "--measure-held reads the plugin's recommended config, copied as the repository's own"
+if [[ -z "$FX_SETUP_FILE" ]]; then skip "the language's linter is not configured by a setup file"; finish
+else
+  target="${FX_ADOPTED_CONFIG:-$FX_LINTER_CONFIG}"
+  cp "$(dirname "$LINT")/../setup/$FX_SETUP_FILE" "$REPO/$target"
+  write_src "src/over$FX_EXT" $((MAX_LINES + 1)) 20 20; write_src "src/at$FX_EXT" "$MAX_LINES" 20 20
+  run_lint file-length --measure-held
+  expect_exit 0 && expect_has "limit $MAX_LINES code lines" \
+    && expect_has "src/over$FX_EXT: $((MAX_LINES + 1)) code lines (limit $MAX_LINES, $FX_HELD_RULE in $target)" \
+    && expect_not "src/at$FX_EXT:" && ok
+  finish
+fi
+
+begin "--measure-held falls back to the profile default when the config sets no limit it can read, and says so"
+fx_write_linter_config_nolimit
+write_src "src/over$FX_EXT" $((MAX_LINES + 1)); write_src "src/at$FX_EXT" "$MAX_LINES"
+run_lint file-length --measure-held
+expect_exit 0 \
+  && expect_has "held by $FX_HELD_RULE in $FX_LINTER_CONFIG, but this script cannot read its limit from $FX_LINTER_CONFIG; it measured the files at the profile default ($MAX_LINES code lines) because the review runs no linter" \
+  && expect_has "src/over$FX_EXT: $((MAX_LINES + 1)) code lines (limit $MAX_LINES, profile default)" \
+  && expect_not "src/at$FX_EXT:" && ok
+finish
+
+begin "--measure-held does not read a limit from the next rule's options"
+fx_write_linter_config_nolimit
+write_src "src/over$FX_EXT" 6
+run_lint file-length --measure-held
+expect_exit 0 && expect_not "limit 4 " && expect_not "limit 6 " && expect_no_finding && ok
+finish
+
+begin "--measure-held leaves a rule named only inside comments to the gap linter"
+fx_write_linter_config_in_comment
+write_src "src/over$FX_EXT" $((MAX_LINES + 1))
+run_lint file-length --measure-held
+expect_exit 0 && expect_not "held by " && expect_has "src/over$FX_EXT: $((MAX_LINES + 1)) code lines (limit $MAX_LINES, profile default)" && ok
+finish
+
+begin "--measure-held does not measure a test file or a generated file"
+fx_write_linter_config
+write_src "$(fx_test_file src 1)" 450
+write_src "src/gen$FX_EXT" 450
+{ printf '%s DO NOT EDIT\n' "$FX_LINE_COMMENT"; cat "$REPO/src/gen$FX_EXT"; } > "$REPO/src/gen.tmp" && mv "$REPO/src/gen.tmp" "$REPO/src/gen$FX_EXT"
+run_lint file-length --measure-held
+expect_exit 0 && expect_no_finding && ok
+finish
+
+begin "--measure-held with --tsv writes the finding as a row and the threshold line to stderr"
+fx_write_linter_config
+write_src "src/over$FX_EXT" 401
+run_lint file-length --measure-held --tsv
+{ [[ "$OUT" == "src/over$FX_EXT${TAB}0${TAB}401 $FX_HELD_COUNT (limit 400, $FX_HELD_RULE in $FX_LINTER_CONFIG)" ]] || bad "expected one row"; } \
+  && [[ "$ERR" == "threshold: "*"held by $FX_HELD_RULE in $FX_LINTER_CONFIG, limit 400 "* ]] && ok
+finish
+
+begin "without --measure-held a held rule still measures none"
+fx_write_linter_config
+write_src "src/over$FX_EXT" $((MAX_LINES + 50))
+run_lint file-length
+expect_exit 0 && expect_has "held by $FX_HELD_RULE in $FX_LINTER_CONFIG; the repository's linter reports long files, so this script measures none" \
+  && expect_not "limit 400" && expect_no_finding && ok
+finish
+
+begin "--measure-held is a usage error with package-size"
+write_src "src/a$FX_EXT" 1
+run_lint package-size --measure-held
+expect_exit 2 && expect_has "only file-length takes --measure-held" && ok
+finish
+
+begin "--measure-held is a usage error with the doctor"
+run_lint doctor --measure-held
+expect_exit 2 && expect_has "only file-length takes --measure-held" && ok
+finish
 
 begin ".ldd-lint.yaml sets the limit when the linter holds none"
 printf 'file_max_lines: 100  # this repository\n' > "$REPO/.ldd-lint.yaml"

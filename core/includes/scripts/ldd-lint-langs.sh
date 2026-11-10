@@ -21,6 +21,12 @@
 #                                   nothing. A named rule belongs to the linter:
 #                                   its limit, its counting and whether it is on
 #                                   are the repository's decision.
+#   lint_file_length_setting <id> <rule>  the limit and the counting of the rule
+#                                   that lint_file_length_rule named, read from
+#                                   its config file as text: "<max> <skip
+#                                   comments> <skip blanks>", each skip 1 or 0;
+#                                   max is "-" when the config sets no whole
+#                                   number above 0 that the reader finds
 #   lint_setup_files                one line per recommended config under the
 #                                   plugin's setup/: file TAB the tool that checks it
 #   lint_setup_check <file> <setup dir> <work dir>  run that tool's own check of
@@ -192,6 +198,109 @@ lint_file_length_rule() {
       f=$(_lint_names '^[[:space:]]*max-module-lines[[:space:]]*=' pyproject.toml .pylintrc pylintrc setup.cfg tox.ini) \
         && printf 'pylint max-module-lines in %s' "$f" ;;
   esac
+  return 0
+}
+
+# _lint_entry_block <file> <anchor ERE> — the text of the config entry that
+# the anchor names, comments removed, on one line: the rest of the anchor's
+# line, then the lines under it, until a line that starts the next rule (a
+# "name" key), a TOML table header, or a line indented less than the anchor's.
+# Exit 1 when the config has no such entry.
+_lint_entry_block() {
+  local f="$1" p="./$1"; [[ "$f" == /* ]] && p="$f"
+  lint_strip_comments "$(_lint_config_style "$f")" "$p" 2>/dev/null | awk -v anchor="$2" -v q="'" '
+    function indent(s) { match(s, /^[ \t]*/); return RLENGTH }
+    BEGIN { name = "name[\"" q "]?[ \t]*[:=]" }
+    !found {
+      if (match($0, anchor)) {
+        found = 1; ind = indent($0); out = substr($0, RSTART + RLENGTH)
+        if (match(out, name)) out = substr(out, 1, RSTART - 1)
+      }
+      next
+    }
+    /^[ \t]*$/ { next }
+    indent($0) < ind { exit }
+    $0 ~ ("^[ \t]*-?[ \t]*[\"" q "]?" name) { exit }
+    /^[ \t]*\[\[?[A-Za-z]/ { exit }
+    { out = out " " $0 }
+    END { if (!found) exit 1; print out }'
+}
+
+# _lint_entry_brackets <file> <anchor ERE> — the "[...]" that follows the
+# first mention of the anchor in a config where a bracket follows (a rule
+# written as ["error", {...}]), comments removed, on one line. Exit 1 when no
+# mention is followed by a bracket: a rule set to a bare severity has no
+# options to read.
+_lint_entry_brackets() {
+  local f="$1" p="./$1"; [[ "$f" == /* ]] && p="$f"
+  lint_strip_comments "$(_lint_config_style "$f")" "$p" 2>/dev/null | awk -v anchor="$2" '
+    { text = text $0 "\n" }
+    END {
+      while (match(text, anchor)) {
+        text = substr(text, RSTART + RLENGTH)
+        s = text; sub(/^[ \t\n]*[:,]?[ \t\n]*/, "", s)
+        if (substr(s, 1, 1) != "[") continue
+        depth = 0
+        for (i = 1; i <= length(s); i++) {
+          c = substr(s, i, 1)
+          if (c == "[") depth++
+          else if (c == "]" && --depth == 0) { out = substr(s, 1, i); gsub(/\n/, " ", out); print out; exit }
+        }
+      }
+      exit 1
+    }'
+}
+
+# _lint_opt_number <text> <key ERE> — the whole number after <key>: or <key>=
+_lint_opt_number() {
+  local re="(^|[^a-z0-9_-])$2[\"']?[[:space:]]*[:=][[:space:]]*[\"']?([0-9]+)"
+  [[ "$1" =~ $re ]] && printf '%s' "${BASH_REMATCH[2]}"
+  return 0
+}
+
+# _lint_opt_true <text> <key ERE> — exit 0 when <key> is set to true
+_lint_opt_true() {
+  local re="(^|[^a-z0-9_-])$2[\"']?[[:space:]]*[:=][[:space:]]*[\"']?true"
+  [[ "$1" =~ $re ]]
+}
+
+# What each linter counts, as far as its config says:
+#   revive file-length-limit  every line, unless skipComments or skipBlankLines
+#                             is set (golangci-lint takes both in kebab case)
+#   pylint max-module-lines   every line; it has no skip option
+#   ESLint max-lines          every line, unless skipComments or skipBlankLines
+#                             is set; a bare number is the limit
+#   sonarjs/max-lines         the lines of code: a blank line and a line that
+#                             holds only a comment are not counted (the S138
+#                             helper of eslint-plugin-sonarjs 3.0.7 skips both,
+#                             and the rule has no skip option)
+lint_file_length_setting() { # <id> <"<rule> in <config file>">
+  local id="$1" f="${2##* in }" name="${2% in *}" t="" max="" sc=0 sb=0 re
+  case "$id" in
+    go)
+      t=$(_lint_entry_block "$f" 'file-length-limit' | tr 'A-Z' 'a-z')
+      max=$(_lint_opt_number "$t" 'max')
+      _lint_opt_true "$t" 'skip[-_]?comments' && sc=1
+      _lint_opt_true "$t" 'skip[-_]?blank[-_]?lines' && sb=1 ;;
+    typescript|javascript)
+      case "$name" in
+        sonarjs/max-lines)
+          t=$(_lint_entry_brackets "$f" 'sonarjs/max-lines([^-a-zA-Z]|$)' | tr 'A-Z' 'a-z')
+          max=$(_lint_opt_number "$t" 'maximum'); sc=1; sb=1 ;;
+        *)
+          t=$(_lint_entry_brackets "$f" '(^|[^-/a-zA-Z])max-lines([^-a-zA-Z]|$)' | tr 'A-Z' 'a-z')
+          max=$(_lint_opt_number "$t" 'max')
+          re='^\[[^,]*,[[:space:]]*([0-9]+)([],]|[[:space:]]|$)'
+          [[ -n "$max" || ! "$t" =~ $re ]] || max="${BASH_REMATCH[1]}"
+          _lint_opt_true "$t" 'skipcomments' && sc=1
+          _lint_opt_true "$t" 'skipblanklines' && sb=1 ;;
+      esac ;;
+    python)
+      max=$(lint_strip_comments "$(_lint_config_style "$f")" "./$f" 2>/dev/null \
+        | sed -n 's/^[[:space:]]*max-module-lines[[:space:]]*=[[:space:]]*\([0-9][0-9]*\)[[:space:]]*$/\1/p' | head -1) ;;
+  esac
+  [[ "$max" =~ ^[0-9]+$ ]] && (( max > 0 )) || { max="-"; sc=0; sb=0; }
+  printf '%s %s %s' "$max" "$sc" "$sb"
   return 0
 }
 

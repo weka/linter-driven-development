@@ -41,15 +41,11 @@
    above.
 
 6. **Is any file over the file-length limit?**
-   Detect-script: ldd-lint file-length
-   Detection: the gap linter counts the code lines of each source file in the scope.
+   Detect-script: ldd-lint file-length --measure-held
+   Detection: the gap linter counts the lines of each source file in the scope.
    The limit is the repository's `sonarjs/max-lines` where it sets one, else
-   {{.FileMaxLines}} code lines. When the repository's linter holds the rule, the
-   script measures nothing: the row count is 0 and the `ldd-lint:` line names the
-   rule. Then list the longest files of the scope with
-   `xargs wc -l < files.txt | sort -n | tail -6`
-   and check each against the limit that rule sets in the repository's linter
-   configuration.
+   {{.FileMaxLines}} code lines. Where the repository's linter holds the rule, the row is measured
+   against that rule's limit and names the rule. The linter stays the enforcer.
    Violation: a file over the limit standing in for the whole slice, or a
    `max-lines` directive silencing the rule (the suppression row carries
    directives) — a `Performance.tsx` of 1,199 lines holding the page, its hooks, its

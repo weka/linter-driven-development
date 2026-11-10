@@ -310,6 +310,130 @@ else
   finish
 fi
 
+# ---- --measure-held: the review runs no linter, so the script measures against the held limit ----
+begin "--measure-held reads the held limit and the rule from the config"
+fx_write_linter_config
+write_src "src/over$FX_EXT" 401; write_src "src/at$FX_EXT" 400
+run_lint file-length --measure-held
+expect_exit 0 \
+  && expect_has "held by $FX_HELD_RULE in $FX_LINTER_CONFIG, limit 400 $FX_HELD_COUNT; this script measured the files against that limit because the review runs no linter" \
+  && expect_has "src/over$FX_EXT: 401 $FX_HELD_COUNT (limit 400, $FX_HELD_RULE in $FX_LINTER_CONFIG)" \
+  && expect_not "src/at$FX_EXT:" && expect_not "profile default" && ok
+finish
+
+begin "--measure-held leaves a file at the held limit alone, though the limit is below the default"
+fx_write_linter_config
+write_src "src/at$FX_EXT" 400
+run_lint file-length --measure-held
+expect_exit 0 && expect_has "limit 400 " && expect_no_finding && ok
+finish
+
+begin "--measure-held counts the way the held linter counts"
+fx_write_linter_config
+write_src "src/mixed$FX_EXT" 390 20 20
+run_lint file-length --measure-held
+if [[ "$FX_HELD_COUNT" == "lines" ]]; then
+  expect_exit 0 && expect_has "src/mixed$FX_EXT: 430 lines (limit 400, $FX_HELD_RULE in $FX_LINTER_CONFIG)" && ok
+else
+  expect_exit 0 && expect_no_finding && ok
+fi
+finish
+
+begin "--measure-held counts as the config says: skipped comments and blank lines are not counted"
+if ! fx_write_linter_config_skip both; then skip "the language's linter has no skip option"; finish
+else
+  write_src "src/mixed$FX_EXT" 390 20 20
+  write_src "src/over$FX_EXT" 401 20 20
+  run_lint file-length --measure-held
+  expect_exit 0 && expect_has "limit 400 code lines" \
+    && expect_has "src/over$FX_EXT: 401 code lines (limit 400, ${FX_HELD_SKIP_RULE:-$FX_HELD_RULE} in " \
+    && expect_not "src/mixed$FX_EXT:" && ok
+  finish
+fi
+
+begin "--measure-held says what a count skips when the config skips only comments"
+if ! fx_write_linter_config_skip comments; then skip "the language's linter has no skip option"; finish
+else
+  write_src "src/mixed$FX_EXT" 390 20 20
+  run_lint file-length --measure-held
+  expect_exit 0 && expect_has "limit 400 lines without comment lines" \
+    && expect_has "src/mixed$FX_EXT: 410 lines without comment lines (limit 400, " && ok
+  finish
+fi
+
+begin "--measure-held reads the plugin's recommended config, copied as the repository's own"
+if [[ -z "$FX_SETUP_FILE" ]]; then skip "the language's linter is not configured by a setup file"; finish
+else
+  target="${FX_ADOPTED_CONFIG:-$FX_LINTER_CONFIG}"
+  cp "$(dirname "$LINT")/../setup/$FX_SETUP_FILE" "$REPO/$target"
+  write_src "src/over$FX_EXT" $((MAX_LINES + 1)) 20 20; write_src "src/at$FX_EXT" "$MAX_LINES" 20 20
+  run_lint file-length --measure-held
+  expect_exit 0 && expect_has "limit $MAX_LINES code lines" \
+    && expect_has "src/over$FX_EXT: $((MAX_LINES + 1)) code lines (limit $MAX_LINES, $FX_HELD_RULE in $target)" \
+    && expect_not "src/at$FX_EXT:" && ok
+  finish
+fi
+
+begin "--measure-held falls back to the profile default when the config sets no limit it can read, and says so"
+fx_write_linter_config_nolimit
+write_src "src/over$FX_EXT" $((MAX_LINES + 1)); write_src "src/at$FX_EXT" "$MAX_LINES"
+run_lint file-length --measure-held
+expect_exit 0 \
+  && expect_has "held by $FX_HELD_RULE in $FX_LINTER_CONFIG, but this script cannot read its limit from $FX_LINTER_CONFIG; it measured the files at the profile default ($MAX_LINES code lines) because the review runs no linter" \
+  && expect_has "src/over$FX_EXT: $((MAX_LINES + 1)) code lines (limit $MAX_LINES, profile default)" \
+  && expect_not "src/at$FX_EXT:" && ok
+finish
+
+begin "--measure-held does not read a limit from the next rule's options"
+fx_write_linter_config_nolimit
+write_src "src/over$FX_EXT" 6
+run_lint file-length --measure-held
+expect_exit 0 && expect_not "limit 4 " && expect_not "limit 6 " && expect_no_finding && ok
+finish
+
+begin "--measure-held leaves a rule named only inside comments to the gap linter"
+fx_write_linter_config_in_comment
+write_src "src/over$FX_EXT" $((MAX_LINES + 1))
+run_lint file-length --measure-held
+expect_exit 0 && expect_not "held by " && expect_has "src/over$FX_EXT: $((MAX_LINES + 1)) code lines (limit $MAX_LINES, profile default)" && ok
+finish
+
+begin "--measure-held does not measure a test file or a generated file"
+fx_write_linter_config
+write_src "$(fx_test_file src 1)" 450
+write_src "src/gen$FX_EXT" 450
+{ printf '%s DO NOT EDIT\n' "$FX_LINE_COMMENT"; cat "$REPO/src/gen$FX_EXT"; } > "$REPO/src/gen.tmp" && mv "$REPO/src/gen.tmp" "$REPO/src/gen$FX_EXT"
+run_lint file-length --measure-held
+expect_exit 0 && expect_no_finding && ok
+finish
+
+begin "--measure-held with --tsv writes the finding as a row and the threshold line to stderr"
+fx_write_linter_config
+write_src "src/over$FX_EXT" 401
+run_lint file-length --measure-held --tsv
+{ [[ "$OUT" == "src/over$FX_EXT${TAB}0${TAB}401 $FX_HELD_COUNT (limit 400, $FX_HELD_RULE in $FX_LINTER_CONFIG)" ]] || bad "expected one row"; } \
+  && [[ "$ERR" == "threshold: "*"held by $FX_HELD_RULE in $FX_LINTER_CONFIG, limit 400 "* ]] && ok
+finish
+
+begin "without --measure-held a held rule still measures none"
+fx_write_linter_config
+write_src "src/over$FX_EXT" $((MAX_LINES + 50))
+run_lint file-length
+expect_exit 0 && expect_has "held by $FX_HELD_RULE in $FX_LINTER_CONFIG; the repository's linter reports long files, so this script measures none" \
+  && expect_not "limit 400" && expect_no_finding && ok
+finish
+
+begin "--measure-held is a usage error with package-size"
+write_src "src/a$FX_EXT" 1
+run_lint package-size --measure-held
+expect_exit 2 && expect_has "only file-length takes --measure-held" && ok
+finish
+
+begin "--measure-held is a usage error with the doctor"
+run_lint doctor --measure-held
+expect_exit 2 && expect_has "only file-length takes --measure-held" && ok
+finish
+
 begin ".ldd-lint.yaml sets the limit when the linter holds none"
 printf 'file_max_lines: 100  # this repository\n' > "$REPO/.ldd-lint.yaml"
 write_src "src/a$FX_EXT" 101

@@ -193,8 +193,12 @@ differently from the other bindings:
   default, `scripts/ldd-lint-langs.sh`, the linter table: per language id, the
   comment syntax, the files a directory count leaves out, and whether the
   repository's own linter config names a file-length rule. A named rule belongs to
-  the linter, so the script reads no limit out of a config and copies no linter's way
-  of counting. `package-size --over-limit` lists only the directories at or over
+  the linter, so by default the script reads no limit out of a config and measures
+  none. With `file-length --measure-held`, which the review uses because it runs no
+  linter, the script reads the rule's limit and its skip options from the config as
+  text and counts as that linter counts, as far as the config says; a limit it cannot
+  read is measured at the default, and the threshold line says so. The linter stays
+  the enforcer. `package-size --over-limit` lists only the directories at or over
   the limit and leaves out the warning zone; the review uses it. The table also holds the doctor's part per linter: the commands that
   ask the installed linter which rules it runs (and, for ruff and ESLint, every
   setting), and the presence check for revive rules, which golangci-lint does not

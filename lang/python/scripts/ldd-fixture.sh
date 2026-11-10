@@ -40,6 +40,18 @@
 #                                    similar name and no file-length rule
 #   fx_write_linter_config_in_comment  a linter config that names the file-length
 #                                    rule only inside comments
+#   FX_HELD_RULE       the rule as the gap linter names it when the repository's
+#                      linter holds file length, and FX_HELD_COUNT what that
+#                      linter counts: "lines" or "code lines"
+#   FX_HELD_SKIP_RULE  the rule's name under fx_write_linter_config_skip, when it
+#                      differs from FX_HELD_RULE
+#   fx_write_linter_config_skip <both|comments>  the config of
+#                                    fx_write_linter_config with the linter's skip
+#                                    options set, for comments and blank lines or
+#                                    for comments only; exit 1 when the linter has
+#                                    no skip option
+#   fx_write_linter_config_nolimit   a config that names the file-length rule and
+#                                    sets no limit that the gap linter can read
 FX_ROWS="python"
 FX_NATIVE="python"
 
@@ -51,6 +63,8 @@ use_row() {
   FX_RULE_ID_RE='^[A-Z]+[0-9]+$'
   FX_ROUTED_SKIP=''
   FX_LENGTH_RULE=''
+  FX_HELD_RULE='pylint max-module-lines'
+  FX_HELD_COUNT='lines'
   FX_LINTER_COMMENT='#'
   FX_EXT='.py'
   FX_LINE_COMMENT='# note'
@@ -103,4 +117,11 @@ fx_write_linter_config_in_comment() {
 
 fx_write_linter_config_other() {
   printf '[tool.pylint.design]\nmax-args = 4\n' > "$REPO/pyproject.toml"
+}
+
+# pylint's max-module-lines counts every line and has no skip option.
+fx_write_linter_config_skip() { return 1; }
+
+fx_write_linter_config_nolimit() {
+  printf '[tool.pylint.format]\nmax-module-lines = none\n' > "$REPO/pyproject.toml"
 }

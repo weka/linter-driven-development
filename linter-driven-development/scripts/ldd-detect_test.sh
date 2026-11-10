@@ -205,6 +205,18 @@ questions_in_rules() {
 #                                    similar name and no file-length rule
 #   fx_write_linter_config_in_comment  a linter config that names the file-length
 #                                    rule only inside comments
+#   FX_HELD_RULE       the rule as the gap linter names it when the repository's
+#                      linter holds file length, and FX_HELD_COUNT what that
+#                      linter counts: "lines" or "code lines"
+#   FX_HELD_SKIP_RULE  the rule's name under fx_write_linter_config_skip, when it
+#                      differs from FX_HELD_RULE
+#   fx_write_linter_config_skip <both|comments>  the config of
+#                                    fx_write_linter_config with the linter's skip
+#                                    options set, for comments and blank lines or
+#                                    for comments only; exit 1 when the linter has
+#                                    no skip option
+#   fx_write_linter_config_nolimit   a config that names the file-length rule and
+#                                    sets no limit that the gap linter can read
 FX_ROWS="go python"
 FX_NATIVE="go python d typescript"
 
@@ -218,6 +230,8 @@ use_row() {
       FX_RULE_ID_RE=''
       FX_ROUTED_SKIP=''
       FX_LENGTH_RULE='file-length-limit'
+      FX_HELD_RULE='revive file-length-limit'
+      FX_HELD_COUNT='lines'
       FX_LINTER_COMMENT='#'
       FX_EXT='.go'
       FX_LINE_COMMENT='// note'
@@ -236,6 +250,8 @@ use_row() {
       FX_RULE_ID_RE=''
       FX_ROUTED_SKIP=''
       FX_LENGTH_RULE=''
+      FX_HELD_RULE='pylint max-module-lines'
+      FX_HELD_COUNT='lines'
       FX_LINTER_COMMENT=';'
       FX_EXT='.py'
       FX_LINE_COMMENT='# note'
@@ -340,6 +356,22 @@ fx_write_linter_config_other() {
   case "$ROW" in
     go)     printf 'linters-settings:\n  revive:\n    rules:\n      - name: argument-limit\n        arguments: [4]\n' > "$REPO/.golangci.yml" ;;
     python) printf '[MAIN]\nmax-args=4\n' > "$REPO/.pylintrc" ;;
+  esac
+}
+
+fx_write_linter_config_skip() { # <both|comments>
+  local opts='skip-comments: true, skip-blank-lines: true'
+  [[ "$1" == comments ]] && opts='skip-comments: true'
+  case "$ROW" in
+    go)     printf 'linters-settings:\n  revive:\n    rules:\n      - name: file-length-limit\n        arguments:\n          - max: 400\n            %s\n' "${opts//, /$'\n            '}" > "$REPO/.golangci.yml" ;;
+    python) return 1 ;;
+  esac
+}
+
+fx_write_linter_config_nolimit() {
+  case "$ROW" in
+    go)     printf 'linters-settings:\n  revive:\n    rules:\n      - name: file-length-limit\n      - name: argument-limit\n        arguments: [4]\n' > "$REPO/.golangci.yml" ;;
+    python) printf '[MAIN]\nmax-module-lines=none\n' > "$REPO/.pylintrc" ;;
   esac
 }
 
@@ -745,8 +777,8 @@ plant_dir() { local i; for (( i = 1; i <= $2; i++ )); do plant_code_lines "$1/m$
 begin "the plan carries the two script rows of R5"
 run_plan
 expect_exit 0 && expect_quiet \
-  && { printf '%s\n' "$OUT" | grep -qxF "R5${TAB}Q6${TAB}script${TAB}ldd-lint file-length" || bad "no R5 Q6 script row in the plan"; } \
-  && printf '%s\n' "$OUT" | grep -qxF "R5${TAB}Q6${TAB}script${TAB}ldd-lint file-length" \
+  && { printf '%s\n' "$OUT" | grep -qxF "R5${TAB}Q6${TAB}script${TAB}ldd-lint file-length --measure-held" || bad "no R5 Q6 script row in the plan"; } \
+  && printf '%s\n' "$OUT" | grep -qxF "R5${TAB}Q6${TAB}script${TAB}ldd-lint file-length --measure-held" \
   && { printf '%s\n' "$OUT" | grep -qxF "R5${TAB}Q7${TAB}script${TAB}ldd-lint package-size --over-limit" || bad "no R5 Q7 script row in the plan"; } \
   && printf '%s\n' "$OUT" | grep -qxF "R5${TAB}Q7${TAB}script${TAB}ldd-lint package-size --over-limit" && ok
 finish
@@ -769,6 +801,17 @@ expect_exit 0 && expect_count R5 6 1 \
   && { grep -qxF "$want" "$BUNDLE/hits.tsv" || bad "hits.tsv has no row: $want"; } \
   && grep -qxF "$want" "$BUNDLE/hits.tsv" \
   && expect_has "ldd-lint: threshold: " && expect_has "2 script," && ok
+finish
+
+begin "a file over the limit of a linter that holds the rule is an R5 Q6 hit that names the rule"
+mk_repo; fx_write_linter_config
+plant_code_lines "services/long$FX_EXT" 401; plant_code_lines "services/at$FX_EXT" 400; write_scope; run_detect
+want="R5${TAB}6${TAB}script${TAB}services/long$FX_EXT${TAB}0${TAB}401 $FX_HELD_COUNT (limit 400, $FX_HELD_RULE in $FX_LINTER_CONFIG)"
+expect_exit 0 && expect_count R5 6 1 \
+  && { grep -qxF "$want" "$BUNDLE/hits.tsv" || bad "hits.tsv has no row: $want"; } \
+  && grep -qxF "$want" "$BUNDLE/hits.tsv" \
+  && expect_has "ldd-lint: threshold: " \
+  && expect_has "held by $FX_HELD_RULE in $FX_LINTER_CONFIG, limit 400 $FX_HELD_COUNT; this script measured the files against that limit because the review runs no linter" && ok
 finish
 
 begin "a short tree has no R5 Q6 hit and the threshold line still prints"

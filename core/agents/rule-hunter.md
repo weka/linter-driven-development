@@ -53,6 +53,9 @@ docs and code of the scope, and never read the missing verdict as clean.
 
 **Script rows are measurements.** A row of kind `script` is the gap linter's
 finding: its excerpt is the measurement and the limit's source, and its line is 0.
+For a file-length row the source is the repository's own linter rule when that
+linter holds the limit, and the review has run no linter, so the row is the only
+measurement of that rule. The linter stays the enforcer.
 Open the file or list the directory to judge whether it is one slice standing in for
 a package, or a legitimate shape. A counts row of kind `script` that reads
 `inconclusive` means the linter did not run: the spawn prompt carries its

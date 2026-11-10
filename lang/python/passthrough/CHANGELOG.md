@@ -14,6 +14,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
   threshold lines print under the `R9 gate:` line. A linter that fails makes its
   rows `inconclusive`, never clean. The god-file lead leaves R5 Q2, which keeps
   horizontal scatter, and `ldd-lint.sh package-size` takes `--over-limit`.
+  Where the repository's linter holds the file-length rule, `ldd-lint.sh
+  file-length --measure-held` measures the files against the limit that the
+  linter's config sets and names the rule, because the review runs no linter. A
+  limit the script cannot read from the config is measured at the plugin's default,
+  and the threshold line says so. Without the flag, the script still measures none
+  there. R5 Q6 no longer tells the hunter to list the longest files with `wc -l`.
 
 ## [0.6.0] - 2026-10-29
 

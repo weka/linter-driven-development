@@ -35,15 +35,11 @@
    above.
 
 6. **Is any module over the file-length limit?**
-   Detect-script: ldd-lint file-length
-   Detection: the gap linter counts the code lines of each Python module in the scope.
+   Detect-script: ldd-lint file-length --measure-held
+   Detection: the gap linter counts the lines of each Python module in the scope.
    ruff has no file-length rule: the limit is pylint's `max-module-lines` where the
-   repository sets it, else {{.FileMaxLines}} code lines. When the repository's linter
-   holds the rule, the script measures nothing: the row count is 0 and the `ldd-lint:`
-   line names the rule. Then list the longest files of the scope with
-   `xargs wc -l < files.txt | sort -n | tail -6`
-   and check each against the limit that rule sets in the repository's linter
-   configuration.
+   repository sets it, else {{.FileMaxLines}} code lines. Where the repository's linter holds the rule, the row is measured
+   against that rule's limit and names the rule. The linter stays the enforcer.
    Violation: a module over the limit standing in for the whole slice, or a
    `# pylint: disable=too-many-lines` silencing the limit (the suppression row
    carries directives) — split it by role inside the package.

@@ -40,6 +40,18 @@
 #                                    similar name and no file-length rule
 #   fx_write_linter_config_in_comment  a linter config that names the file-length
 #                                    rule only inside comments
+#   FX_HELD_RULE       the rule as the gap linter names it when the repository's
+#                      linter holds file length, and FX_HELD_COUNT what that
+#                      linter counts: "lines" or "code lines"
+#   FX_HELD_SKIP_RULE  the rule's name under fx_write_linter_config_skip, when it
+#                      differs from FX_HELD_RULE
+#   fx_write_linter_config_skip <both|comments>  the config of
+#                                    fx_write_linter_config with the linter's skip
+#                                    options set, for comments and blank lines or
+#                                    for comments only; exit 1 when the linter has
+#                                    no skip option
+#   fx_write_linter_config_nolimit   a config that names the file-length rule and
+#                                    sets no limit that the gap linter can read
 FX_ROWS="typescript"
 FX_NATIVE="typescript"
 
@@ -56,6 +68,9 @@ use_row() {
   # package-size is the gap linter's
   FX_ROUTED_SKIP='no-restricted-syntax package-size'
   FX_LENGTH_RULE='sonarjs/max-lines'
+  FX_HELD_RULE='sonarjs/max-lines'
+  FX_HELD_COUNT='code lines'
+  FX_HELD_SKIP_RULE='max-lines'
   FX_LINTER_COMMENT='//'
   FX_EXT='.ts'
   FX_LINE_COMMENT='// note'
@@ -109,4 +124,16 @@ fx_write_linter_config_in_comment() {
 # max-lines-per-function limits a function, not a file.
 fx_write_linter_config_other() {
   printf "export default [{\n  rules: {\n    'max-lines-per-function': ['error', 50],\n    'sonarjs/max-lines-per-function': ['error', { maximum: 50 }],\n  },\n}]\n" > "$REPO/eslint.config.mjs"
+}
+
+# sonarjs/max-lines has no skip option and counts code lines; ESLint's own
+# max-lines has the two.
+fx_write_linter_config_skip() { # <both|comments>
+  local opts='skipComments: true, skipBlankLines: true'
+  [[ "$1" == comments ]] && opts='skipComments: true'
+  printf "export default [{\n  rules: {\n    'max-lines': ['error', { max: 400, %s }],\n  },\n}]\n" "$opts" > "$REPO/eslint.config.mjs"
+}
+
+fx_write_linter_config_nolimit() {
+  printf "export default [{\n  rules: {\n    'sonarjs/max-lines': 'error',\n  },\n}]\n" > "$REPO/eslint.config.mjs"
 }

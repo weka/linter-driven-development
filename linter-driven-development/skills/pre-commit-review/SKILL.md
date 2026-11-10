@@ -81,7 +81,8 @@ question only a hunter's reading answers — then one line per rule family. A `s
 row is the gap linter's measurement over the scope: one hit per file or directory
 over a limit, and the linter's `ldd-lint: threshold: …` lines print under the
 `R9 gate:` line, naming the limit that applied and whether the repository's own
-linter holds it. That
+linter holds it. Where it holds the file-length rule, the row is measured against
+that rule's limit and the finding names the rule: the review runs no linter. That
 table, about 300 tokens, is the pre-filter: the parent prints no rule file, composes
 no detection command, and never reads a Falsifying-questions section. On a scoped review the R9
 gate checks the docs the diff touches in full; in a doc that links to a scope file
