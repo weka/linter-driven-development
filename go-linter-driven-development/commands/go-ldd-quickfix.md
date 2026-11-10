@@ -97,7 +97,8 @@ ROW
   @pre-commit-review in INCREMENTAL mode
 - Defer a finding only when the user says to defer it, and write it as a `finding`
   row (`<deferral_ledger>` in the skill). When the prompt or the system says that no
-  user can answer, fix every finding and defer none.
+  user can answer, fix every finding and defer none. In that run, fix a finding that
+  the skeptic REFUTED with the skeptic's cheaper alternative.
 
 **Phase 5 — SHIP**: tests and lint green and the tree dirty → commit, then the ship
 summary with the hash, the scope line, the lint-fixer's `FIXED:` / `ESCALATED:`

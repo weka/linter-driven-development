@@ -246,8 +246,9 @@ advisory. Fix bugs and user-accepted findings via @refactoring — except accept
 
 Defer a finding only when the user says to defer it. Write each deferral to the
 ledger at once (`<deferral_ledger>`) as a `finding` row. When the prompt or the system
-says that no user can answer, fix every finding and defer none. Never decide yourself
-that no user can answer.
+says that no user can answer, fix every finding and defer none. In that run, fix a
+finding that the skeptic REFUTED with the skeptic's cheaper alternative. Never decide
+yourself that no user can answer.
 
 **Cluster routing**: report entries marked 🔗 CLUSTER (≥2 hunters converging on one
 anchor) are fixed design-first, never member-by-member — partial fixes undo each

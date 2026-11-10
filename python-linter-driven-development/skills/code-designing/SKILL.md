@@ -31,7 +31,7 @@ Backward counterpart (fixing code that already fails lint/review): @refactoring.
 - Linter failures that need a design decision, not a mechanical fix:
   - `PLR0913` (too many arguments) → design a frozen dataclass of the parameters that travel together (score it per `../../rules/R1-primitive-obsession.md`); a keyword-only `*` marker tidies the call sites but leaves the clump
   - `PLR0911` (too many returns), or a tuple return carrying a `bool` or an error member → design a named result type, or raise (same R1 scoring)
-  - a module over the file-length limit (pylint's `max-module-lines` where set, else the gap linter's 450 code lines; ruff has no file-length rule) → split juicy types into their own modules (juiciness per R1; module-per-type per `../../rules/R5-vertical-slice.md`); a single god class routes to @refactoring's god-object decomposition procedure first
+  - a module over the file-length limit (pylint's `max-module-lines` where set, else the gap linter's 450 code lines; ruff has no file-length rule) → split the feature's own types into their own modules (module-per-type per `../../rules/R5-vertical-slice.md`), and move a juicy helper (juiciness per R1) to a sub-package with `__init__.py` (rung 2 of `../../rules/R4-helper-placement.md`); a single god class routes to @refactoring's god-object decomposition procedure first
   - Package-size yellow/red zone → re-model with sub-packages *before* the zone escalates (`<package_decomposition>` in @refactoring's `reference.md` (`sed -n '/^<package_decomposition>/,/^<\/package_decomposition>/p; /^### Package decomposition/,$p'`))
 - A Phase 4 review CLUSTER (≥2 hunters converging on one anchor —
   @linter-driven-development routes it here) → **cluster-scoped mode**: skip
@@ -146,7 +146,9 @@ Orchestrating Types:
 Package Structure:
 [feature]/
   ├── __init__.py      # the public surface: what a consumer imports
-  ├── [type].py        # each juicy type in its own module
+  ├── [type].py        # each of the feature's own types in its own module
+  ├── [helper]/        # a juicy helper that no second package imports: a sub-package (R4 rung 2)
+  │   └── __init__.py
   ├── service.py
   └── handler.py
 

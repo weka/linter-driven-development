@@ -3,8 +3,8 @@
    Detection: for each newly public function/class (no leading underscore, or newly
    listed in `__all__`),
    `grep -rn '<Symbol>' --include='*.py' . | grep -v 'test_\|_test.py\|conftest'` —
-   count non-test references outside its defining package.
-   Violation: zero production call sites outside its defining package while test
+   count non-test references outside its defining module.
+   Violation: zero production call sites outside its defining module while test
    files reference it — it was made public for tests; demote (rung 1) or promote
    (rung 2/3).
 

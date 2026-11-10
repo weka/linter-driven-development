@@ -239,11 +239,12 @@ position to the reader as an `In Python` aside under its rule
 
 R4's rung 2 in Python is a sub-package, a folder with `__init__.py`: a Go package
 maps to a Python package, and a Go file to a module. Core's rung-2 text names "a
-package or a module", which is true in TypeScript, so the ladder's rung-2 item and the
-two rung-2 Fix-pattern bullets are includes (`rules/R4/ladder-rung-2.md`,
-`rules/R4/promote-rung-2.md`) whose core default is that text. The Python files name
-only a sub-package. The two bullets keep their move names verbatim, and the
-rendered-tree check holds the names to the catalogue.
+package or a module", which is true in TypeScript, so the ladder's rung-2 item, the
+two rung-2 Fix-pattern bullets and the skeptic's refinement paragraph are includes
+(`rules/R4/ladder-rung-2.md`, `rules/R4/promote-rung-2.md`,
+`agents/overabstraction-skeptic/refinement.md`) whose core default is that text. The
+Python files name only a sub-package. The two bullets keep their move names verbatim,
+and the rendered-tree check holds the names to the catalogue.
 
 The binding also holds stances that are not Python community norms and says so
 under an "Opinionated" heading in its README: no `utils.py` or `common.py`, no

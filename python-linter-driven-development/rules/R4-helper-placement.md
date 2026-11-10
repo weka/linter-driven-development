@@ -47,8 +47,9 @@ def _parse_k3s_argument(arg: str) -> tuple[str, str] | None:
     return (key, value) if sep else None
 ```
 
-There is no urge to test this directly — and that absence is the point: the promotion
-signal (below) never fires. The rungs in Python: rung 1 is a leading-underscore name
+Its R1 score is 0–3, so it stays at rung 1, and its tests go through the public API
+that calls it. An urge to test it directly does not change that (the promotion
+signal, below). The rungs in Python: rung 1 is a leading-underscore name
 in the same module, covered through the module's public API; rung 2 is a sub-package
 (a folder with `__init__.py`) nested in the feature package, with public names
 (`alerts/vectorenv/__init__.py`); rung 3 is a top-level package under the project's
@@ -83,10 +84,9 @@ only home.
 act on that urge by testing privates, and never by exporting the helper into the
 parent. The R1 score decides the home. With a score of 0–3, the helper stays
 underscore-prefixed at rung 1, and its tests go through the parent's public API. With a
-score of 4 or more, the helper deserves its own package: a real home where a test can
-call its exported API with literal inputs. Use rung 2 by default, and rung 3 on the
-trigger the ladder gives. A score of 4 or more gives the helper its own package,
-with or without the urge.
+score of 4 or more, with or without the urge, the helper deserves its own package: a
+real home where a test can call its exported API with literal inputs. Use rung 2 by
+default, and rung 3 on the trigger the ladder gives.
 
 ### The reuse objection
 
@@ -160,8 +160,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detection: for each newly public function/class (no leading underscore, or newly
    listed in `__all__`),
    `grep -rn '<Symbol>' --include='*.py' . | grep -v 'test_\|_test.py\|conftest'` —
-   count non-test references outside its defining package.
-   Violation: zero production call sites outside its defining package while test
+   count non-test references outside its defining module.
+   Violation: zero production call sites outside its defining module while test
    files reference it — it was made public for tests; demote (rung 1) or promote
    (rung 2/3).
 

@@ -22,8 +22,9 @@ def _parse_k3s_argument(arg: str) -> tuple[str, str] | None:
     return (key, value) if sep else None
 ```
 
-There is no urge to test this directly — and that absence is the point: the promotion
-signal (below) never fires. The rungs in Python: rung 1 is a leading-underscore name
+Its R1 score is 0–3, so it stays at rung 1, and its tests go through the public API
+that calls it. An urge to test it directly does not change that (the promotion
+signal, below). The rungs in Python: rung 1 is a leading-underscore name
 in the same module, covered through the module's public API; rung 2 is a sub-package
 (a folder with `__init__.py`) nested in the feature package, with public names
 (`alerts/vectorenv/__init__.py`); rung 3 is a top-level package under the project's

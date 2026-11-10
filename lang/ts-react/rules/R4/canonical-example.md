@@ -26,8 +26,9 @@ function parseK3sArgument(arg: string): readonly [key: string, value: string] | 
 }
 ```
 
-There is no urge to test this directly — and that absence is the point: the promotion
-signal (below) never fires. The rungs in TypeScript: rung 1 is a non-exported
+Its R1 score is 0–3, so it stays at rung 1, and its tests go through the public API
+that calls it. An urge to test it directly does not change that (the promotion
+signal, below). The rungs in TypeScript: rung 1 is a non-exported
 function at module scope beside its only caller (never inside the component body,
 where it is re-created every render), covered through the module's exports; rung 2
 is the page folder's own module named for its vocabulary
