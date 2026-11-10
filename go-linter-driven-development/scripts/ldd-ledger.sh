@@ -28,6 +28,16 @@ set -euo pipefail
 usage() { sed -n '/^# Usage:/,/^# Exit:/p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
 fail() { echo "ldd-ledger: $*" >&2; exit 1; }
 
+# A writer that keeps the pipe open and sends no end of input is bad usage.
+# The clock check also catches bash 3.2, whose read -t gives no timeout status.
+read_stdin() {
+  local line start=$SECONDS
+  text=""
+  while IFS= read -r -t 5 line; do text+="$line"$'\n'; done
+  (( SECONDS - start < 5 )) || { echo "ldd-ledger: no end of input on stdin in 5 seconds" >&2; usage; }
+  text+="$line"
+}
+
 common=$(git rev-parse --path-format=absolute --git-common-dir) \
   || { echo "ldd-ledger: not inside a git repository" >&2; exit 2; }
 branch=$(git symbolic-ref --short -q HEAD) || branch=HEAD
@@ -57,7 +67,7 @@ case "$cmd" in
       text=$(printf '%s ' "$@")
     else
       [[ -p /dev/stdin || -f /dev/stdin ]] || usage
-      text=$(cat)
+      read_stdin
     fi
     text=$(printf '%s' "$text" | tr '\n\r\t' '   ' | sed 's/  */ /g; s/^ //; s/ $//')
     [[ -n "$text" ]] || { echo "ldd-ledger: the text is empty" >&2; usage; }

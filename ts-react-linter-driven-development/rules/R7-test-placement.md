@@ -255,8 +255,10 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    `grep -rn '<function>' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules .` —
    is it exercised directly, or only through a page's render test? Then list the new
    or changed non-exported functions and classes:
-   `grep -nE '^((async )?function|class) [a-zA-Z]|^const [a-zA-Z]\w* = '` in the
-   changed `.ts` and `.tsx` files. Score each one with R1's scorecard. Read the scorecard
+   `grep -nE '^\s*((async )?function\*? [a-zA-Z]|class [a-zA-Z]|(const|let) [a-zA-Z]\w*(: [^=]+)? = )'`
+   in the changed `.ts` and `.tsx` files. The grep also finds a helper inside a hook or
+   a component, and a typed `const`. Keep only the functions, the arrow functions and
+   the classes. Score each one with R1's scorecard. Read the scorecard
    in the same Bash call as the grep: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
    over `R1-primitive-obsession.md` in this rule file's directory. Do not judge or
    report a helper with a score of 3 or less. An `export` added only for the test is a

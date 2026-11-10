@@ -30,7 +30,7 @@ Display current implementation status:
   [list with +/- lines]
 
 🔧 Lint setup:
-  [Show this part only when the last preamble command printed a line. Copy each
+  [Show this part only when `ldd-lint.sh doctor --brief` printed a line. Copy each
   line as given. When it printed nothing, leave this part out.]
 
 ⏸️ Deferral ledger:

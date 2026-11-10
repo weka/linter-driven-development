@@ -155,6 +155,23 @@ if [[ "$sock" == "2" ]] && [[ "$OUT" == "Deferred: none" ]]; then ok
 else bad "expected exit 2 and no row (add with a socket stdin: $sock)"; fi
 finish
 
+begin "add with stdin from a pipe whose writer stays open exits 2, no row"
+new_repo "$TMP/r"
+pipe=$(cd "$TMP/r" && python3 -I -c '
+import os, subprocess, sys
+r, w = os.pipe()
+os.write(w, b"half a row")
+try:
+    p = subprocess.run(["bash", sys.argv[1], "add", "prep"], stdin=r, capture_output=True, timeout=20)
+    print(p.returncode)
+except subprocess.TimeoutExpired:
+    print("timeout")
+' "$LEDGER")
+run "$TMP/r" show
+if [[ "$pipe" == "2" ]] && [[ "$OUT" == "Deferred: none" ]]; then ok
+else bad "expected exit 2 and no row (add with an open pipe: $pipe)"; fi
+finish
+
 begin "a new row that is part of an old row is a new row"
 new_repo "$TMP/r"
 run "$TMP/r" add prep "split the leaf out"
