@@ -80,7 +80,7 @@ Tests cover what an eval cannot. A rule that works on one fixture does not need 
 | What the change touches | Check |
 |---|---|
 | Shared script or generator, plugin text byte-identical | Shell tests and `task check`. No eval. |
-| Core text that all bindings render (rule prose, agents, skills) | Full check on Go. Narrow check on Python and TypeScript. |
+| Core text that all bindings render (rule prose, agents, skills) | Full check on Go. Narrow check on Python, TypeScript and generic. |
 | Text under one `lang/<binding>/` directory | Narrow check on each binding that renders it. The generic binding renders the Go `examples/` includes, so a change there reaches Go and generic. |
 | Language-specific script code (for example a suppression pattern) | Shell test for that binding. Narrow check only if a hunter reads its output. |
 | Docs, changelog, README | No eval. |
