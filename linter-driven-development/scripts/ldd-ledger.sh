@@ -21,7 +21,10 @@
 # File:   $(git rev-parse --path-format=absolute --git-common-dir)/ldd/<branch>.md,
 #         one file for each branch; in the branch name `%` becomes `%25`, then `/`
 #         becomes `%2F`; a detached HEAD uses `HEAD`
-# Exit:   0 done · 1 a read or write of the file failed · 2 bad usage, or no git repository
+# Lock:   add and clear take the directory <file>.lock in turns; a lock older
+#         than one minute is from a run that stopped, and the next run removes it
+# Exit:   0 done · 1 a read or write of the file failed, or the lock stayed taken
+#         for 5 seconds · 2 bad usage, or no git repository
 
 set -euo pipefail
 
@@ -46,6 +49,22 @@ common=$(git rev-parse --path-format=absolute --git-common-dir) \
 branch=$(git symbolic-ref --short -q HEAD) || branch=HEAD
 branch=${branch//\%/%25}
 ledger="$common/ldd/${branch//\//%2F}.md"
+lock="$ledger.lock"
+
+# mkdir is atomic, and macOS has no flock.
+take_lock() {
+  local tries=0
+  mkdir -p -- "$(dirname -- "$ledger")" || fail "cannot create the directory of $ledger"
+  until mkdir -- "$lock" 2>/dev/null; do
+    if [[ -n "$(find "$lock" -maxdepth 0 -mmin +1 2>/dev/null)" ]]; then
+      rmdir -- "$lock" || fail "cannot remove the stale lock $lock"
+      continue
+    fi
+    (( tries++ < 50 )) || fail "the lock $lock stayed taken for 5 seconds; remove it when no add or clear runs"
+    sleep 0.1
+  done
+  trap 'rmdir -- "$lock" 2>/dev/null || true' EXIT
+}
 
 cmd="${1:-}"
 case "$cmd" in
@@ -68,6 +87,7 @@ case "$cmd" in
     text=$(printf '%s' "$text" | tr '\n\r\t' '   ' | sed 's/  */ /g; s/^ //; s/ $//')
     [[ -n "$text" ]] || { echo "ldd-ledger: the text is empty" >&2; usage; }
     row="$head$text"
+    take_lock
     if [[ -e "$ledger" ]]; then
       found=0
       grep -qxF -- "$row" "$ledger" || found=$?
@@ -77,7 +97,6 @@ case "$cmd" in
         *) fail "cannot read $ledger" ;;
       esac
     fi
-    mkdir -p -- "$(dirname -- "$ledger")" || fail "cannot create the directory of $ledger"
     printf '%s\n' "$row" >> "$ledger" || fail "cannot write $ledger"
     printf '%s\n' "$row"
     ;;
@@ -95,6 +114,7 @@ case "$cmd" in
     ;;
   clear)
     (( $# == 1 )) || usage
+    take_lock
     rm -f -- "$ledger" || fail "cannot remove $ledger"
     ;;
   *) usage ;;

@@ -213,7 +213,8 @@ differently from the other bindings:
 - `scripts/ldd-ledger.sh` and `scripts/ldd-ledger_test.sh`, the deferral ledger and
   its fixture matrix, are core templates with no includes. The ledger is one file for
   each branch, in the `ldd/` directory of the repository's common git directory. A
-  row stays when a linked worktree is removed. A row is a deferred finding, a deferred
+  row stays when a linked worktree is removed. Two runs of `add` or `clear` at the same
+  moment take turns through a lock directory next to the file. A row is a deferred finding, a deferred
   prep move, or a mutation run that did not execute. Every closing report prints the
   ledger. The workflow skills and the prepare command run `add` and `show` with no
   permission prompt; the status command runs `show` only. The agent runs `clear` only

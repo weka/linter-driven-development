@@ -376,6 +376,52 @@ OUT=$(cd "$TMP/plain" && GIT_CEILING_DIRECTORIES="$TMP" bash "$LEDGER" show 2>&1
 if (( CODE == 2 )); then ok; else bad "expected exit 2"; fi
 finish
 
+lock_of() { echo "$(git -C "$1" rev-parse --path-format=absolute --git-common-dir)/ldd/main.md.lock"; }
+
+begin "twenty adds of one row at the same moment write one row and leave no lock"
+new_repo "$TMP/r"
+for _ in $(seq 1 20); do
+  (cd "$TMP/r" && bash "$LEDGER" add prep "one row" >/dev/null 2>&1 </dev/null) &
+done
+wait
+run "$TMP/r" show
+if [[ "$OUT" == "Deferred:
+- prep · one row" ]] && [[ ! -e "$(lock_of "$TMP/r")" ]]; then ok
+else bad "expected one row and no lock directory"; fi
+finish
+
+begin "a fresh lock makes add exit 1, writes no row and keeps the lock"
+new_repo "$TMP/r"
+lock=$(lock_of "$TMP/r"); mkdir -p "$lock"
+run "$TMP/r" add prep "blocked"; add_code=$CODE add_out=$OUT
+run "$TMP/r" show
+if (( add_code == 1 )) && [[ "$add_out" == *"ldd-ledger: "*"lock"* ]] \
+  && [[ "$OUT" == "Deferred: none" ]] && [[ -d "$lock" ]]; then ok
+else CODE=$add_code; bad "expected exit 1, a lock message, no row, the lock kept"; fi
+finish
+
+begin "a fresh lock makes clear exit 1 and keeps the rows"
+new_repo "$TMP/r"
+run "$TMP/r" add prep "kept"
+lock=$(lock_of "$TMP/r"); mkdir -p "$lock"
+run "$TMP/r" clear; clear_code=$CODE
+rmdir "$lock"
+run "$TMP/r" show
+if (( clear_code == 1 )) && [[ "$OUT" == "Deferred:
+- prep · kept" ]]; then ok
+else CODE=$clear_code; bad "expected clear exit 1 and the row kept"; fi
+finish
+
+begin "a lock older than one minute is stale: add removes it and writes the row"
+new_repo "$TMP/r"
+lock=$(lock_of "$TMP/r"); mkdir -p "$lock"; touch -t 202001010000 "$lock"
+run "$TMP/r" add prep "after a stale lock"; add_code=$CODE
+run "$TMP/r" show
+if (( add_code == 0 )) && [[ "$OUT" == "Deferred:
+- prep · after a stale lock" ]] && [[ ! -e "$lock" ]]; then ok
+else CODE=$add_code; bad "expected exit 0, the row, and no lock"; fi
+finish
+
 echo
 echo "ldd-ledger: $pass passed, $failed failed"
 (( failed == 0 ))
