@@ -74,12 +74,14 @@ only home.
 
 ### The promotion signal
 
-**The urge to unit-test a helper directly means it deserves its own package.** Never
+**The urge to unit-test a helper directly is a signal to score the helper.** Never
 act on that urge by testing privates, and never by exporting the helper into the
-parent. The urge is data: it says that the helper has enough behavior to be a unit
-of its own. Give it a real home where a test can call its exported API with literal
-inputs. Use rung 2 by default, and rung 3 on the trigger the ladder gives. An R1 score
-of 4 or more is the same signal, with or without the urge.
+parent. The R1 score decides the home. With a score of 0–3, the helper stays
+internal at rung 1, and its tests go through the parent's public API. With a
+score of 4 or more, the helper deserves its own package: a real home where a test can
+call its exported API with literal inputs. Use rung 2 by default, and rung 3 on the
+trigger the ladder gives. A score of 4 or more is the same signal, with or without
+the urge.
 
 ### The reuse objection
 
@@ -165,8 +167,10 @@ directory, or whatever the repository uses).
    Detection: find test files that can reach non-public symbols (an in-package test,
    an import of a private module, a test that reaches past the public surface), then
    search those files for calls to the package's non-public functions.
-   Violation: any direct test of a private helper — that urge is the promotion
-   signal; give the helper its own package instead.
+   Violation: any direct test of a private helper. The urge is a signal to score
+   the helper on R1's scorecard. A score of 0–3 keeps it private: delete the direct
+   test and cover the helper through the parent's public API (rung 1). A
+   score of 4 or more gives the helper its own package (rung 2 or 3).
 
 3. **Does a new shared package have a role name?**
    Detect-path: `(^|/)(util|utils|helpers|helper|common|shared|misc)(/|\.[a-z]+$)`

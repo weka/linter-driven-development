@@ -237,6 +237,14 @@ position to the reader as an `In Python` aside under its rule
    class holding the mapping for a queried map. An object- or Any-valued container
    is house rule P5's suppression one level down.
 
+R4's rung 2 in Python is a sub-package, a folder with `__init__.py`: a Go package
+maps to a Python package, and a Go file to a module. Core's rung-2 text names "a
+package or a module", which is true in TypeScript, so the ladder's rung-2 item and the
+two rung-2 Fix-pattern bullets are includes (`rules/R4/ladder-rung-2.md`,
+`rules/R4/promote-rung-2.md`) whose core default is that text. The Python files name
+only a sub-package. The two bullets keep their move names verbatim, and the
+rendered-tree check holds the names to the catalogue.
+
 The binding also holds stances that are not Python community norms and says so
 under an "Opinionated" heading in its README: no `utils.py` or `common.py`, no
 testing of `_private` functions, no `mock.patch` of internal collaborators

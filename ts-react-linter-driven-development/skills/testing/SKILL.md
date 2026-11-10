@@ -50,7 +50,7 @@ Ready after tests? Run linter: `npx tsc --noEmit && npx eslint . --fix && npx pr
 **Test only the public API**
 - Import the package as a consumer would, so privates are unreachable
 - Test types through their constructors
-- No testing private methods/functions — the urge to unit-test an internal helper directly is a promotion signal: give the helper its own package, nested under the feature by default (`../../rules/R4-helper-placement.md`), never test privates.
+- No testing private methods/functions — the urge to unit-test an internal helper directly is a signal to score the helper: with an R1 score of 0–3, test it through the parent's public API; with 4 or more, give it its own package, nested under the feature by default (`../../rules/R4-helper-placement.md`). Never test privates.
 
 **No mocks — and a type that only satisfies a production interface in a test IS a mock**
 - A "fake" is a *real implementation with fake data* (embedded DB, in-process HTTP server, fake binary, temp dir) — NOT a type written to satisfy a dependency interface, and NOT a patched-in stand-in.

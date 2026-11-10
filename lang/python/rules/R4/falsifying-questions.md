@@ -3,8 +3,8 @@
    Detection: for each newly public function/class (no leading underscore, or newly
    listed in `__all__`),
    `grep -rn '<Symbol>' --include='*.py' . | grep -v 'test_\|_test.py\|conftest'` —
-   count non-test references outside its defining module.
-   Violation: zero production call sites outside its defining module while test
+   count non-test references outside its defining package.
+   Violation: zero production call sites outside its defining package while test
    files reference it — it was made public for tests; demote (rung 1) or promote
    (rung 2/3).
 
@@ -13,9 +13,12 @@
    Detection: an import of a `_private` name, or a call through `obj._helper(...)` in a test
    body. `monkeypatch.setattr(mod, "_helper", ...)` is the same reach with a
    different verb.
-   Violation: any direct test of a private helper — that urge is the promotion
-   signal; give the helper its own module or package instead. The underscore is a
-   convention, not a wall: the test runs, and that is why the question is asked.
+   Violation: any direct test of a private helper. The urge is a signal to score
+   the helper on R1's scorecard. A score of 0–3 keeps it private: delete the direct
+   test and cover the helper through the parent's public API (rung 1). A
+   score of 4 or more gives the helper its own package: a sub-package of the feature
+   (rung 2), or a top-level package (rung 3). The underscore is a convention, not a
+   wall: the test runs, and that is why the question is asked.
 
 3. **Does a new shared package have a role name?**
    Detect-path: `(^|/)(util|utils|helpers|helper|common|shared|misc)(\.py|/__init__\.py)$`
@@ -29,7 +32,7 @@
    domain siblings exist under the name.
    Violation: a package named after its one type (`kubeport/`) with no room for
    siblings — fold into a vocabulary package (`networking/`) or keep at rung 1/2.
-   A rung-2 package nested under its feature is not judged by this question.
+   A rung-2 sub-package nested under its feature is not judged by this question.
 
 5. **Did feature policy leak into a shared package?**
    Detect: judgment

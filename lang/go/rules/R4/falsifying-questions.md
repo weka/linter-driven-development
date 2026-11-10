@@ -13,8 +13,10 @@
    test package; grep those files for calls to lowercase functions
    defined in the package. An `export_test.go` file with a `var X = x` alias of a
    private name is a direct test of a private name too.
-   Violation: any direct test of a private helper — that urge is the promotion
-   signal; give the helper its own package instead.
+   Violation: any direct test of a private helper. The urge is a signal to score
+   the helper on R1's scorecard. A score of 0–3 keeps it private: delete the direct
+   test and cover the helper through the parent's public API (rung 1). A
+   score of 4 or more gives the helper its own package (rung 2 or 3).
 
 3. **Does a new shared package have a role name?**
    Detect-path: `(^|/)(internal/)?pkg/(util|utils|helpers|helper|common|shared|misc)/`

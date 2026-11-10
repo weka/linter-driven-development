@@ -159,9 +159,10 @@ ROW
   flag in one table is the canonical violation — it folds success and error cases
   into one table and pays with a conditional. Split into a success function and an
   error function.
-- **The urge to test a private is a placement signal**, never a license: it means
-  the helper deserves its own package (`R4-helper-placement.md`), where its public
-  API is legitimately testable.
+- **The urge to test a private is a placement signal**, never a license. With an R1
+  score of 0–3, test the helper through the parent's public API. With 4 or more, the
+  helper deserves its own package (`R4-helper-placement.md`), where its public API is
+  legitimately testable.
 - **Mechanics**: `pytest.param(..., id=...)` on every row so a failure names its
   case, and named tuple fields rather than positional tuples when a row carries more
   than two values; no `time.sleep` — `Event.wait(timeout)`, `Queue.get(timeout)` or an

@@ -24,8 +24,8 @@ def _parse_k3s_argument(arg: str) -> tuple[str, str] | None:
 
 There is no urge to test this directly — and that absence is the point: the promotion
 signal (below) never fires. The rungs in Python: rung 1 is a leading-underscore name
-in the same module, covered through the module's public API; rung 2 is a module or
-sub-package inside the feature package, with public names (`alerts/vectorenv.py`);
-rung 3 is a shared package under the project's source root, named for a domain
-vocabulary, when a second package imports it. There is no `internal/` convention —
-the underscore and `__all__` carry visibility.
+in the same module, covered through the module's public API; rung 2 is a sub-package
+(a folder with `__init__.py`) nested in the feature package, with public names
+(`alerts/vectorenv/__init__.py`); rung 3 is a top-level package under the project's
+source root, named for a domain vocabulary, when a second package imports it.
+There is no `internal/` convention — the underscore and `__all__` carry visibility.

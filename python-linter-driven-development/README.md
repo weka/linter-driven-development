@@ -76,8 +76,10 @@ them because the rules hold them in every language:
 
 - **No `utils.py`, no `common.py`.** A module is named for the domain vocabulary it
   holds, never for its role (R4, R5).
-- **No testing of `_private` functions.** The urge is a placement signal: the helper
-  wants its own module or package, where its public API is testable (R4, R7).
+- **No testing of `_private` functions.** The urge is a placement signal. With an R1
+  score of 0–3, the helper stays private and the test goes through the public API.
+  With 4 or more, it wants its own sub-package, where its public API is testable
+  (R4, R7).
 - **No `mock.patch` of internal collaborators.** A patch on a class you own is a
   seam that exists only so a test can substitute a double — the same smell as a
   single-implementer `Protocol`. Patching the true external boundary — the clock, a

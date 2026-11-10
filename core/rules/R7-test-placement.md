@@ -64,9 +64,10 @@ and review contract.
   flag in one table is the canonical violation — it folds success and error cases
   into one table and pays with a conditional. Split into a success function and an
   error function.
-- **The urge to test a private is a placement signal**, never a license: it means
-  the helper deserves its own package (`R4-helper-placement.md`), where its public
-  API is legitimately testable.
+- **The urge to test a private is a placement signal**, never a license. With an R1
+  score of 0–3, test the helper through the parent's public API. With 4 or more, the
+  helper deserves its own package (`R4-helper-placement.md`), where its public API is
+  legitimately testable.
 {{include "rules/R7/mechanics.md"}}
 - Full ladder, harness patterns, and dependency levels (in-memory → binary →
   containers): @testing.
