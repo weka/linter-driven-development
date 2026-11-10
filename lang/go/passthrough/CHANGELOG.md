@@ -32,6 +32,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
   stays after a worktree is removed. The ship summary, the final message and
   `/go-ldd-status` print it. `clear` runs only when the user asks. The script needs
   git 2.31 or later.
+- **Only the user defers a review finding.** When no user can answer, the agent fixes
+  every finding and writes no finding row.
 
 ### Changed
 

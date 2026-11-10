@@ -139,12 +139,15 @@ or more goes on
 [rung 2 or 3](../core/rules/R4-helper-placement.md).
 The probe stays in the feature package.
 
-The promotion case expects the leaf in a rung-2 package or module. The new package has
-direct tests and full coverage. The old name is gone. No test-only export exists. The
-trivial helper stays private. The Go case runs the mutation tool over the new package.
+The promotion case expects the leaf in a rung-2 home: a nested package in Go, a
+sub-package folder in Python, a module in TypeScript. The new package has direct tests
+and full coverage. The old name is gone. No test-only export exists. The trivial helper
+stays private. Each case runs the mutation tool over the new package, or writes a
+`mutation-not-run` row when the tool cannot run.
 
 The medium case also expects the closing report to print the
-[deferral ledger](quick-start.md). Its postcheck builds and tests the code. It checks
+[deferral ledger](quick-start.md). The run has no user, so it fixes every finding and
+the ledger holds no finding row. Its postcheck builds and tests the code. It checks
 the coverage of the new package. It checks that the old private name is gone, that no test-only export file exists and that the tree is clean.
 It checks that at least one commit exists.
 
