@@ -1,6 +1,6 @@
 ---
 type: guide
-description: how a baseline is recorded and compared: noise floor, regrade, the acceptance procedure for a plugin refactor
+description: how a baseline is recorded and compared: noise floor, regrade, the acceptance procedure for a plugin refactor, and the eval scope each kind of change needs
 ---
 # Baselines and Comparison
 
@@ -68,6 +68,28 @@ promise is that the generated plugin behaves the same as the hand-written one:
    same cases.
 4. Anything outside that band is a real behavior change. With the plugin text
    byte-identical, the suspect is the generator, not the plugin.
+
+## Choosing the eval scope for a change
+A change to plugin text or to a shared script can need two kinds of check. The table below selects which ones apply:
+
+- A full check: `review-full`, three runs, on the Go fixture, on both arms (main and the branch). It finds a change in hunter behavior that the text change causes.
+- A narrow check: for each other binding that renders the changed text, run only the cases that hold the plants of the touched rules. Run the branch arm only, three runs, against the newest baseline of that language.
+
+Tests cover what an eval cannot. A rule that works on one fixture does not need a full run on the other fixtures.
+
+| What the change touches | Check |
+|---|---|
+| Shared script or generator, plugin text byte-identical | Shell tests and `task check`. No eval. |
+| Core text that all bindings render (rule prose, agents, skills) | Full check on Go. Narrow check on Python, TypeScript and generic. |
+| Text under one `lang/<binding>/` directory | Narrow check on each binding that renders it. The generic binding renders the Go `examples/` includes, so a change there reaches Go and generic. |
+| Language-specific script code (for example a suppression pattern) | Shell test for that binding. Narrow check only if a hunter reads its output. |
+| Docs, changelog, README | No eval. |
+
+Pick the narrow cases from the rule ids in the plugin text that changed. A case qualifies when `violations.yaml` of that language plants a violation of the rule. When no case qualifies, use `review-full`.
+
+If the newest baseline of a language predates the last release of its plugin, run the main arm too. Then compare two live arms, not an old baseline.
+
+Write the scope and the result in the pull request: the cases, the run counts and the grader counts per arm.
 
 ## Comparing after a behavior change
 Each deliberate fix to the plugin names the cases it should flip. Re-run only those

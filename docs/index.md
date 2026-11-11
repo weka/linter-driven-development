@@ -15,6 +15,6 @@ okf_version: "0.2"
 - [eval-fixture.md](eval-fixture.md) — the go-mini, py-mini and ts-react-mini fixtures and their violations manifests: plants, controls, scaffolds, and the checks that keep them honest
 - [eval-cases-and-graders.md](eval-cases-and-graders.md) — how to write an eval case: prompt frontmatter, case.yaml, the five grader types, the report contract graders lean on, postcheck scripts, art judges, calibration rules
 - [eval-runner.md](eval-runner.md) — how `ldd-eval` runs, regrades and resumes cases headlessly, and what to delete when `claude plugin eval` opens
-- [eval-baseline.md](eval-baseline.md) — how a baseline is recorded and compared: noise floor, regrade, the acceptance procedure for a plugin refactor
+- [eval-baseline.md](eval-baseline.md) — how a baseline is recorded and compared: noise floor, regrade, the acceptance procedure for a plugin refactor, and the eval scope each kind of change needs
 - [eval-return-experiments.md](eval-return-experiments.md) — is linter-driven development worth its tokens: the twelve experiments that would answer it, the three-layer scorecard every run is graded on, the ISO 25010 framing that survives scrutiny, and the order to run them in
 - [token-budget.md](token-budget.md) — the token budget — where a plugin session's tokens go, measured on the Go baseline, the staged design that cuts the spend without changing what the rules say, and the two gates (verdicts and spend) every stage must pass to prove it
