@@ -4,12 +4,19 @@
 # Measures the design triggers no linter holds, or that the repository's linter
 # does not hold yet: lines per source file and source files per directory. It
 # never edits a file. Where the repository's linter has a file-length rule, the
-# linter owns file length and this script leaves it alone. Its doctor compares
+# linter owns file length and this script leaves it alone, unless --measure-held
+# asks it to measure for a review that runs no linter. Its doctor compares
 # the repository's linter with the plugin's recommended config.
 #
 # Usage:  bash scripts/ldd-lint.sh <subcommand> [options]
 #   file-length            source files over the file-length limit
+#   --measure-held         file-length: when the repository's linter holds the
+#                          limit, measure against the limit that linter's
+#                          config sets and name its rule, in place of leaving
+#                          the measuring to the linter (below)
 #   package-size           directories at or over the warning size or the limit
+#   --over-limit           package-size: leave out the warning zone; list only
+#                          the directories at or over the limit
 #   doctor                 per language of the repository, each rule of the
 #                          plugin's recommended config under setup/: whether
 #                          the repository's linter runs it, and the setting on
@@ -23,7 +30,8 @@
 #                          lookup starts there (default: cwd)
 #   --files <list>         measure the source files this list names, one
 #                          relative path per line (a scope bundle's files.txt
-#                          works: a "(not bundled: …)" suffix is ignored);
+#                          works: a "(not bundled: …)" suffix is ignored); a
+#                          relative list path is read from the caller's directory;
 #                          default: every source file of the repository
 #   --tsv                  findings as rows: path TAB line TAB message, line 0;
 #                          the threshold lines then go to stderr. doctor rows:
@@ -54,7 +62,15 @@
 # Thresholds, per language — the "threshold:" line says which one a run used:
 #   file-length: when a linter config at the repository root names a
 #      file-length rule, the linter holds it: the line names the rule and the
-#      script measures nothing more. Else the limit is file_max_lines in
+#      script measures nothing more. With --measure-held the script measures
+#      the files against that rule's limit, read from the config as text, and
+#      counts as that linter counts as far as the config says (a line is every
+#      line, unless the config skips comments or blank lines); a finding reads
+#      "<n> lines (limit <max>, <rule> in <config file>)", and "code lines"
+#      only when the count skips comments and blank lines. A limit that the
+#      script cannot read from the config is measured at the plugin's default,
+#      and the line says so. The linter stays the enforcer: this is for a
+#      review that runs no linter. Else the limit is file_max_lines in
 #      .ldd-lint.yaml, else the plugin's default, {{.FileMaxLines}} code lines (blank and
 #      comment-only lines are not counted); with the default, the line also
 #      prints the linter setting that would hold the limit, as a proposal for
@@ -253,6 +269,8 @@ OVERRIDE_FILE=".ldd-lint.yaml"
 ROOT="$(pwd)"
 FILES_LIST=""
 TSV=0
+OVER_LIMIT=0
+MEASURE_HELD=0
 OPT_GLOB=""
 OPT_TEST_RE=""
 SUBCOMMAND=""
@@ -282,6 +300,8 @@ while (( $# > 0 )); do
     --root)    value "$1" $#; ROOT="$2"; shift 2 ;;
     --files)   value "$1" $#; FILES_LIST="$2"; shift 2 ;;
     --tsv)     TSV=1; shift ;;
+    --over-limit) OVER_LIMIT=1; shift ;;
+    --measure-held) MEASURE_HELD=1; shift ;;
     --linter)   value "$1" $#; AGREE_LINTER="$2"; LINTER_SET=1; shift 2 ;;
     --rule)     value "$1" $#; AGREE_RULE="$2"; AGREE_SET="$AGREE_SET $1"; shift 2 ;;
     --decision) value "$1" $#; AGREE_DECISION="$2"; AGREE_SET="$AGREE_SET $1"; shift 2 ;;
@@ -304,6 +324,8 @@ done
 (( ! LINTER_SET )) || [[ "$SUBCOMMAND" == agree || ( "$SUBCOMMAND" == doctor && -n "$OPT_CONFIG" ) ]] \
   || die "only agree, and doctor with --config, take --linter"
 (( ! BRIEF )) || [[ "$SUBCOMMAND" == doctor ]] || die "only doctor takes --brief"
+(( ! OVER_LIMIT )) || [[ "$SUBCOMMAND" == package-size ]] || die "only package-size takes --over-limit"
+(( ! MEASURE_HELD )) || [[ "$SUBCOMMAND" == file-length ]] || die "only file-length takes --measure-held"
 (( ! BRIEF )) || [[ -z "$OPT_CONFIG$FILES_LIST" ]] || die "--brief takes no --config or --files"
 [[ -d "$ROOT" ]] || die "not a directory: $ROOT"
 if [[ -n "$FILES_LIST" ]]; then
@@ -657,14 +679,59 @@ measured() {
 # ---------- file-length ----------
 # code_lines <id> <path> — the lines that keep code after comments are removed
 code_lines() {
-  lint_strip_comments "$(lint_comment_style "$1")" "./$2" | awk 'NF { n++ } END { print n + 0 }'
+  lint_strip_comments "$(lint_comment_style "$1")" "./$2" | awk '/[^ \t\r]/ { n++ } END { print n + 0 }'
+}
+
+# held_label <skip comments> <skip blanks> — what the held linter's count is
+# of; "code lines" only when it skips comment-only and blank lines both
+held_label() {
+  if (( $1 && $2 )); then printf 'code lines'
+  elif (( $1 )); then printf 'lines without comment lines'
+  elif (( $2 )); then printf 'lines without blank lines'
+  else printf 'lines'; fi
+}
+
+# held_lines <id> <path> <skip comments> <skip blanks> — the lines that count
+# as the held linter counts: every line, less the comment-only lines when
+# <skip comments> is 1 and less the blank lines when <skip blanks> is 1
+held_lines() {
+  awk -v sc="$3" -v sb="$4" '
+    FNR == NR { raw[FNR] = ($0 ~ /[^ \t\r]/); next }
+    { code = ($0 ~ /[^ \t\r]/)
+      if (!raw[FNR]) { if (!sb) n++ }
+      else if (!code) { if (!sc) n++ }
+      else n++ }
+    END { print n + 0 }' "./$2" <(lint_strip_comments "$(lint_comment_style "$1")" "./$2")
+}
+
+# run_held_file_length <id> <rule> — the repository's linter holds the limit
+# and the review runs none: measure against the limit the config sets
+run_held_file_length() {
+  local id="$1" rule="$2" cfg="${2##* in }" max sc sb label src f n
+  read -r max sc sb <<< "$(lint_file_length_setting "$id" "$rule")"
+  if [[ "$max" != "-" ]]; then
+    label=$(held_label "$sc" "$sb"); src="$rule"
+    say "threshold: $id file length — held by $rule, limit $max $label; this script measured the files against that limit because the review runs no linter"
+  else
+    max="$DEFAULT_FILE_MAX_LINES"; sc=1; sb=1; label="code lines"; src="profile default"
+    say "threshold: $id file length — held by $rule, but this script cannot read its limit from $cfg; it measured the files at the profile default ($max code lines) because the review runs no linter"
+  fi
+  while IFS=$'\t' read -r _ f; do
+    measured "$f" || continue
+    n=$(held_lines "$id" "$f" "$sc" "$sb")
+    (( n > max )) && finding "$f" "$n $label (limit $max, $src)"
+  done < <(awk -F'\t' -v id="$id" '$1 == id' "$SCOPE")
 }
 
 run_file_length() { # <id> — every measured file of that language
   local id="$1" rule max src f n o
   rule=$(lint_file_length_rule "$id")
   if [[ -n "$rule" ]]; then
-    say "threshold: $id file length — held by $rule; the repository's linter reports long files, so this script measures none"
+    if (( MEASURE_HELD )); then
+      run_held_file_length "$id" "$rule"
+    else
+      say "threshold: $id file length — held by $rule; the repository's linter reports long files, so this script measures none"
+    fi
     return 0
   fi
   o=$(override file_max_lines) || exit 2
@@ -704,7 +771,7 @@ run_package_size() { # <id> — every directory that holds a measured file of th
     n="${n:-0}"
     if (( n >= lim )); then
       finding "$d" "$n source files (limit $lim, $src)"
-    elif (( n >= warn )); then
+    elif (( ! OVER_LIMIT && n >= warn )); then
       finding "$d" "$n source files (warning at $warn, $src)"
     fi
   done < <(awk -F'\t' -v id="$id" '$1 == id { print $2 }' "$SCOPE" | while IFS= read -r f; do

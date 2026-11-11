@@ -5,6 +5,22 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+### Added
+
+- **The gap linter's findings are detection rows.** R5 Q6 (file length) and Q7
+  (package size) carry `Detect-script: ldd-lint …` lines, a fifth detect kind: the
+  detection pass runs the gap linter over the scope and writes its findings as
+  `script` rows of `hits.tsv` and `counts.tsv`, with a receipt per question. Its
+  threshold lines print under the `R9 gate:` line. A linter that fails makes its
+  rows `inconclusive`, never clean. The god-file lead leaves R5 Q2, which keeps
+  horizontal scatter, and `ldd-lint.sh package-size` takes `--over-limit`.
+  Where the repository's linter holds the file-length rule, `ldd-lint.sh
+  file-length --measure-held` measures the files against the limit that the
+  linter's config sets and names the rule, because the review runs no linter. A
+  limit the script cannot read from the config is measured at the plugin's default,
+  and the threshold line says so. Without the flag, the script still measures none
+  there. R5 Q6 no longer tells the hunter to list the longest files with `wc -l`.
+
 ## [0.7.0] - 2026-10-29
 
 ### Added

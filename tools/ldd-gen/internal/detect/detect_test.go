@@ -30,6 +30,10 @@ const good = `A preamble paragraph that belongs to no question.
    line?**
    Detect-gate: Q1
    Violation: a doc no index lists.
+
+5. **Is any package over the file-count limit?**
+   Detect-script: ldd-lint package-size --over-limit
+   Violation: a directory at the limit.
 `
 
 func repo(files map[string]string) fstest.MapFS {
@@ -79,6 +83,31 @@ func TestLint_Problems(t *testing.T) {
 		{"unknown flag", func(s string) string { return strings.Replace(s, "context=3", "after=3", 1) }, `unknown detect flag "after=3"`},
 		{"bad files flag", func(s string) string { return strings.Replace(s, "files=src", "files=prod", 1) }, `unknown detect flag "files=prod"`},
 		{"flag twice", func(s string) string { return strings.Replace(s, "files=src", "files=src files=all", 1) }, "flag files given twice"},
+		{"script unknown", func(s string) string {
+			return strings.Replace(s, "ldd-lint package-size --over-limit", "ldd-scope all", 1)
+		}, `unknown script "ldd-scope"`},
+		{"script subcommand unknown", func(s string) string {
+			return strings.Replace(s, "ldd-lint package-size --over-limit", "ldd-lint doctor", 1)
+		}, `has no subcommand "doctor"`},
+		{"script without subcommand", func(s string) string {
+			return strings.Replace(s, "ldd-lint package-size --over-limit", "ldd-lint", 1)
+		}, "takes <script> <subcommand>"},
+		{"script wide space", func(s string) string {
+			return strings.Replace(s, "ldd-lint package-size", "ldd-lint  package-size", 1)
+		}, "exactly one space"},
+		{"script tab", func(s string) string {
+			return strings.Replace(s, "ldd-lint package-size", "ldd-lint\tpackage-size", 1)
+		}, "exactly one space"},
+		{"script bad flag", func(s string) string { return strings.Replace(s, "--over-limit", "--Over", 1) }, `flag "--Over" is not of the shape`},
+		{"script flag twice", func(s string) string {
+			return strings.Replace(s, "--over-limit", "--over-limit --over-limit", 1)
+		}, "flag --over-limit given twice"},
+		{"script backtick", func(s string) string {
+			return strings.Replace(s, "ldd-lint package-size --over-limit", "`ldd-lint package-size`", 1)
+		}, "takes no backticks"},
+		{"script placeholder", func(s string) string {
+			return strings.Replace(s, "ldd-lint package-size --over-limit", "ldd-lint <subcommand>", 1)
+		}, "carries the placeholder <subcommand>"},
 		{"numbering gap", func(s string) string { return strings.Replace(s, "3. **Is a package", "5. **Is a package", 1) }, "numbered 5 where 3 was expected"},
 	}
 	for _, tc := range cases {
@@ -107,7 +136,7 @@ func TestLint_QuestionCountsMatchAcrossBindings(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, problems, 1, "%v", problems)
 	assert.Equal(t, "lang/python/rules/R1/falsifying-questions.md", problems[0].Path)
-	assert.Contains(t, problems[0].Msg, "R1 carries 3 questions here and 4 in core/includes/rules/R1/falsifying-questions.md")
+	assert.Contains(t, problems[0].Msg, "R1 carries 3 questions here and 5 in core/includes/rules/R1/falsifying-questions.md")
 }
 
 func TestLint_ProblemsAreSortedByPathAndLine(t *testing.T) {
@@ -122,5 +151,5 @@ func TestLint_ProblemsAreSortedByPathAndLine(t *testing.T) {
 	assert.Equal(t, "core/includes/rules/R1/falsifying-questions.md", problems[0].Path)
 	assert.Less(t, problems[0].Line, problems[1].Line)
 	assert.Equal(t, "lang/go/rules/R1/falsifying-questions.md", problems[2].Path)
-	assert.Equal(t, "core/includes/rules/R1/falsifying-questions.md:8: question 2 has no detect line (Detect-grep, Detect-path, Detect-gate or Detect: judgment)", problems[0].String())
+	assert.Equal(t, "core/includes/rules/R1/falsifying-questions.md:8: question 2 has no detect line (Detect-grep, Detect-path, Detect-gate, Detect-script or Detect: judgment)", problems[0].String())
 }

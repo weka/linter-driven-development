@@ -520,7 +520,7 @@ are the ones that catch the most. The house-rule questions are review questions 
 - **R2** Can the type exist in an invalid state? · Does anything return or accept the missing value as a value?
 - **R3** Does one body mix abstraction levels? · Do block comments narrate sections inside a function body?
 - **R4** Are internal helpers tested directly? · Does a new shared package have a role name?
-- **R5** Is any package or module named after a layer or role? · Is one feature's code spread across ≥2 layer directories?
+- **R5** Is any package or module named after a layer or role? · Is one feature's code spread across ≥2 layer directories? · Is any file over the file-length limit?
 - **R6** Is the only other implementer a test double? · Does the diff justify a new interface with "for testing" or "import cycle"?
 - **R7** Does any test case body contain a conditional? · Does any test reach past the public surface? · Does any test sleep to synchronize?
 - **R8** Does any package declare mutable state at package level? · Does deep code read a global config?

@@ -139,6 +139,20 @@ mk_repo() { fx_write_marker "$REPO" fixture; fx_write_code; mk_docs; }
 #                                    similar name and no file-length rule
 #   fx_write_linter_config_in_comment  a linter config that names the file-length
 #                                    rule only inside comments
+#   FX_HELD_RULE       the rule as the gap linter names it when the repository's
+#                      linter holds file length, and FX_HELD_COUNT what that
+#                      linter counts: "lines" or "code lines"
+#   FX_HELD_SKIP_RULE  the rule's name under fx_write_linter_config_skip, when it
+#                      differs from FX_HELD_RULE
+#   fx_write_linter_config_skip <both|comments>  the config of
+#                                    fx_write_linter_config with the linter's skip
+#                                    options set, for comments and blank lines or
+#                                    for comments only; exit 1 when the linter has
+#                                    no skip option
+#   fx_write_linter_config_nolimit   a config that names the file-length rule and
+#                                    sets no limit that the gap linter can read
+#   fx_write_linter_config_value <text>  the config of fx_write_linter_config with
+#                                    <text> as the limit, such as 1_000
 FX_ROWS="go python"
 FX_NATIVE="go python d typescript"
 
@@ -152,6 +166,8 @@ use_row() {
       FX_RULE_ID_RE=''
       FX_ROUTED_SKIP=''
       FX_LENGTH_RULE='file-length-limit'
+      FX_HELD_RULE='revive file-length-limit'
+      FX_HELD_COUNT='lines'
       FX_LINTER_COMMENT='#'
       FX_EXT='.go'
       FX_LINE_COMMENT='// note'
@@ -170,6 +186,8 @@ use_row() {
       FX_RULE_ID_RE=''
       FX_ROUTED_SKIP=''
       FX_LENGTH_RULE=''
+      FX_HELD_RULE='pylint max-module-lines'
+      FX_HELD_COUNT='lines'
       FX_LINTER_COMMENT=';'
       FX_EXT='.py'
       FX_LINE_COMMENT='# note'
@@ -274,6 +292,29 @@ fx_write_linter_config_other() {
   case "$ROW" in
     go)     printf 'linters-settings:\n  revive:\n    rules:\n      - name: argument-limit\n        arguments: [4]\n' > "$REPO/.golangci.yml" ;;
     python) printf '[MAIN]\nmax-args=4\n' > "$REPO/.pylintrc" ;;
+  esac
+}
+
+fx_write_linter_config_skip() { # <both|comments>
+  local opts='skip-comments: true, skip-blank-lines: true'
+  [[ "$1" == comments ]] && opts='skip-comments: true'
+  case "$ROW" in
+    go)     printf 'linters-settings:\n  revive:\n    rules:\n      - name: file-length-limit\n        arguments:\n          - max: 400\n            %s\n' "${opts//, /$'\n            '}" > "$REPO/.golangci.yml" ;;
+    python) return 1 ;;
+  esac
+}
+
+fx_write_linter_config_value() { # <limit text>
+  case "$ROW" in
+    go)     printf 'linters-settings:\n  revive:\n    rules:\n      - name: file-length-limit\n        arguments:\n          - max: %s\n' "$1" > "$REPO/.golangci.yml" ;;
+    python) printf '[MAIN]\nmax-module-lines=%s\n' "$1" > "$REPO/.pylintrc" ;;
+  esac
+}
+
+fx_write_linter_config_nolimit() {
+  case "$ROW" in
+    go)     printf 'linters-settings:\n  revive:\n    rules:\n      - name: file-length-limit\n      - name: argument-limit\n        arguments: [4]\n' > "$REPO/.golangci.yml" ;;
+    python) printf '[MAIN]\nmax-module-lines=none\n' > "$REPO/.pylintrc" ;;
   esac
 }
 

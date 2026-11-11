@@ -22,7 +22,7 @@ critic):
 | R2 | types | `../../rules/R2-self-validating-types.md` | invalid-state construction; defensive re-checks; the missing value returned where a real value is expected |
 | R3 | structure | `../../rules/R3-storifying.md` | mixed abstraction levels; comments naming unextracted blocks |
 | R4 | structure | `../../rules/R4-helper-placement.md` | helper visibility/placement off the placement ladder |
-| R5 | structure | `../../rules/R5-vertical-slice.md` | horizontal layering; role-named packages |
+| R5 | structure | `../../rules/R5-vertical-slice.md` | horizontal layering; role-named packages; files over the length limit, directories over the file-count limit |
 | R6 | tests and dependencies | `../../rules/R6-test-only-interfaces.md` | interfaces whose only second implementer is a test double |
 | R7 | tests and dependencies | `../../rules/R7-test-placement.md` | tests reaching privates; success-or-error flag conditionals; wrong-rung tests; sleeps; untriaged mutation survivors on a leaf type |
 | R8 | tests and dependencies | `../../rules/R8-no-globals.md` | package-level state; library code manufacturing its own root cancellation |
@@ -61,8 +61,8 @@ one tally line per rule (`R<N>: <M> finding(s)` or that rule's hunted-clean line
 types hunter given R1, R2 and R11 returns three tallies. A rule file that did not read
 has `R<N>: rule unreadable at <path>` in its tally's place, and the hunter hunts the
 rest; that line is part of the report shape, never dropped and never a tally. A gate
-row the table marks `inconclusive` has the receipt `R9 Q<n>: inconclusive → answered
-from the prose → <findings> finding(s)`. A gate verdict the hunter checked and found
+or script row the table marks `inconclusive` has the receipt `R<N> Q<n>: inconclusive →
+answered from the prose → <findings> finding(s)`. A gate verdict the hunter checked and found
 false has one line of its own, `gate disproved: R9 Q<n> <file> — <what the repository
 shows>`; it is not a finding, and it renders verbatim beside the R9 tally, because it
 names a defect of the gate script. The
@@ -264,7 +264,7 @@ finding was dropped in the merge, and the fix is to render it, never to adjust t
 tally. A finding the skeptic refuted still counts as rendered when its
 cheaper alternative is on the page. The receipts are reconciled the same way, against
 the counts table step 1 printed: for every rule a hunter was given, each question
-with a pattern has a receipt carrying the table's number, and each `judgment` row a
+with a pattern or a script has a receipt carrying the table's number, and each `judgment` row a
 `judgment` receipt. A receipt that reads `<judged> of <hits> hit(s) judged`, a receipt
 below the table's count, or a question with no receipt is coverage the review did
 not have: the header renders it beside that rule's tally — `R1 8/8 (Q1: 40 of 44

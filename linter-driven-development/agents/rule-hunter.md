@@ -27,7 +27,7 @@ line number; on a whole-repository review also `dirs.txt`, and in the prompt you
 reading order over its directories), the diff scope it describes, and the detection
 pass's tables for your rules: the `awk` command that prints your family's rows of
 `hits.tsv` (`rule TAB question TAB kind TAB file TAB line TAB excerpt`, one row per
-hit of every falsifying question that has a pattern), and your rules' rows of the
+hit of every falsifying question that has a pattern or a script), and your rules' rows of the
 counts table (`rule q kind hits`; a `judgment` row is a question with no pattern).
 The detection pass already ran every pattern over the whole scope: you run no
 pattern of your own — a question capped in `hits.tsv` has every hit in
@@ -50,6 +50,17 @@ line. A counts row whose hits cell is `inconclusive` means the gate gave no verd
 it ran out of time or failed, and the spawn prompt carries its `R9 gate: …` line.
 Answer that question yourself with the Detection prose of R9's question, over the
 docs and code of the scope, and never read the missing verdict as clean.
+
+**Script rows are measurements.** A row of kind `script` is the gap linter's
+finding: its excerpt is the measurement and the limit's source, and its line is 0.
+For a file-length row the source is the repository's own linter rule when that
+linter holds the limit, and the review has run no linter, so the row is the only
+measurement of that rule. The linter stays the enforcer.
+Open the file or list the directory to judge whether it is one slice standing in for
+a package, or a legitimate shape. A counts row of kind `script` that reads
+`inconclusive` means the linter did not run: the spawn prompt carries its
+`ldd-lint: inconclusive — …` line. Run the question's Detection prose over
+`files.txt` and never read the missing measurement as clean.
 
 **Read-only:** Bash is for inspection only — `awk` over the tables, `cat` of scope
 files, `git diff`, `git log`, `grep` for a judgment question's search or a gate
@@ -141,7 +152,7 @@ Then, rule by rule, one receipt line per falsifying question, in the rule's orde
 `R<N> Q<n>: <hits> hit(s) → <findings> finding(s)` — the counts table's number for
 that question and how many of its hits became findings; the rest were cleared. A
 question the table marks `judgment` reads `R<N> Q<n>: judgment → <findings>
-finding(s)`. A question the table marks `inconclusive` reads `R9 Q<n>: inconclusive
+finding(s)`. A question the table marks `inconclusive` reads `R<N> Q<n>: inconclusive
 → answered from the prose → <findings> finding(s)`. When your budget ended before every counted hit was read, the receipt
 says so — `R<N> Q<n>: <judged> of <hits> hit(s) judged → <findings> finding(s)` — and
 the parent renders the review as partial; a receipt that carries the table's number
