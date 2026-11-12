@@ -11,4 +11,6 @@ src/handlers/rotator{{.SrcExt}}           src/rotator/repository{{.SrcExt}}     
 > feature noun, `rotator`, never `services` or `models`; `utils`, `common` and
 > `helpers` name no vocabulary at all, so the first function that lands there has no
 > owner and the next lands beside it. Role names live in the file names inside the
-> slice, and a type with logic gets its own file named after the type.
+> slice. A type of the feature's API with logic gets its own file named after the
+> type. A juicy helper that the feature keeps out of its API goes to a package or
+> module nested under the feature (R4).

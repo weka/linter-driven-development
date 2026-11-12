@@ -184,7 +184,10 @@ decide the answer. One is juiciness: the scorecard in R1
 There are three rungs: underscore-prefixed in place, a sub-package nested under the
 feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
-it.
+it. The ladder places helpers: code the feature would otherwise keep underscore-prefixed. A
+type that is part of the feature package's public API stays in that package, whatever
+its R1 score. When a rung-2 helper builds that type, the helper's package can define
+it, and the feature package re-exports it.
 
 ```python
 # ❌ imported by the test through its private name, so it stays where it should not
@@ -230,8 +233,9 @@ src/app/handlers/rotator_handler.py  src/app/rotator/handler.py
 > or `models`. `utils.py`, `common.py` and `helpers.py` name no vocabulary at all:
 > the first function that lands there has no owner, and the next lands beside it
 > because the first did. Role names (`parser.py`, `handler.py`) live in module names
-> inside the slice. Each type with
-> logic sits in its own module named after the type, and `__init__.py` is the
+> inside the slice. Each type of the
+> feature's API with logic sits in its own module named after the type. A juicy
+> helper sits in a sub-package (R4). `__init__.py` is the
 > slice's front door: it re-exports what other slices may import and nothing else,
 > and it never imports another slice, or the front doors form an import cycle.
 

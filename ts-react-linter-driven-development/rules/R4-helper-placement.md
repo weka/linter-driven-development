@@ -8,7 +8,10 @@ decide the answer. One is juiciness: the scorecard in `R1-primitive-obsession.md
 There are three rungs: internal in place, a sub-package nested under the
 feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
-it.
+it. The ladder places helpers: code the feature would otherwise keep internal. A
+type that is part of the feature package's public API stays in that package, whatever
+its R1 score. When a rung-2 helper builds that type, the helper's package can define
+it, and the feature package re-exports it.
 
 ## Why
 
@@ -72,15 +75,16 @@ caller, then the page's `hooks/`, then `src/hooks/` only when two pages share it
 1. **Trivial helper** (R1 score 0–3) → internal, same package, tested only
    through the parent's public API.
 2. **Juicy, and no second package imports it** → a package nested under the feature
-   package, or a module with public names inside the feature package. The feature
-   needs no minimum size for it. See `R5-vertical-slice.md`.
+   package, or a module inside the feature package. Its names are public there, and
+   the feature's public surface does not expose them. The feature needs no minimum
+   size for it. See `R5-vertical-slice.md`.
 3. **Juicy, and a second package imports it** → a top-level shared package. Extend
    the domain package that fits it, or create one.
    Granularity: a package is a domain *vocabulary* (`networking`), not a single noun
    (`kubeport`), never a role (`util`/`helpers`/`common`).
 
 The rung paths in TypeScript: rung 2 is a module in the page folder, with exported
-names (`pages/Cluster/managementPort.ts`). Rung 3 is a shared `src/<domain>/` module.
+names that the folder's `index.ts` does not re-export (`pages/Cluster/managementPort.ts`). Rung 3 is a shared `src/<domain>/` module.
 
 "Juicy" is an R1 score of 4 or more — `R1-primitive-obsession.md` is the scorecard's
 only home.

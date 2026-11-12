@@ -93,7 +93,8 @@ name it. A test-only door to a private name is never the cheaper alternative. A 
 is an export, alias, re-export or hook that exists only so a test can reach a private
 name. For a private leaf with R1 score 0–3, the cheaper alternative is a test through
 the public entry of its parent. At a score of 4 or more, the leaf gets its own package
-or module under the feature. Tests call its exported API directly.
+nested under the feature (`internal/<feature>/<leaf>`). Tests call its exported API
+directly.
 The case file you read is the template for what a
 correct refutation looks like.
 

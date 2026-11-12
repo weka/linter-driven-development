@@ -8,7 +8,10 @@ decide the answer. One is juiciness: the scorecard in `R1-primitive-obsession.md
 There are three rungs: unexported in place, a sub-package nested under the
 feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
-it.
+it. The ladder places helpers: code the feature would otherwise keep unexported. A
+type that is part of the feature package's public API stays in that package, whatever
+its R1 score. When a rung-2 helper builds that type, the helper's package can define
+it, and the feature package re-exports it.
 
 ## Why
 
@@ -65,8 +68,9 @@ signal, below).
 1. **Trivial helper** (R1 score 0–3) → unexported, same package, tested only
    through the parent's public API.
 2. **Juicy, and no second package imports it** → a package nested under the feature
-   package, or a module with public names inside the feature package. The feature
-   needs no minimum size for it. See `R5-vertical-slice.md`.
+   package, with exported names. A file of the feature package is not enough: each
+   exported name in it is part of the feature's API. The feature needs no minimum
+   size for it. See `R5-vertical-slice.md`.
 3. **Juicy, and a second package imports it** → a top-level shared package. Extend
    the domain package that fits it, or create one.
    Granularity: a package is a domain *vocabulary* (`networking`), not a single noun
@@ -109,11 +113,11 @@ package nested under its feature can hold a single type.
 - **Demote (rung 1)**: a helper exported from its parent only so tests can reach it →
   unexport it, delete the direct tests, cover it through the parent's public API.
 - **Promote to feature sub-package (rung 2)**: a juicy helper that no second package
-  imports, tested through awkward big-object setups → move it into a rung-2 package or
-  module, export it there, test its public API directly.
+  imports, tested through awkward big-object setups → move it into a nested rung-2
+  package, export it there, test its exported API directly.
 - **Split the pure leaf out of an I/O package**: a juicy pure function or type sits in
   a package that does I/O (network, files, environment variables). Only tests through
-  that I/O reach it. Move it to a rung-2 package or module and export it there. Give
+  that I/O reach it. Move it to a nested rung-2 package and export it there. Give
   it leaf unit tests (rung 0 of `R7-test-placement.md`) with 100% coverage and a
   mutation run. The I/O code stays in the parent and calls it. This applies also
   when the leaf is unexported.

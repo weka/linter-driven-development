@@ -227,7 +227,10 @@ decide the answer. One is juiciness: the scorecard in R1
 There are three rungs: internal in place, a sub-package nested under the
 feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
-it.
+it. The ladder places helpers: code the feature would otherwise keep internal. A
+type that is part of the feature package's public API stays in that package, whatever
+its R1 score. When a rung-2 helper builds that type, the helper's package can define
+it, and the feature package re-exports it.
 
 ```typescript
 // ❌ exported from the page module only so the test can import it

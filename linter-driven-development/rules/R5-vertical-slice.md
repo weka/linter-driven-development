@@ -51,8 +51,9 @@ project/
     └── rotator<test-file suffix>
 ```
 
-The whole feature is one `ls`. Each type with logic sits in its own file named after
-the type; the package name is the feature's domain word, and file names carry the
+The whole feature is one `ls`. Each type of the feature's API with logic sits in its own
+file named after the type, and a juicy helper goes to rung 2 of
+`R4-helper-placement.md`; the package name is the feature's domain word, and file names carry the
 roles. The directory is a package, module or namespace — whatever the language calls
 one unit of code with its own public surface.
 
@@ -75,9 +76,9 @@ one unit of code with its own public surface.
 ### Inside the slice
 
 Separate by role and responsibility within the feature package: `parser.<ext>`,
-`handler.<ext>`, `repository.<ext>`. Types with logic get their own file named after the
-type. When a slice grows a juicy sub-concern, it becomes a feature sub-package
-(rung 2 of `R4-helper-placement.md`). When a second package imports a concern, the
+`handler.<ext>`, `repository.<ext>`. Each type of the feature's API with logic gets its own file
+named after the type. A juicy helper that the feature keeps out of its API goes to
+rung 2 of `R4-helper-placement.md`. When a second package imports a concern, the
 concern moves to a shared domain package (rung 3) — placement is R4's decision.
 
 ### Migration template

@@ -178,7 +178,10 @@ decide the answer. One is juiciness: the scorecard in R1
 There are three rungs: unexported in place, a sub-package nested under the
 feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
-it.
+it. The ladder places helpers: code the feature would otherwise keep unexported. A
+type that is part of the feature package's public API stays in that package, whatever
+its R1 score. When a rung-2 helper builds that type, the helper's package can define
+it, and the feature package re-exports it.
 
 ```go
 // ❌ exported from the feature package only so the test can reach it
@@ -215,8 +218,9 @@ internal/handlers/rotator.go     internal/rotator/handler.go
 internal/models/rotation.go      internal/rotator/rotation.go
 ```
 
-> **In Go:** role names live in file names inside the slice, and a type with logic
-> gets its own file named after the type. Slices live under `internal/` unless
+> **In Go:** role names live in file names inside the slice, and a type of the
+> feature's API with logic gets its own file named after the type. A juicy helper
+> that the feature keeps unexported goes to a nested package (R4). Slices live under `internal/` unless
 > another module is meant to import them.
 
 **Moves:** Slice out a feature · Rename layer files by role during the move · Split a generic package by owner

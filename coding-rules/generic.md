@@ -155,7 +155,10 @@ decide the answer. One is juiciness: the scorecard in R1
 There are three rungs: internal in place, a sub-package nested under the
 feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
-it.
+it. The ladder places helpers: code the feature would otherwise keep internal. A
+type that is part of the feature package's public API stays in that package, whatever
+its R1 score. When a rung-2 helper builds that type, the helper's package can define
+it, and the feature package re-exports it.
 
 ```text
 # ❌ made public by the feature package only so the test can reach it
@@ -200,7 +203,9 @@ src/handlers/rotator.<ext>           src/rotator/repository.<ext>     # role: pe
 > feature noun, `rotator`, never `services` or `models`; `utils`, `common` and
 > `helpers` name no vocabulary at all, so the first function that lands there has no
 > owner and the next lands beside it. Role names live in the file names inside the
-> slice, and a type with logic gets its own file named after the type.
+> slice. A type of the feature's API with logic gets its own file named after the
+> type. A juicy helper that the feature keeps out of its API goes to a package or
+> module nested under the feature (R4).
 
 **Moves:** Slice out a feature · Rename layer files by role during the move · Split a generic package by owner
 
