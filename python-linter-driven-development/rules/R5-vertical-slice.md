@@ -52,9 +52,11 @@ src/app/
     └── test_rotator.py  # or tests/rotator/ — whichever the repository uses
 ```
 
-The whole feature is one `ls`. Each type with logic sits in its own module named after
-the type; the package name is the feature's domain word, and module names carry the
-roles. `__init__.py` is the slice's front door: it re-exports what other slices may
+The whole feature is one `ls`. Each type of the feature's API with logic sits in its own
+module named after the type. A juicy helper goes to a sub-package (rung 2 of
+`R4-helper-placement.md`).
+The package name is the feature's domain word, and module names carry the roles.
+`__init__.py` is the slice's front door: it re-exports what other slices may
 import and nothing else, so the module split inside the package is private to it.
 
 ## Design guidance
@@ -76,10 +78,10 @@ import and nothing else, so the module split inside the package is private to it
 ### Inside the slice
 
 Separate by role and responsibility within the feature package: `parser.py`,
-`handler.py`, `repository.py`. Types with logic get their own file named after the
-type. When a slice grows a juicy sub-concern, it becomes a feature sub-package
-(rung 2 of `R4-helper-placement.md`); when a concern turns out to be domain-generic,
-it promotes to a shared domain package (rung 3) — placement is R4's decision.
+`handler.py`, `repository.py`. Each type of the feature's API with logic gets its own file
+named after the type. A juicy helper that the feature keeps out of its API goes to
+rung 2 of `R4-helper-placement.md`. When a second package imports a concern, the
+concern moves to a shared domain package (rung 3) — placement is R4's decision.
 
 ### Migration template
 

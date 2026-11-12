@@ -172,19 +172,28 @@ func (h *Handler) Heartbeat(ctx context.Context, raw []byte) error {
 
 ### R4 — Helper Placement
 
-Every extraction raises a second question: where does the helper live? The answer is
-decided by two axes — juiciness (the scorecard in R1; cite
-it, never re-derive it) and scope (feature-specific versus domain-generic). Three
-rungs: unexported in place, feature sub-package, shared domain package. Never test
+Every extraction raises a second question: where does the helper live? Two axes
+decide the answer. One is juiciness: the scorecard in R1
+(cite it, never re-derive it). The other is scope: does a second package import it?
+There are three rungs: unexported in place, a sub-package nested under the
+feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
-it.
+it. The ladder places helpers: code the feature would otherwise keep unexported. A
+type that is part of the feature package's public API stays in that package, whatever
+its R1 score.
+A type is part of the API when the public entry takes or returns it. A function that
+builds and returns an API type is that type's constructor, not a helper. It stays
+beside the type in the feature package. It is public, so its tests call it directly.
+A juicy constructor is never unexported. A juicy part that the constructor calls
+and that returns another type is a helper, and it follows the ladder.
 
 ```go
 // ❌ exported from the feature package only so the test can reach it
-func ParseCIDRList(raw string) ([]netip.Prefix, error)
+func ParseK3sArgument(arg string) (key, value string, ok bool)
 
-// ✅ rung 1: unexported where it is used, tested through the public API that calls it
-func parseCIDRList(raw string) ([]netip.Prefix, error)
+// ✅ rung 1: one caller, no vocabulary of its own; unexported where it is used,
+//    tested through the public API that calls it
+func parseK3sArgument(arg string) (key, value string, ok bool)
 
 // ✅ rung 3: generic networking vocabulary with three callers → its own package
 package networking
@@ -196,7 +205,7 @@ func ParsePrefixes(raw string) (Prefixes, error)
 > `internal/pkg/networking`. A shared package that knows one feature's constants is
 > leaked policy, not shared vocabulary.
 
-**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
+**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Split the pure leaf out of an I/O package · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
 
 ### R5 — Vertical Slice
 
@@ -213,8 +222,9 @@ internal/handlers/rotator.go     internal/rotator/handler.go
 internal/models/rotation.go      internal/rotator/rotation.go
 ```
 
-> **In Go:** role names live in file names inside the slice, and a type with logic
-> gets its own file named after the type. Slices live under `internal/` unless
+> **In Go:** role names live in file names inside the slice, and a type of the
+> feature's API with logic gets its own file named after the type. A juicy helper
+> that the feature keeps out of its API goes to a nested package (R4). Slices live under `internal/` unless
 > another module is meant to import them.
 
 **Moves:** Slice out a feature · Rename layer files by role during the move · Split a generic package by owner

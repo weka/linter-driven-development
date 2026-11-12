@@ -33,9 +33,24 @@
    Detect: judgment
    Detection: for each new exported function on a leaf module,
    `grep -rn '<function>' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules .` —
-   is it exercised directly, or only through a page's render test?
-   Violation: leaf behavior reached only from above — add the rung-0 test; the page
-   test keeps only the seam.
+   is it exercised directly, or only through a page's render test? Then list the new
+   or changed non-exported functions and classes:
+   `grep -nE '^\s*((async )?function\*? [a-zA-Z_]|class [a-zA-Z_]|(const|let) [a-zA-Z_]\w*(: [^=]+)? = )'`
+   in the changed `.ts` and `.tsx` files. The grep also finds a helper inside a hook or
+   a component, and a typed `const`. Keep only the functions, the arrow functions and
+   the classes. Score each one with R1's scorecard. Read the scorecard
+   in the same Bash call as the grep: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
+   over `R1-primitive-obsession.md` in this rule file's directory. Do not judge or
+   report a helper with a score of 3 or less. An `export` added only for the test is a
+   Q2 finding, not a direct test.
+   Violation: leaf behavior with no direct test, reached only from above. This
+   applies to an exported function of a leaf module and to a non-exported function or
+   class with a score of 4 or more. The usual test above it renders a tree, registers
+   `server.use` handlers or builds a `QueryClient`. Fix an exported function: add the
+   rung-0 test; the page test keeps only the seam. Fix a non-exported leaf in a module that
+   does I/O with R4's "Split the pure leaf out of an I/O package". Fix one in a module
+   with no I/O with "Promote to feature sub-package (rung 2)". Then add the rung-0 test
+   in a `.ts` module.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `toHaveBeenCalled(Times|With|Once)?\(|toHaveBeen(Last|Nth)CalledWith|\.mock\.(calls|results|lastCall)` files=test
@@ -64,7 +79,8 @@
    each mutant in a sandbox copy under `.stryker-tmp/`, never in the checkout. Read
    the `clear-text` reporter: a `Survived` line carries the file, the line and the
    replacement, and a `CompileError` line is a mutant the types rejected, not a
-   kill. Skip orchestrators, the top rung and any module that does I/O. Stryker
+   kill. Skip orchestrators, the top rung and any module that does I/O. Judge a pure leaf
+   inside such a module with Q4. Do not skip it. Stryker
    not installed (`@stryker-mutator/core` absent from `devDependencies`): propose
    the install the mechanics bullet describes before hunting; no survivors from a
    run that did not execute is not a pass. In a read-only review, where no tests
@@ -75,6 +91,9 @@
    each error assertion. An assertion that matches only a word all the leaf's errors
    share (`toThrow('tenant')`) cannot tell one error path from another, so a removed
    check or a changed message survives.
+   When the tool run did not execute for a leaf, the receipt says so on its own line:
+   `R7 Q7: mutation run did not execute — <leaf>`. A hand check alone runs no tool
+   and writes no such line.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,

@@ -237,6 +237,19 @@ position to the reader as an `In Python` aside under its rule
    class holding the mapping for a queried map. An object- or Any-valued container
    is house rule P5's suppression one level down.
 
+R4's rung 2 holds the helpers that a feature keeps out of its public API. Core's
+rung-2 text names "a package or a module" that the feature's public surface does not
+expose. That is true in TypeScript, where the folder's `index.ts` sets that surface.
+In Go, each exported name in a file of a package is part of its API, so a file is not
+enough. R4's rung 2 in Python is a sub-package, a folder with `__init__.py`: a Go
+package maps to a Python package, and a Go file to a module. So the ladder's rung-2
+item, the two rung-2 Fix-pattern bullets and the skeptic's refinement paragraph are
+includes (`rules/R4/ladder-rung-2.md`, `rules/R4/promote-rung-2.md`,
+`agents/overabstraction-skeptic/refinement.md`) whose core default is that text. The
+Go files name only a nested package, and the Python files only a sub-package. The
+two bullets keep their move names verbatim,
+and the rendered-tree check holds the names to the catalogue.
+
 The binding also holds stances that are not Python community norms and says so
 under an "Opinionated" heading in its README: no `utils.py` or `common.py`, no
 testing of `_private` functions, no `mock.patch` of internal collaborators

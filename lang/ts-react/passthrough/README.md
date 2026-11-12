@@ -99,8 +99,9 @@ them because the rules hold them in every language:
 
 - **No `utils.ts`, no `common.ts`, no `helpers.ts`.** A module is named for the
   domain vocabulary it holds, never for its role (R4, R5).
-- **No testing of non-exported functions.** The urge is a placement signal: the
-  helper wants its own module, where its public API is testable (R4, R7).
+- **No testing of non-exported functions.** The urge is a placement signal. With an R1
+  score of 0–3, the helper stays private and the test goes through the public API.
+  With 4 or more, it wants its own module, where its public API is testable (R4, R7).
 - **No `vi.mock` of internal hooks and services.** MSW is the boundary. A mock of a
   module you own is a seam that exists only so a test can substitute a double — the
   same smell as a single-implementer interface. Mocking the true external boundary —

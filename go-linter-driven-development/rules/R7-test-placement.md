@@ -128,6 +128,16 @@ private-function test.
   (`==`, `!=`) or a literal constant, so it cannot ask for the row where an element
   sorts below the needle or the row on the far side of a limit; the hand check's row
   at each boundary and one past it covers those two on purpose, not by accident.
+  The actor that tried the tool writes each run that did not execute to the deferral
+  ledger, and reads the exit code. That actor is the testing skill, or the main agent
+  when it runs the tool itself on `/go-ldd-quickfix`. The call:
+
+```bash
+bash <this rule file's directory>/../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
+<leaf> — <why the run did not execute>
+ROW
+```
+
 - **Orchestrating types**: integration-style tests wiring real collaborators — real
   store over an embedded DB, real client against an in-process HTTP server — never
   interface-injected doubles (`R6-test-only-interfaces.md`). They cover the seams;
@@ -138,9 +148,10 @@ private-function test.
   flag in one table is the canonical violation — it folds success and error cases
   into one table and pays with a conditional. Split into a success function and an
   error function.
-- **The urge to test a private is a placement signal**, never a license: it means
-  the helper deserves its own package (`R4-helper-placement.md`), where its public
-  API is legitimately testable.
+- **The urge to test a private is a placement signal**, never a license. With an R1
+  score of 0–3, test the helper through the parent's public API. With 4 or more, the
+  helper deserves its own package (`R4-helper-placement.md`), where its public API is
+  legitimately testable.
 - **Mechanics**: named struct fields in every table (the linter reorders fields);
   no `time.Sleep` — channels or wait groups; testify suites only for real
   infrastructure setup, not plain unit tests; `package foo_test` so privates are
@@ -153,7 +164,10 @@ private-function test.
 
 - **Move the behavior down a rung**: rewrite the big-object test as a leaf unit test
   with literal inputs; if the leaf doesn't exist yet, that is an R1/R3 extraction
-  first (`../examples/storify-leaf-type.md` shows the pair).
+  first (`../examples/storify-leaf-type.md` shows the pair). When an
+  unexported leaf with an R1 score of 4 or more is in a package that does I/O,
+  apply "Split the pure leaf out of an
+  I/O package" (`R4-helper-placement.md`) first.
 - **Split Success and Error Tables**: one function asserting values, one asserting
   errors — complexity 1 in both.
 - **Kill the surviving mutant**: add the table row whose literal input distinguishes
@@ -195,9 +209,20 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect: judgment
    Detection: for each new public method on a leaf type,
    `grep -rn '<Method>' --include='*_test.go' .` — is it exercised directly, or only
-   through an orchestrator's test?
-   Violation: leaf behavior reached only from above — add the rung-0 test; the
-   orchestrator test keeps only the seam.
+   through an orchestrator's test? Then list the new or changed unexported functions,
+   methods and types: `grep -nE '^func (\([^)]*\) )?[a-z]|^type [a-z]'` in the changed
+   files. Score each one with R1's scorecard. Read the scorecard in the same Bash call
+   as the grep: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
+   `R1-primitive-obsession.md` in this rule file's directory. Do not judge or report
+   a helper with a score of 3 or less. An in-package test that calls it is a Q2
+   finding, not a direct test.
+   Violation: leaf behavior with no direct test, reached only from above. This
+   applies to a public method of a leaf type and to an unexported function, method or
+   type with a score of 4 or more. The usual test above it builds a server, files or
+   a database. Fix a public method: add the rung-0 test; the orchestrator test keeps
+   only the seam. Fix an unexported leaf in a package that does I/O with R4's "Split
+   the pure leaf out of an I/O package". Fix one in a package with no I/O with
+   "Promote to feature sub-package (rung 2)". Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `AssertExpectations|AssertCalled|\.calls\b` files=test
@@ -213,20 +238,27 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
 7. **Does a mutant survive a leaf type's tests?**
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*[Ll]en\b)|\b[Ll]en\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)cmd/,(^|/)main\.go$,(^|/)handlers/
    Detection: for each new or changed leaf package,
-   `gremlins unleash ./path/to/leaf | grep -E '^\s*LIVED'`; skip orchestrators, the
-   top rung and any package that does I/O. `gremlins` not on `PATH`: propose the
-   install the mechanics bullet describes before hunting; an empty `LIVED` list from
-   a run that did not execute, or whose mutants all timed out, is not a pass. In a
+   `gremlins unleash ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|NOT COVERED|TIMED OUT)|Killed:|Not covered:|Timed out:'`;
+   skip orchestrators, the top rung and any package that does I/O. Judge a pure leaf
+   inside such a package with Q4. Do not skip it. `gremlins` not on `PATH`: propose
+   the install the mechanics bullet describes before hunting; an empty `LIVED` list from
+   a run that did not execute, or whose mutants all timed out, is not a pass. A
+   `NOT COVERED` mutant is a finding, the same as a `LIVED` one: a missing test row.
+   The run did not execute only when there is no summary line, or when every count
+   (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0. In a
    read-only review, where no tests may run, take the hand check instead: list the
    leaf's comparisons and boolean conditions, check the table for a row at each
    boundary value and on each side of each condition, and name the row that is
    missing.
+   When the tool run did not execute for a leaf, the receipt says so on its own line:
+   `R7 Q7: mutation run did not execute — <leaf>`. A hand check alone runs no tool
+   and writes no such line.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,
    and the `not reached:` line names the three leaf directories with the most hits,
    each as the review that judges it: `R7 Q7: /go-ldd-review <dir>`. On a
    scoped review the question is judged in full.
-   Violation: any `LIVED` line on a leaf package that is not recorded as an
-   equivalent mutant — a missing table row or dead logic; name the mutant (file,
+   Violation: any `LIVED` or `NOT COVERED` line on a leaf package that is not
+   recorded as an equivalent mutant — a missing table row or dead logic; name the mutant (file,
    line, mutation) and the row that would kill it.

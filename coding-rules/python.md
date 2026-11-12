@@ -178,12 +178,20 @@ def upsert_iface_addr_host(self, iface: Interface) -> None:
 
 ### R4 — Helper Placement
 
-Every extraction raises a second question: where does the helper live? The answer is
-decided by two axes — juiciness (the scorecard in R1; cite
-it, never re-derive it) and scope (feature-specific versus domain-generic). Three
-rungs: underscore-prefixed in place, feature sub-package, shared domain package. Never test
+Every extraction raises a second question: where does the helper live? Two axes
+decide the answer. One is juiciness: the scorecard in R1
+(cite it, never re-derive it). The other is scope: does a second package import it?
+There are three rungs: underscore-prefixed in place, a sub-package nested under the
+feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
-it.
+it. The ladder places helpers: code the feature would otherwise keep underscore-prefixed. A
+type that is part of the feature package's public API stays in that package, whatever
+its R1 score.
+A type is part of the API when the public entry takes or returns it. A function that
+builds and returns an API type is that type's constructor, not a helper. It stays
+beside the type in the feature package. It is public, so its tests call it directly.
+A juicy constructor is never underscore-prefixed. A juicy part that the constructor calls
+and that returns another type is a helper, and it follows the ladder.
 
 ```python
 # ❌ imported by the test through its private name, so it stays where it should not
@@ -200,12 +208,14 @@ from app.networking import Port, Ports
 
 > **In Python:** the leading underscore is a convention, not a wall, so a test *can*
 > import `_parse_row`. That it can is not a reason it should: the urge is a placement
-> signal, and the helper wants its own module with a public name. Rung 2 is the
-> feature package, whose `__init__.py` re-exports the slice's public names and lists
-> them in `__all__`; rung 3 a shared package under the source root. There is no
-> `internal/`; the underscore and `__all__` carry visibility.
+> signal. With an R1 score of 0–3 the helper stays private and the test goes through
+> the public API; with 4 or more it wants its own sub-package with public names. Rung
+> 2 is a sub-package (a folder with `__init__.py`) nested in the feature package
+> (`alerts/vectorenv/__init__.py`); rung 3 a top-level package under the source
+> root, when a second package imports it. There is no `internal/`; the underscore
+> and `__all__` carry visibility.
 
-**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
+**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Split the pure leaf out of an I/O package · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
 
 ### R5 — Vertical Slice
 
@@ -227,8 +237,9 @@ src/app/handlers/rotator_handler.py  src/app/rotator/handler.py
 > or `models`. `utils.py`, `common.py` and `helpers.py` name no vocabulary at all:
 > the first function that lands there has no owner, and the next lands beside it
 > because the first did. Role names (`parser.py`, `handler.py`) live in module names
-> inside the slice. Each type with
-> logic sits in its own module named after the type, and `__init__.py` is the
+> inside the slice. Each type of the
+> feature's API with logic sits in its own module named after the type. A juicy
+> helper sits in a sub-package (R4). `__init__.py` is the
 > slice's front door: it re-exports what other slices may import and nothing else,
 > and it never imports another slice, or the front doors form an import cycle.
 

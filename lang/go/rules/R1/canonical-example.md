@@ -115,7 +115,8 @@ validity back in-band.
 ### Stage 2 — placement (R4 rung 3)
 
 `Port`, `Ports`, `FirstNamed`, `First` say nothing about Kubernetes or Weka — they
-are generic networking vocabulary, so they move to `internal/pkg/networking`
+are generic networking vocabulary, and a second feature imports them, so they move
+to `internal/pkg/networking`
 (rung 3 of `R4-helper-placement.md`). The wire adapter `ParsePorts` knows the K8s
 DTO, so it stays with the feature. The feature policy stays home as a four-line
 storified method:

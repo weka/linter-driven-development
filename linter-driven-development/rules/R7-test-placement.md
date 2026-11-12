@@ -103,11 +103,22 @@ private-function test.
   installs a pinned version and runs it over one leaf package, and where there is no
   task runner propose the local install command for the developer to run; ask before
   installing, never install silently, and never read a run that did not execute as a
-  pass. When the language has no maintained mutation tool, the check is done by hand and stays cheap because a
+  pass.
+  When the language has no maintained mutation tool, the check is done by hand and stays cheap because a
   leaf is small: for every comparison in the leaf the table holds a row at the
   boundary value and one just past it, for every boolean condition a row on each
   side, and a suspected gap is confirmed by flipping the operator, running the
   leaf's tests, and putting it back — green tests mean a survivor.
+  The actor that tried the tool writes each run that did not execute to the deferral
+  ledger, and reads the exit code. That actor is the testing skill, or the main agent
+  when it runs the tool itself on `/ldd-quickfix`. The call:
+
+```bash
+bash <this rule file's directory>/../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
+<leaf> — <why the run did not execute>
+ROW
+```
+
 - **Orchestrating types**: integration-style tests wiring real collaborators — real
   store over an embedded DB, real client against an in-process HTTP server — never
   interface-injected doubles (`R6-test-only-interfaces.md`). They cover the seams;
@@ -118,9 +129,10 @@ private-function test.
   flag in one table is the canonical violation — it folds success and error cases
   into one table and pays with a conditional. Split into a success function and an
   error function.
-- **The urge to test a private is a placement signal**, never a license: it means
-  the helper deserves its own package (`R4-helper-placement.md`), where its public
-  API is legitimately testable.
+- **The urge to test a private is a placement signal**, never a license. With an R1
+  score of 0–3, test the helper through the parent's public API. With 4 or more, the
+  helper deserves its own package (`R4-helper-placement.md`), where its public API is
+  legitimately testable.
 - **Mechanics**: name every table field; no fixed pauses — wait on the event; test
   suites and fixtures only for real infrastructure setup, not plain unit tests; the
   repository's own test framework, never a second one.
@@ -131,7 +143,10 @@ private-function test.
 
 - **Move the behavior down a rung**: rewrite the big-object test as a leaf unit test
   with literal inputs; if the leaf doesn't exist yet, that is an R1/R3 extraction
-  first (`../examples/storify-leaf-type.md` shows the pair).
+  first (`../examples/storify-leaf-type.md` shows the pair). When an
+  internal leaf with an R1 score of 4 or more is in a package that does I/O,
+  apply "Split the pure leaf out of an
+  I/O package" (`R4-helper-placement.md`) first.
 - **Split Success and Error Tables**: one function asserting values, one asserting
   errors — complexity 1 in both.
 - **Kill the surviving mutant**: add the table row whose literal input distinguishes
@@ -179,8 +194,19 @@ Test files are the ones the repository's test runner picks up (`*<test-file suff
    Detect: judgment
    Detection: for each new public method on a leaf type, search the test files for
    its name — is it exercised directly, or only through an orchestrator's test?
-   Violation: leaf behavior reached only from above — add the rung-0 test; the
-   orchestrator test keeps only the seam.
+   Then search the changed source for new or changed internal functions and
+   types. Score each one with R1's scorecard. Read the scorecard in the same Bash call
+   as the search: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
+   `R1-primitive-obsession.md` in this rule file's directory. Do not judge or report
+   a helper with a score of 3 or less. A test that calls an internal name is a
+   Q2 finding, not a direct test.
+   Violation: leaf behavior with no direct test, reached only from above. This
+   applies to a public method of a leaf type and to an internal function or type
+   with a score of 4 or more. The usual test above it builds a server, files, a
+   database or a rendered tree. Fix a public method: add the rung-0 test; the
+   orchestrator test keeps only the seam. Fix an internal leaf in a package that
+   does I/O with R4's "Split the pure leaf out of an I/O package". Fix one in a package
+   with no I/O with "Promote to feature sub-package (rung 2)". Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `[Aa]ssert(_?[Cc]alled|_?[Ee]xpectations|_?[Aa]ny_?[Cc]all|_?[Hh]as_?[Cc]alls)|\.call_count|\.mock_calls|\.calls\b` files=test
@@ -203,12 +229,16 @@ Test files are the ones the repository's test runner picks up (`*<test-file suff
    Detection: for each new or changed leaf type, run the repository's mutation
    testing tool over that leaf's package only (the mechanics bullet names the tool
    and the command) and read its list of survivors; skip orchestrators, the top
-   rung and any package that does I/O. A tool the language has but the machine
+   rung and any package that does I/O. Judge a pure leaf inside such a package
+   with Q4. Do not skip it. A tool the language has but the machine
    lacks is proposed for install as the mechanics bullet says, never skipped and
    never counted as a pass. Without any tool, list the leaf's comparisons
    and boolean conditions, check the table for a row at each boundary value and on
    each side of each condition, and hand-flip any operator whose rows are missing
    (`<` to `<=`, `>` to `>=`, a condition negated), run the leaf's tests, revert.
+   When the tool run did not execute for a leaf, the receipt says so on its own line:
+   `R7 Q7: mutation run did not execute — <leaf>`. A hand check alone runs no tool
+   and writes no such line.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,

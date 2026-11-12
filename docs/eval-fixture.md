@@ -42,7 +42,7 @@ implementation is a context provider "so tests can swap it", a hand double sits
 beside working MSW handlers, and eight React-only ids (an unstable nested
 component, `vi.mock` of an internal hook, test ids over roles, a fetch in an effect
 without abort, a disabled `exhaustive-deps`, prop drilling, a sort in render, a
-nullable prop) follow the 156 shared ones.
+nullable prop) follow the 158 shared ones.
 
 Ground rules, all enforced:
 
@@ -77,9 +77,9 @@ Ground rules, all enforced:
 
 ## The manifest
 `go/violations.yaml`, beside the fixture, is the answer key, kept outside the scaffolded tree. One
-entry per plant or control, 156 in total. `py/violations.yaml` carries the same 156
+entry per plant or control, 158 in total. `py/violations.yaml` carries the same 158
 ids in the same order with Python files and anchors, and `ts-react/violations.yaml`
-the same 156 with TypeScript files and anchors followed by the eight React-only
+the same 158 with TypeScript files and anchors followed by the eight React-only
 ids; where a plant's disease had
 to change with the language, a comment on the entry says so, and `expect.lint`
 names the ruff rule that fires (or `"-"` where ruff has no rule for the plant, such
@@ -135,6 +135,19 @@ carries no hints; the TypeScript one also checks that the two suites' recordings
 are byte-identical. Run it after any change to a fixture or its manifest. The Python
 and TypeScript grader generators are the Go script called with that suite's manifest
 and graders directory (`task py:graders`, `task ts-react:graders`).
+
+## The private-leaf plant and its control
+Each fixture holds one pure helper inside an I/O file. The transport webhook file has
+a private `expandEnv` (`_expand_env` in py-mini, `expandEnv` in ts-react-mini). It
+expands environment references in a string. It has real branching. Only a test that
+starts an HTTP server and loads a configuration reaches it. The plant is
+`R7.Q4.private-leaf-in-io`. The plugin must find it and name the fix "Split the pure
+leaf out of an I/O package". A refactor moves it into its own package or module with
+direct tests and removes the old name.
+
+The control is `CTRL.R4.trivial-private-in-io`: a one-line `trimSlash`
+(`_trim_slash`) in the same file. It scores too low to earn a move. A correct report
+leaves it private and does not mention it.
 
 ## Known weakness
 The Case D control's types have no callers in the fixture, so an agent that deletes

@@ -29,8 +29,19 @@ Test files are the ones the repository's test runner picks up (`*{{.TestGlob}}`,
    Detect: judgment
    Detection: for each new public method on a leaf type, search the test files for
    its name — is it exercised directly, or only through an orchestrator's test?
-   Violation: leaf behavior reached only from above — add the rung-0 test; the
-   orchestrator test keeps only the seam.
+   Then search the changed source for new or changed {{.Unexported}} functions and
+   types. Score each one with R1's scorecard. Read the scorecard in the same Bash call
+   as the search: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
+   `R1-primitive-obsession.md` in this rule file's directory. Do not judge or report
+   a helper with a score of 3 or less. A test that calls an {{.Unexported}} name is a
+   Q2 finding, not a direct test.
+   Violation: leaf behavior with no direct test, reached only from above. This
+   applies to a public method of a leaf type and to an {{.Unexported}} function or type
+   with a score of 4 or more. The usual test above it builds a server, files, a
+   database or a rendered tree. Fix a public method: add the rung-0 test; the
+   orchestrator test keeps only the seam. Fix an {{.Unexported}} leaf in a package that
+   does I/O with R4's "Split the pure leaf out of an I/O package". Fix one in a package
+   with no I/O with "Promote to feature sub-package (rung 2)". Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `[Aa]ssert(_?[Cc]alled|_?[Ee]xpectations|_?[Aa]ny_?[Cc]all|_?[Hh]as_?[Cc]alls)|\.call_count|\.mock_calls|\.calls\b` files=test
@@ -53,12 +64,16 @@ Test files are the ones the repository's test runner picks up (`*{{.TestGlob}}`,
    Detection: for each new or changed leaf type, run the repository's mutation
    testing tool over that leaf's package only (the mechanics bullet names the tool
    and the command) and read its list of survivors; skip orchestrators, the top
-   rung and any package that does I/O. A tool the language has but the machine
+   rung and any package that does I/O. Judge a pure leaf inside such a package
+   with Q4. Do not skip it. A tool the language has but the machine
    lacks is proposed for install as the mechanics bullet says, never skipped and
    never counted as a pass. Without any tool, list the leaf's comparisons
    and boolean conditions, check the table for a row at each boundary value and on
    each side of each condition, and hand-flip any operator whose rows are missing
    (`<` to `<=`, `>` to `>=`, a condition negated), run the leaf's tests, revert.
+   When the tool run did not execute for a leaf, the receipt says so on its own line:
+   `R7 Q7: mutation run did not execute — <leaf>`. A hand check alone runs no tool
+   and writes no such line.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,

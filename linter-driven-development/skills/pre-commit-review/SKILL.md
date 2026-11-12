@@ -347,7 +347,8 @@ once, now. The contract it spells out, kept whatever the scope:
   the script's defect gets a fix: `R9 gate: inconclusive — the gate failed (exit 2):
   <its error line> — gate questions answered from the prose`. The hunter's
   `inconclusive` receipts and its `gate disproved:` lines render verbatim beside the
-  R9 tally.
+  R9 tally. Each `R7 Q7: mutation run did not execute — <leaf>` line renders verbatim
+  beside the R7 tally.
 - Fix routing cites each rule's **Fix pattern**; out-of-scope observations go under
   BROADER CONTEXT; the report ends `Caller decides: commit as-is · fix 🔴 first · fix
   all. Findings are advisory.` **The report is the message** that ends the review —

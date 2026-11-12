@@ -11,6 +11,8 @@ allowed-tools:
   - Skill(go-linter-driven-development:pre-commit-review)
   - Skill(go-linter-driven-development:documentation)
   - Agent
+  - Bash(bash *ldd-ledger.sh add *)
+  - Bash(bash *ldd-ledger.sh show)
 ---
 
 <objective>
@@ -124,11 +126,13 @@ and can still be hostile to the plan.
 3. **BOUNDED** — effort S/M (hunter scale) → proceed. L → defer to Phase 4's report
    as `PREP-DEFERRED`, UNLESS gate 2 showed the feature cannot be tested at all
    without it — then it is not preparation but a design-plan gap: return to Phase 1.
+   Write each deferred item to the ledger at once as a `prep` row (`<deferral_ledger>`).
 4. **SKEPTICIZED** — any prep move that creates a type/interface/package is judged by
    the `go-linter-driven-development:overabstraction-skeptic` (Agent tool; spawn prompt per @pre-commit-review step 3), with
    one sharpening in the spawn prompt: the justification is the approved plan in
    hand, not an imagined future — score the extraction as if the feature already
-   existed. REFUTED → apply the cheaper alternative or defer. R2's construction
+   existed. REFUTED → apply the cheaper alternative or defer. Write each deferral here
+   to the ledger at once as a `prep` row, as in gate 3. R2's construction
    mechanics — a validating constructor, unexported fields, an options type and its
    `With*` functions, a named Null Object default — are not extractions and skip this
    gate: apply R2 as written.
@@ -234,6 +238,12 @@ advisory. Fix bugs and user-accepted findings via @refactoring — except accept
 (documentation-network) findings, whose fixer is @documentation — then re-invoke
 @pre-commit-review in INCREMENTAL mode until the delta reports clean.
 
+Defer a finding only when the user says to defer it. Write each deferral to the
+ledger at once (`<deferral_ledger>`) as a `finding` row. When the prompt or the system
+says that no user can answer, fix every finding and defer none. In that run, fix a
+finding that the skeptic REFUTED with the skeptic's cheaper alternative. Never decide
+yourself that no user can answer.
+
 **Cluster routing**: report entries marked 🔗 CLUSTER (≥2 hunters converging on one
 anchor) are fixed design-first, never member-by-member — partial fixes undo each
 other (R1 names an enum that R11's move then replaces; R2 places validation that
@@ -253,7 +263,9 @@ before.
    @documentation applies the verdicts and re-critiques once — R3 routes from the
    critic go back through @refactoring like any R3 finding).
 2. Commit. When tests (`go test ./...`) and lint (Phase 3) are green and the tree
-   is dirty, commit the slice with the ship summary as the message. A green slice left
+   is dirty, commit the slice with the ship summary as the message. Before the commit,
+   run `ldd-ledger.sh show` and paste its output into the summary (`<deferral_ledger>`).
+   A green slice left
    uncommitted "for the user" is the one state this workflow never ends in: the user
    can amend, split or revert a commit; an uncommitted tree evaporates with the
    session. Prep commits (Phase 1.5) stay separate.
@@ -262,9 +274,37 @@ before.
    `Stop check` block verbatim: the six labelled lines (`1 gates` … `6 commit`), not
    a prose account of them. The block is a precondition of the summary, not an
    ornament: no block, or fewer than six lines, means the refactoring did not finish —
-   run its `<stopping_criteria>` now, render the block, then present. User decides
-   only about the deferred advisory findings: fix them now or later.
+   run its `<stopping_criteria>` now, render the block, then present. Keep the
+   `ldd-ledger.sh show` output from step 2. User decides only about the deferred
+   advisory findings: fix them now or later.
 </phase_5_ship>
+
+<deferral_ledger>
+The ledger is one file for each branch. It keeps deferred work when Claude Code
+compacts the conversation. Write a row with one of these calls. Put the text on the
+line between `<<'ROW'` and `ROW`:
+
+```bash
+bash <this skill dir>/../../scripts/ldd-ledger.sh add finding <<'ROW'
+<rule and question> <file:line> — <the fix>
+ROW
+bash <this skill dir>/../../scripts/ldd-ledger.sh add prep <<'ROW'
+<the prep move> — <the gate that failed>
+ROW
+bash <this skill dir>/../../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
+<leaf> — <why the run did not execute>
+ROW
+```
+
+Read the exit code of each `add`. When it is not 0, list the row by hand under
+`Deferred (not in the ledger):` with the error line. Then never print `Deferred: none`
+in that session. Every closing report prints the ledger: the ship summary, the final
+message, and any PR body that you write. Run `ldd-ledger.sh show` when you write the
+report, and paste its output. Never write that all items are closed while the ledger
+has rows. When the ledger has rows, tell the user: "When each row is fixed or accepted
+as debt, ask: clear the ledger." Run `ldd-ledger.sh clear` only when the user asks for
+it.
+</deferral_ledger>
 
 <success_criteria>
 - [ ] Design plan user-approved before the first RED
@@ -273,9 +313,10 @@ before.
 - [ ] Every behavior completed a RED → GREEN → REFACTOR cycle
 - [ ] Package-scoped lint + rule greps clean after each cycle
 - [ ] lint-fixer reported `LINT STATUS: green`; all escalations resolved via @refactoring
-- [ ] @pre-commit-review INCREMENTAL delta clean, or findings explicitly deferred by user
+- [ ] @pre-commit-review INCREMENTAL delta clean, or findings that the user said to
+      defer, each one a ledger row
 - [ ] @documentation (FEATURE mode) done — docs wired into the network, R9 self-check
       clean, comment-critic critique loop applied and confirmed clean (or remainder
       reported); the green slice committed and the ship summary presented with its
-      hash, deferred advisory findings listed
+      hash and the `ldd-ledger.sh show` output
 </success_criteria>

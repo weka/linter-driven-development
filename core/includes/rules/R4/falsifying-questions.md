@@ -9,14 +9,18 @@ directory, or whatever the repository uses).
    Violation: zero production call sites outside the package or module while test
    references exist — it was made public for tests; demote (rung 1) or promote
    (rung 2/3).
+   A function that builds and returns an API type is that type's constructor, not a
+   helper. Do not report it.
 
 2. **Are {{.Unexported}} helpers tested directly?**
    Detect: judgment
    Detection: find test files that can reach non-public symbols (an in-package test,
    an import of a private module, a test that reaches past the public surface), then
    search those files for calls to the package's non-public functions.
-   Violation: any direct test of a private helper — that urge is the promotion
-   signal; give the helper its own package instead.
+   Violation: any direct test of a private helper. The urge is a signal to score
+   the helper on R1's scorecard. A score of 0–3 keeps it private: delete the direct
+   test and cover the helper through the parent's public API (rung 1). A
+   score of 4 or more gives the helper its own package (rung 2 or 3).
 
 3. **Does a new shared package have a role name?**
    Detect-path: `(^|/)(util|utils|helpers|helper|common|shared|misc)(/|\.[a-z]+$)`
@@ -30,6 +34,7 @@ directory, or whatever the repository uses).
    plausible domain siblings exist under the name.
    Violation: a package named after its one type (`kubeport`) with no room for
    siblings — fold into a vocabulary package (`networking`) or keep at rung 1/2.
+   A rung-2 package nested under its feature is not judged by this question.
 
 5. **Did feature policy leak into a shared package?**
    Detect: judgment

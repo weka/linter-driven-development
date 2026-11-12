@@ -2,12 +2,20 @@
 
 ## Principle
 
-Every extraction raises a second question: where does the helper live? The answer is
-decided by two axes — juiciness (the scorecard in `R1-primitive-obsession.md`; cite
-it, never re-derive it) and scope (feature-specific versus domain-generic). Three
-rungs: unexported in place, feature sub-package, shared domain package. Never test
+Every extraction raises a second question: where does the helper live? Two axes
+decide the answer. One is juiciness: the scorecard in `R1-primitive-obsession.md`
+(cite it, never re-derive it). The other is scope: does a second package import it?
+There are three rungs: unexported in place, a sub-package nested under the
+feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
-it.
+it. The ladder places helpers: code the feature would otherwise keep unexported. A
+type that is part of the feature package's public API stays in that package, whatever
+its R1 score.
+A type is part of the API when the public entry takes or returns it. A function that
+builds and returns an API type is that type's constructor, not a helper. It stays
+beside the type in the feature package. It is public, so its tests call it directly.
+A juicy constructor is never unexported. A juicy part that the constructor calls
+and that returns another type is a helper, and it follows the ladder.
 
 ## Why
 
@@ -24,8 +32,9 @@ unit tests against a legitimate public API.
 
 From the Port case (`R1-primitive-obsession.md` carries the full three-stage study).
 After extraction, `Port`/`Ports`/`FirstNamed`/`First` say nothing about Kubernetes or
-Weka: juicy (range validation, collection queries) and domain-generic → rung 3,
-`internal/pkg/networking`. The feature keeps a four-line storified policy method:
+Weka: juicy (range validation, collection queries), domain-generic, and imported by a
+second feature → rung 3, `internal/pkg/networking`. The feature keeps a four-line
+storified policy method:
 
 ```go
 func (s kubeService) managementPort() (networking.Port, bool) {
@@ -52,60 +61,76 @@ func parseK3SArgument(arg string) (key, value string, ok bool) {
 }
 ```
 
-There is no urge to test this directly — and that absence is the point: the promotion
-signal (below) never fires.
+Its R1 score is 0–3, so it stays at rung 1, and its tests go through the public API
+that calls it. An urge to test it directly does not change that (the promotion
+signal, below).
 
 ## Design guidance
 
 ### The placement ladder
 
-1. **Trivial helper** → unexported, same package, tested only through the parent's
-   public API.
-2. **Juicy + feature-scoped** → vertical-slice feature sub-package (e.g. `kubefwd/`)
-   *if the feature has enough substance to be a package*; types exported there. See
-   `R5-vertical-slice.md`.
-3. **Juicy + domain-generic** → shared domain-named library package:
-   `internal/pkg/<domain>` (default) or `pkg/<domain>` (public). Granularity: a
-   package is a domain *vocabulary* (`networking`), not a single noun (`kubeport`),
-   never a role (`util`/`helpers`/`common`).
+1. **Trivial helper** (R1 score 0–3) → unexported, same package, tested only
+   through the parent's public API.
+2. **Juicy, and no second package imports it** → a package nested under the feature
+   package, with exported names. A file of the feature package is not enough: each
+   exported name in it is part of the feature's API. The feature needs no minimum
+   size for it. See `R5-vertical-slice.md`.
+   The constructor of an API type is not a helper and does not move.
+3. **Juicy, and a second package imports it** → a top-level shared package. Extend
+   the domain package that fits it, or create one.
+   Granularity: a package is a domain *vocabulary* (`networking`), not a single noun
+   (`kubeport`), never a role (`util`/`helpers`/`common`).
 
-"Juicy" is the verdict of R1's scorecard — `R1-primitive-obsession.md` is its only
-home.
+The rung paths in Go: rung 2 is `internal/<feature>/<leaf>`. Rung 3 is
+`internal/pkg/<domain>` (default) or `pkg/<domain>` when another repository could use it.
+
+"Juicy" is an R1 score of 4 or more — `R1-primitive-obsession.md` is the scorecard's
+only home.
 
 ### The promotion signal
 
-**The urge to unit-test a helper directly means it deserves its own package.** Never
+**The urge to unit-test a helper directly is a signal to score the helper.** Never
 act on that urge by testing privates, and never by exporting the helper into the
-parent. The urge is data: it says the helper has enough behavior to be a unit of its
-own — so give it a real home (rung 2 or 3) where its exported API is legitimately
-testable with literal inputs.
+parent. The R1 score decides the home. With a score of 0–3, the helper stays
+unexported at rung 1, and its tests go through the parent's public API. With a
+score of 4 or more, with or without the urge, the helper deserves its own package: a
+real home where a test can call its exported API with literal inputs. Use rung 2 by
+default, and rung 3 on the trigger the ladder gives.
 
 ### The reuse objection
 
 "Nobody else uses it, so it can't justify a package." Wrong premise: reuse is not the
 only justification for extraction — isolated testability and readability count on
 their own. And the pollution worry it hides is solved by *placement*, not by inlining
-the logic back: a helper in its own domain package pollutes nothing.
+the logic back: a helper in its own package pollutes nothing. Reuse decides only
+between rung 2 and rung 3.
 
 ### Granularity
 
 Name shared packages after a domain vocabulary with room for siblings: `networking`
 can grow `Port`, `Ports`, addresses, CIDRs. A single-noun package (`kubeport`) is a
 vocabulary of one — fold it into the vocabulary it belongs to. A role name (`util`,
-`helpers`, `common`) describes no domain at all and is never acceptable.
+`helpers`, `common`) describes no domain at all and is never acceptable. A rung-2
+package nested under its feature can hold a single type.
 
 ## Fix pattern
 
 - **Demote (rung 1)**: a helper exported from its parent only so tests can reach it →
   unexport it, delete the direct tests, cover it through the parent's public API.
-- **Promote to feature sub-package (rung 2)**: a juicy, feature-scoped helper being
-  tested through awkward big-object setups → move it into the feature's
-  vertical-slice sub-package (`R5-vertical-slice.md`), export it there, test its
-  public API directly.
-- **Promote to domain package (rung 3)**: a juicy, domain-generic helper → create or
-  extend `internal/pkg/<domain>`; move the generic types; leave feature policy home
-  as a thin storified method (see Stage 2 of `R1-primitive-obsession.md`'s canonical
-  example).
+- **Promote to feature sub-package (rung 2)**: a juicy helper that no second package
+  imports, tested through awkward big-object setups → move it into a nested rung-2
+  package, export it there, test its exported API directly.
+- **Split the pure leaf out of an I/O package**: a juicy pure function or type sits in
+  a package that does I/O (network, files, environment variables). Only tests through
+  that I/O reach it. Move it to a nested rung-2 package and export it there. Give
+  it leaf unit tests (rung 0 of `R7-test-placement.md`) with 100% coverage and a
+  mutation run. The I/O code stays in the parent and calls it. This applies also
+  when the leaf is unexported.
+  A leaf that builds and returns an API type is that type's constructor. Do not move it.
+  Make it public beside the type. Give it the same tests and the same mutation run.
+- **Promote to domain package (rung 3)**: a juicy helper that a second package
+  imports → create or extend the shared domain package; move the generic types; leave feature policy home as a thin
+  storified method (see Stage 2 of `R1-primitive-obsession.md`'s canonical example).
 - **Split policy from vocabulary during promotion**: feature constants and preference
   logic stay in the feature; only the domain-generic types and queries move.
 - **Move Method to the Envied Type** (Fowler: Feature Envy → Move Function): a
@@ -148,15 +173,21 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    references outside its defining file.
    Violation: zero production call sites outside the package while `*_test.go`
    references exist — it was exported for tests; demote (rung 1) or promote
-   (rung 2/3).
+   (rung 2/3). An exported helper of the feature package that no code outside the
+   package calls is the same finding, with or without test references. Score it: 4
+   or more → a nested package (rung 2); 0–3 → unexport it (rung 1). A constructor
+   of an API type, a function that builds and returns it, is not a helper.
 
 2. **Are unexported helpers tested directly?**
    Detect-grep: `^package [a-z][a-z0-9]*$` files=test
    Detection: a test file whose package line lacks the `_test` suffix is an internal
    test package; grep those files for calls to lowercase functions
-   defined in the package.
-   Violation: any direct test of a private helper — that urge is the promotion
-   signal; give the helper its own package instead.
+   defined in the package. An `export_test.go` file with a `var X = x` alias of a
+   private name is a direct test of a private name too.
+   Violation: any direct test of a private helper. The urge is a signal to score
+   the helper on R1's scorecard. A score of 0–3 keeps it private: delete the direct
+   test and cover the helper through the parent's public API (rung 1). A
+   score of 4 or more gives the helper its own package (rung 2 or 3).
 
 3. **Does a new shared package have a role name?**
    Detect-path: `(^|/)(internal/)?pkg/(util|utils|helpers|helper|common|shared|misc)/`
@@ -169,6 +200,7 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    plausible domain siblings exist under the name.
    Violation: a package named after its one type (`kubeport`) with no room for
    siblings — fold into a vocabulary package (`networking`) or keep at rung 1/2.
+   A rung-2 package nested under its feature is not judged by this question.
 
 5. **Did feature policy leak into a shared package?**
    Detect: judgment

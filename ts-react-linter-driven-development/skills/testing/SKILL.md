@@ -5,6 +5,9 @@ description: |
   Automatically invoked to write tests for new types, or use as testing expert advisor.
   Covers the composition ladder from rung-0 unit tests to whole-system tests, with emphasis on real in-memory dependencies.
   Ensures 100% coverage on leaf types with public API testing.
+allowed-tools:
+  - Bash(bash *ldd-ledger.sh add *)
+  - Bash(bash *ldd-ledger.sh show)
 ---
 
 <objective>
@@ -47,7 +50,7 @@ Ready after tests? Run linter: `npx tsc --noEmit && npx eslint . --fix && npx pr
 **Test only the public API**
 - Import the package as a consumer would, so privates are unreachable
 - Test types through their constructors
-- No testing private methods/functions — the urge to unit-test an internal helper directly is a promotion signal: give the helper its own package (`../../rules/R4-helper-placement.md`), never test privates.
+- No testing private methods/functions — the urge to unit-test an internal helper directly is a signal to score the helper: with an R1 score of 0–3, test it through the parent's public API; with 4 or more, give it its own package, nested under the feature by default (`../../rules/R4-helper-placement.md`). Never test privates.
 
 **No mocks — and a type that only satisfies a production interface in a test IS a mock**
 - A "fake" is a *real implementation with fake data* (embedded DB, in-process HTTP server, fake binary, temp dir) — NOT a type written to satisfy a dependency interface, and NOT a patched-in stand-in.
@@ -59,7 +62,16 @@ Ready after tests? Run linter: `npx tsc --noEmit && npx eslint . --fix && npx pr
 **Coverage targets**
 - Rung 0 (leaf types): 100% unit test coverage, and no untriaged survivor when the
   mutation tool runs over the leaf's package (`../../rules/R7-test-placement.md`,
-  Mutation score on leaf types only) — coverage is the floor, the mutation score the claim
+  Mutation score on leaf types only) — coverage is the floor, the mutation score the claim.
+  A run that did not execute is not a pass. Write it to the ledger, and read the exit
+  code. Write each line of this call at the start of its line, with no indent:
+
+```bash
+bash <this skill dir>/../../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
+<leaf> — <why the run did not execute>
+ROW
+```
+
 - Higher rungs (orchestrating types): cover the delta each rung adds — its seams and emergent behaviors
 - Critical workflows: top-rung (system) tests
 

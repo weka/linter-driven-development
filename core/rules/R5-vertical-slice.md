@@ -42,10 +42,10 @@ instead of above it.
 ### Inside the slice
 
 Separate by role and responsibility within the feature package: `parser{{.SrcExt}}`,
-`handler{{.SrcExt}}`, `repository{{.SrcExt}}`. Types with logic get their own file named after the
-type. When a slice grows a juicy sub-concern, it becomes a feature sub-package
-(rung 2 of `R4-helper-placement.md`); when a concern turns out to be domain-generic,
-it promotes to a shared domain package (rung 3) — placement is R4's decision.
+`handler{{.SrcExt}}`, `repository{{.SrcExt}}`. Each type of the feature's API with logic gets its own file
+named after the type. A juicy helper that the feature keeps out of its API goes to
+rung 2 of `R4-helper-placement.md`. When a second package imports a concern, the
+concern moves to a shared domain package (rung 3) — placement is R4's decision.
 
 ### Migration template
 

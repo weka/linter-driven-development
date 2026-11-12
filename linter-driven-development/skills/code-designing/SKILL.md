@@ -34,7 +34,7 @@ Backward counterpart (fixing code that already fails lint/review): @refactoring.
   - too many parameters → design an options type (grouping data that travels together — score it per `../../rules/R1-primitive-obsession.md`)
   - too many return values → design a named result type (same R1 scoring)
   - a tuple or pair result, or a map or list of primitives returned or accepted → the same named result type, with no linter to say so (R1, Name the Container)
-  - file too long → split juicy types into their own files (juiciness per R1; file-per-type per `../../rules/R5-vertical-slice.md`); a single god type routes to @refactoring's god-object decomposition procedure first
+  - file too long → split the feature's API types into their own files (file-per-type per `../../rules/R5-vertical-slice.md`), and move a juicy helper (juiciness per R1) to rung 2 of `../../rules/R4-helper-placement.md`; a single god type routes to @refactoring's god-object decomposition procedure first
   - a directory in the package-size yellow/red zone → re-model with sub-packages *before* the zone escalates (`<package_decomposition>` in @refactoring's `reference.md` (`sed -n '/^<package_decomposition>/,/^<\/package_decomposition>/p; /^### Package decomposition/,$p'`))
 - A Phase 4 review CLUSTER (≥2 hunters converging on one anchor —
   @linter-driven-development routes it here) → **cluster-scoped mode**: skip
@@ -102,7 +102,7 @@ For each concept in the design, open the rule that owns the question and apply i
 | `../../rules/R1-primitive-obsession.md` | Which primitives become types — score every candidate with R1's juiciness scorecard; reject ceremony wrappers (over-abstraction trap). |
 | `../../rules/R2-self-validating-types.md` | Constructor-only entry, validation ownership, trusting composed values, null is not a value, no defensive checks in methods. |
 | `../../rules/R3-storifying.md` | Plan orchestration functions as 3–5 named steps at one conceptual level; honest names for mutators. |
-| `../../rules/R4-helper-placement.md` | WHERE each helper/type lands — the placement ladder (internal → feature sub-package → shared domain package). |
+| `../../rules/R4-helper-placement.md` | WHERE each helper/type lands — the placement ladder (internal helper → nested feature package → shared domain package when a second package imports it). |
 | `../../rules/R5-vertical-slice.md` | Package structure and naming: feature slices with roles inside, flatcase domain vocabulary, migration template. |
 | `../../rules/R6-test-only-interfaces.md` | Default dependencies to concrete types; an interface must be earned by a second production implementation or a grep-verified import cycle. |
 | `../../rules/R7-test-placement.md` | The test plan per type: leaf types 100% unit coverage via public constructors, checked by a mutation run over the leaf's package; orchestrators integration-tested over real collaborators, never mutated. |
@@ -119,7 +119,8 @@ Before presenting the plan, verify against the rules (cite, don't restate):
 - [ ] Every planned signature names its types: no nested container, no flat container of primitives crossing a function boundary that its receivers operate on; a product result has a name and field names (R1, Name the Container)
 - [ ] Types are self-validating; composed types trusted, never re-validated (R2)
 - [ ] Orchestration planned as a story; most logic pushed into leaf types (R3, R7)
-- [ ] **Placement decided** for every helper and type via the ladder — internal helper vs feature sub-package vs domain package (`../../rules/R4-helper-placement.md`)
+- [ ] **Placement decided** for every helper and type via the ladder — internal helper vs feature sub-package vs domain package — or the type is marked feature API (`../../rules/R4-helper-placement.md`)
+- [ ] No helper or helper type with R1 score ≥4 on rung 1. A type of the feature's public API is not a helper: it stays in the feature package at any score. Its constructor, a function that builds and returns it, stays beside it and is public, with direct tests (R4). A pure leaf with R1 score ≥4 can sit in a package that also does I/O. Move it to rung 2 with R4's "Split the pure leaf out of an I/O package". Before you choose rung 2, search the other packages for the same logic. For a match, check if the other package would import the shared leaf. Weigh it with the maxim "a little copying is better than a little dependency". If it would, use rung 3. On rung 3, the other package imports the shared leaf. It deletes its copy only after its tests pass against the shared leaf. When it has no tests, write characterization tests first.
 - [ ] Vertical slice structure; package names are flatcase domain vocabulary, never roles/containers (R5)
 - [ ] No test-only interfaces: every interface has a second production implementation OR breaks a real import cycle, verified by grepping the import direction (detection command in `../../rules/R6-test-only-interfaces.md`); otherwise depend on the concrete type
 - [ ] Import direction strictly downward: leaf types ← sub-packages ← parent ← cmd/ (cycle-breaking move in `<package_decomposition>` in @refactoring's `reference.md` (`sed -n '/^<package_decomposition>/,/^<\/package_decomposition>/p; /^### Package decomposition/,$p'`))
@@ -146,12 +147,14 @@ Orchestrating Types:
 
 Package Structure:
 [feature]/
-  ├── [type].<ext>      # each juicy type in its own file
+  ├── [type].<ext>      # each juicy type of the feature's API in its own file
+  ├── [helper]/       # a juicy helper the feature keeps out of its API (R4 rung 2)
   ├── service.<ext>
   └── handler.<ext>
 
 Placement Decisions (R4):
-- [helper/type] → rung 1/2/3 and why
+- [type/helper] — R1 score N → rung K (<package path>) — reason
+- [API type or its constructor] — R1 score N → feature API (<package path>) — reason
 
 Design Decisions:
 - [decision] — rationale, citing the owning rule
@@ -171,7 +174,7 @@ Design phase is complete when ALL are true:
 
 - [ ] Architecture pattern analyzed (vertical/horizontal/mixed) and user chose an option
 - [ ] Core domain types identified, each with its validation rules and R1 score
-- [ ] Placement decision recorded for every new type/helper (R4 ladder)
+- [ ] Placement line recorded for every new type/helper, with all four parts: name, R1 score, rung with its package path, reason (R4 ladder); no line puts a score of 4 or more on rung 1
 - [ ] Package structure follows R5 (slices, naming, downward imports)
 - [ ] Design checklist answered satisfactorily (every box cites its rule)
 - [ ] Design plan presented in the output format above

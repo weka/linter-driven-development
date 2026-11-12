@@ -5,15 +5,21 @@
    references outside its defining file.
    Violation: zero production call sites outside the package while `*_test.go`
    references exist — it was exported for tests; demote (rung 1) or promote
-   (rung 2/3).
+   (rung 2/3). An exported helper of the feature package that no code outside the
+   package calls is the same finding, with or without test references. Score it: 4
+   or more → a nested package (rung 2); 0–3 → unexport it (rung 1). A constructor
+   of an API type, a function that builds and returns it, is not a helper.
 
 2. **Are unexported helpers tested directly?**
    Detect-grep: `^package [a-z][a-z0-9]*$` files=test
    Detection: a test file whose package line lacks the `_test` suffix is an internal
    test package; grep those files for calls to lowercase functions
-   defined in the package.
-   Violation: any direct test of a private helper — that urge is the promotion
-   signal; give the helper its own package instead.
+   defined in the package. An `export_test.go` file with a `var X = x` alias of a
+   private name is a direct test of a private name too.
+   Violation: any direct test of a private helper. The urge is a signal to score
+   the helper on R1's scorecard. A score of 0–3 keeps it private: delete the direct
+   test and cover the helper through the parent's public API (rung 1). A
+   score of 4 or more gives the helper its own package (rung 2 or 3).
 
 3. **Does a new shared package have a role name?**
    Detect-path: `(^|/)(internal/)?pkg/(util|utils|helpers|helper|common|shared|misc)/`
@@ -26,6 +32,7 @@
    plausible domain siblings exist under the name.
    Violation: a package named after its one type (`kubeport`) with no room for
    siblings — fold into a vocabulary package (`networking`) or keep at rung 1/2.
+   A rung-2 package nested under its feature is not judged by this question.
 
 5. **Did feature policy leak into a shared package?**
    Detect: judgment

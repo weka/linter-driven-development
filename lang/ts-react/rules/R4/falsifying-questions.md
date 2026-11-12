@@ -8,6 +8,8 @@
    it — it was exported for tests; demote (rung 1) or promote (rung 2/3).
    `export function parseRetention` whose only importer is `parseRetention.test.ts`
    is the shape.
+   A function that builds and returns an API type is that type's constructor, not a
+   helper. Do not report it.
 
 2. **Are module-private helpers tested directly?**
    Detect-grep: `__test|for test|@internal|^export \{|vi\.spyOn\(` files=all
@@ -16,9 +18,11 @@
    `index.ts` that re-exports what the module kept private, and a `vi.spyOn` in a
    test on a module's internals through its namespace import — read what each
    `export {` block and each spy names.
-   Violation: any direct test of a private helper — that urge is the promotion
-   signal; give the helper its own module instead. The re-export is a convention
-   the test runs through, and that is why the question is asked.
+   Violation: any direct test of a private helper. The urge is a signal to score
+   the helper on R1's scorecard. A score of 0–3 keeps it private: delete the direct
+   test and cover the helper through the parent's public API (rung 1). A
+   score of 4 or more gives the helper its own module (rung 2 or 3). The re-export is
+   a convention the test runs through, and that is why the question is asked.
 
 3. **Does a new shared module have a role name?**
    Detect-path: `(^|/)(util[^/]*|helpers|helper|common|shared|misc|lib)/|(^|/)(utils|helpers|common|constants)\.tsx?$`
@@ -35,6 +39,7 @@
    and ask whether plausible domain siblings exist under the name.
    Violation: a module named after its one type (`src/kubeport/`) with no room for
    siblings — fold into a vocabulary module (`src/networking/`) or keep at rung 1/2.
+   A rung-2 module nested under its feature is not judged by this question.
 
 5. **Did feature policy leak into a shared module?**
    Detect: judgment

@@ -127,7 +127,8 @@ spells a `Port` literal — R2 Q1 greps for the others.
 ### Stage 2 — placement (R4 rung 3)
 
 `Port`, `Ports`, `firstNamed`, `first` say nothing about Kubernetes or Weka — they
-are generic networking vocabulary, so they move to a shared `src/networking/` module
+are generic networking vocabulary, and a second page imports them, so they move to a
+shared `src/networking/` module
 (rung 3 of `R4-helper-placement.md`). The wire adapter `parsePorts` knows the
 Kubernetes DTO, so it stays with the feature. The feature policy stays home as a
 two-line storified function beside the hook that uses it:
@@ -293,9 +294,10 @@ it like any type: the receivers' operations are its methods and earn the scoreca
 
 ### Placement
 
-A juicy type must also land in the right package — feature-scoped versus
-domain-generic. That decision is `R4-helper-placement.md`; the canonical example's
-Stage 2 shows it applied.
+A juicy helper must also land in the right package — nested under its feature, or
+shared when a second package imports it. A type of the feature's public API stays in
+the feature package. That decision is `R4-helper-placement.md`;
+the canonical example's Stage 2 shows it applied.
 
 ## Fix pattern
 

@@ -6,11 +6,13 @@ allowed-tools:
   - Read
   - Bash(git *)
   - Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-lint.sh *)
+  - Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh show)
 ---
 
 !`git status --porcelain`
 !`git diff --stat HEAD`
 !`bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-lint.sh doctor --brief`
+!`bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh show`
 
 Display current implementation status:
 
@@ -28,8 +30,12 @@ Display current implementation status:
   [list with +/- lines]
 
 🔧 Lint setup:
-  [Show this part only when the last preamble command printed a line. Copy each
+  [Show this part only when `ldd-lint.sh doctor --brief` printed a line. Copy each
   line as given. When it printed nothing, leave this part out.]
+
+⏸️ Deferral ledger:
+  [Copy the `ldd-ledger.sh show` output as given. When it has rows, add: "When each
+  row is fixed or accepted as debt, ask: clear the ledger."]
 
 🎯 Next Action:
   [What happens next in the workflow]

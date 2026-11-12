@@ -29,9 +29,21 @@
    Detect: judgment
    Detection: for each new public method on a leaf type,
    `grep -rn '<method>' --include='test_*.py' --include='*_test.py' .` — is it
-   exercised directly, or only through an orchestrator's test?
-   Violation: leaf behavior reached only from above — add the rung-0 test; the
-   orchestrator test keeps only the seam.
+   exercised directly, or only through an orchestrator's test? Then list the new or
+   changed underscore-prefixed functions and classes:
+   `grep -nE '^\s*(async def|def|class) _[a-zA-Z]'` in the changed files. Score each
+   one with R1's scorecard. Read the scorecard in the same Bash call as the grep:
+   `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
+   `R1-primitive-obsession.md` in this rule file's directory. Do not judge or report
+   a helper with a score of 3 or less. A test that imports it is a Q2 finding, not a
+   direct test.
+   Violation: leaf behavior with no direct test, reached only from above. This
+   applies to a public method of a leaf type and to an underscore-prefixed function or
+   class with a score of 4 or more. The usual test above it builds a server, files or
+   a database. Fix a public method: add the rung-0 test; the orchestrator test keeps
+   only the seam. Fix an underscore-prefixed leaf in a module that does I/O with R4's
+   "Split the pure leaf out of an I/O package". Fix one in a module with no I/O with
+   "Promote to feature sub-package (rung 2)". Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `assert_called|assert_any_call|assert_has_calls|\.call_count|\.call_args|\.mock_calls|\.calls\b` files=test
@@ -51,8 +63,9 @@
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*len\b)|\blen\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)handlers/,(^|/)__main__\.py$,(^|/)main\.py$,(^|/)cli\.py$
    Detection: for each new or changed leaf package, with `paths_to_mutate` under
    `[tool.mutmut]` naming that package only, `mutmut run` then `mutmut results`;
-   skip orchestrators, the top rung and any module that does I/O. `mutmut` not
-   installed: propose the install the mechanics bullet describes before hunting; no
+   skip orchestrators, the top rung and any module that does I/O. Judge a pure leaf
+   inside such a module with Q4. Do not skip it. `mutmut` not installed: propose the
+   install the mechanics bullet describes before hunting; no
    survivors from a run that did not execute is not a pass. In a read-only review,
    where no tests may run, take the hand check instead: list the leaf's comparisons
    and boolean conditions, check the parametrize table for a row at each boundary
@@ -62,6 +75,9 @@
    only where a hit row points. An assertion that matches only a word all the
    leaf's errors share (`match="tenant"`) cannot tell one error path from another, so
    a removed check or a changed message survives.
+   When the tool run did not execute for a leaf, the receipt says so on its own line:
+   `R7 Q7: mutation run did not execute — <leaf>`. A hand check alone runs no tool
+   and writes no such line.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,

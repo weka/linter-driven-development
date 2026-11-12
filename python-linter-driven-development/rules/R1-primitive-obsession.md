@@ -116,7 +116,8 @@ the Python rule is that `None` is a declared absence and never a disguised failu
 ### Stage 2 — placement (R4 rung 3)
 
 `Port`, `Ports`, `first_named`, `first` say nothing about Kubernetes or Weka — they
-are generic networking vocabulary, so they move to a shared `networking` package
+are generic networking vocabulary, and a second feature imports them, so they move
+to a shared `networking` package
 (rung 3 of `R4-helper-placement.md`). The wire adapter `Ports.parse` knows the
 Kubernetes DTO, so it stays with the feature. The feature policy stays home as a
 two-line storified method:
@@ -271,9 +272,10 @@ it like any type: the receivers' operations are its methods and earn the scoreca
 
 ### Placement
 
-A juicy type must also land in the right package — feature-scoped versus
-domain-generic. That decision is `R4-helper-placement.md`; the canonical example's
-Stage 2 shows it applied.
+A juicy helper must also land in the right package — nested under its feature, or
+shared when a second package imports it. A type of the feature's public API stays in
+the feature package. That decision is `R4-helper-placement.md`;
+the canonical example's Stage 2 shows it applied.
 
 ## Fix pattern
 

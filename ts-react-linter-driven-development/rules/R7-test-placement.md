@@ -158,6 +158,16 @@ throw, and neither case body branches.
   Stryker mutates equality, relational and logical operators, literals and optional
   chaining, so the hand check's boundary rows mostly confirm its report rather than
   cover a blind spot.
+  The actor that tried the tool writes each run that did not execute to the deferral
+  ledger, and reads the exit code. That actor is the testing skill, or the main agent
+  when it runs the tool itself on `/tsr-ldd-quickfix`. The call:
+
+```bash
+bash <this rule file's directory>/../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
+<leaf> — <why the run did not execute>
+ROW
+```
+
 - **Orchestrating types**: integration-style tests wiring real collaborators — real
   store over an embedded DB, real client against an in-process HTTP server — never
   interface-injected doubles (`R6-test-only-interfaces.md`). They cover the seams;
@@ -168,9 +178,10 @@ throw, and neither case body branches.
   flag in one table is the canonical violation — it folds success and error cases
   into one table and pays with a conditional. Split into a success function and an
   error function.
-- **The urge to test a private is a placement signal**, never a license: it means
-  the helper deserves its own package (`R4-helper-placement.md`), where its public
-  API is legitimately testable.
+- **The urge to test a private is a placement signal**, never a license. With an R1
+  score of 0–3, test the helper through the parent's public API. With 4 or more, the
+  helper deserves its own package (`R4-helper-placement.md`), where its public API is
+  legitimately testable.
 - **Mechanics**: a `name` field on every `it.each` row and `$name` in the title so a
   failure names its case, and object rows rather than positional arrays when a row
   carries more than two values; no `setTimeout` waits — `findBy*`, `waitFor` or an
@@ -188,7 +199,10 @@ throw, and neither case body branches.
 
 - **Move the behavior down a rung**: rewrite the big-object test as a leaf unit test
   with literal inputs; if the leaf doesn't exist yet, that is an R1/R3 extraction
-  first (`../examples/storify-leaf-type.md` shows the pair).
+  first (`../examples/storify-leaf-type.md` shows the pair). When an
+  internal leaf with an R1 score of 4 or more is in a package that does I/O,
+  apply "Split the pure leaf out of an
+  I/O package" (`R4-helper-placement.md`) first.
 - **Split Success and Error Tables**: one function asserting values, one asserting
   errors — complexity 1 in both.
 - **Kill the surviving mutant**: add the table row whose literal input distinguishes
@@ -240,9 +254,24 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect: judgment
    Detection: for each new exported function on a leaf module,
    `grep -rn '<function>' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules .` —
-   is it exercised directly, or only through a page's render test?
-   Violation: leaf behavior reached only from above — add the rung-0 test; the page
-   test keeps only the seam.
+   is it exercised directly, or only through a page's render test? Then list the new
+   or changed non-exported functions and classes:
+   `grep -nE '^\s*((async )?function\*? [a-zA-Z_]|class [a-zA-Z_]|(const|let) [a-zA-Z_]\w*(: [^=]+)? = )'`
+   in the changed `.ts` and `.tsx` files. The grep also finds a helper inside a hook or
+   a component, and a typed `const`. Keep only the functions, the arrow functions and
+   the classes. Score each one with R1's scorecard. Read the scorecard
+   in the same Bash call as the grep: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
+   over `R1-primitive-obsession.md` in this rule file's directory. Do not judge or
+   report a helper with a score of 3 or less. An `export` added only for the test is a
+   Q2 finding, not a direct test.
+   Violation: leaf behavior with no direct test, reached only from above. This
+   applies to an exported function of a leaf module and to a non-exported function or
+   class with a score of 4 or more. The usual test above it renders a tree, registers
+   `server.use` handlers or builds a `QueryClient`. Fix an exported function: add the
+   rung-0 test; the page test keeps only the seam. Fix a non-exported leaf in a module that
+   does I/O with R4's "Split the pure leaf out of an I/O package". Fix one in a module
+   with no I/O with "Promote to feature sub-package (rung 2)". Then add the rung-0 test
+   in a `.ts` module.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `toHaveBeenCalled(Times|With|Once)?\(|toHaveBeen(Last|Nth)CalledWith|\.mock\.(calls|results|lastCall)` files=test
@@ -271,7 +300,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    each mutant in a sandbox copy under `.stryker-tmp/`, never in the checkout. Read
    the `clear-text` reporter: a `Survived` line carries the file, the line and the
    replacement, and a `CompileError` line is a mutant the types rejected, not a
-   kill. Skip orchestrators, the top rung and any module that does I/O. Stryker
+   kill. Skip orchestrators, the top rung and any module that does I/O. Judge a pure leaf
+   inside such a module with Q4. Do not skip it. Stryker
    not installed (`@stryker-mutator/core` absent from `devDependencies`): propose
    the install the mechanics bullet describes before hunting; no survivors from a
    run that did not execute is not a pass. In a read-only review, where no tests
@@ -282,6 +312,9 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    each error assertion. An assertion that matches only a word all the leaf's errors
    share (`toThrow('tenant')`) cannot tell one error path from another, so a removed
    check or a changed message survives.
+   When the tool run did not execute for a leaf, the receipt says so on its own line:
+   `R7 Q7: mutation run did not execute — <leaf>`. A hand check alone runs no tool
+   and writes no such line.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,
