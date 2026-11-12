@@ -181,9 +181,11 @@ privates, and never export a helper into its parent package just so a test can r
 it. The ladder places helpers: code the feature would otherwise keep unexported. A
 type that is part of the feature package's public API stays in that package, whatever
 its R1 score.
-A function that builds and returns an API type is that type's constructor, not a
-helper. It stays beside the type in the feature package. It is public, so its tests
-call it directly. A juicy constructor is never unexported.
+A type is part of the API when the public entry takes or returns it. A function that
+builds and returns an API type is that type's constructor, not a helper. It stays
+beside the type in the feature package. It is public, so its tests call it directly.
+A juicy constructor is never unexported. A juicy part that the constructor calls
+and that returns another type is a helper, and it follows the ladder.
 
 ```go
 // ❌ exported from the feature package only so the test can reach it

@@ -8,6 +8,8 @@
    it — it was exported for tests; demote (rung 1) or promote (rung 2/3).
    `export function parseRetention` whose only importer is `parseRetention.test.ts`
    is the shape.
+   A function that builds and returns an API type is that type's constructor, not a
+   helper. Do not report it.
 
 2. **Are module-private helpers tested directly?**
    Detect-grep: `__test|for test|@internal|^export \{|vi\.spyOn\(` files=all

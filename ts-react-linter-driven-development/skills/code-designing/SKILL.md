@@ -158,7 +158,7 @@ pages/Snapshots/
 
 Placement Decisions (R4):
 - [type/helper] — R1 score N → rung K (<package path>) — reason
-- [API type] — R1 score N → feature API (<package path>) — reason
+- [API type or its constructor] — R1 score N → feature API (<package path>) — reason
 
 Design Decisions:
 - [decision] — rationale, citing the owning rule

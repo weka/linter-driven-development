@@ -11,9 +11,11 @@ privates, and never export a helper into its parent package just so a test can r
 it. The ladder places helpers: code the feature would otherwise keep underscore-prefixed. A
 type that is part of the feature package's public API stays in that package, whatever
 its R1 score.
-A function that builds and returns an API type is that type's constructor, not a
-helper. It stays beside the type in the feature package. It is public, so its tests
-call it directly. A juicy constructor is never underscore-prefixed.
+A type is part of the API when the public entry takes or returns it. A function that
+builds and returns an API type is that type's constructor, not a helper. It stays
+beside the type in the feature package. It is public, so its tests call it directly.
+A juicy constructor is never underscore-prefixed. A juicy part that the constructor calls
+and that returns another type is a helper, and it follows the ladder.
 
 ## Why
 
@@ -70,6 +72,7 @@ There is no `internal/` convention — the underscore and `__all__` carry visibi
 2. **Juicy, and no second package imports it** → a sub-package (a folder with
    `__init__.py`) nested in the feature package, with public names. The feature
    needs no minimum size for it. See `R5-vertical-slice.md`.
+   The constructor of an API type is not a helper and does not move.
 3. **Juicy, and a second package imports it** → a top-level shared package. Extend
    the domain package that fits it, or create one.
    Granularity: a package is a domain *vocabulary* (`networking`), not a single noun
@@ -122,8 +125,8 @@ package nested under its feature can hold a single type.
   it leaf unit tests (rung 0 of `R7-test-placement.md`) with 100% coverage and a
   mutation run. The I/O code stays in the parent and calls it. This applies also
   when the leaf is underscore-prefixed.
-  When the leaf builds and returns an API type, it is that type's constructor: make it
-  public beside the type, with the same tests and mutation run.
+  A leaf that builds and returns an API type is that type's constructor. Do not move it.
+  Make it public beside the type. Give it the same tests and the same mutation run.
 - **Promote to domain package (rung 3)**: a juicy helper that a second package
   imports → create or extend the shared domain package; move the generic types; leave feature policy home as a thin
   storified method (see Stage 2 of `R1-primitive-obsession.md`'s canonical example).
@@ -171,6 +174,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Violation: zero production call sites outside its defining module while test
    files reference it — it was made public for tests; demote (rung 1) or promote
    (rung 2/3).
+   A function that builds and returns an API type is that type's constructor, not a
+   helper. Do not report it.
 
 2. **Are `_private` helpers tested directly?**
    Detect-grep: `import _[a-z]|from [a-z_.]+ import .*\b_[a-z_]+|\._[a-z_]+\(` files=test

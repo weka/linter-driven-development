@@ -9,6 +9,8 @@ directory, or whatever the repository uses).
    Violation: zero production call sites outside the package or module while test
    references exist — it was made public for tests; demote (rung 1) or promote
    (rung 2/3).
+   A function that builds and returns an API type is that type's constructor, not a
+   helper. Do not report it.
 
 2. **Are {{.Unexported}} helpers tested directly?**
    Detect: judgment

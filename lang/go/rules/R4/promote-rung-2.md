@@ -7,5 +7,5 @@
   it leaf unit tests (rung 0 of `R7-test-placement.md`) with 100% coverage and a
   mutation run. The I/O code stays in the parent and calls it. This applies also
   when the leaf is unexported.
-  When the leaf builds and returns an API type, it is that type's constructor: make it
-  public beside the type, with the same tests and mutation run.
+  A leaf that builds and returns an API type is that type's constructor. Do not move it.
+  Make it public beside the type. Give it the same tests and the same mutation run.
