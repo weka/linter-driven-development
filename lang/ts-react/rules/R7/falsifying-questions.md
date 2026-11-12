@@ -30,27 +30,27 @@
    down a rung, extracting the leaf if needed.
 
 4. **Does a new behavior's test sit above the lowest rung that contains it?**
-   Detect: judgment
-   Detection: for each new exported function on a leaf module,
+   Detect-grep: `^\s*((async )?function\*? [a-zA-Z_]|class [a-zA-Z_]|(const|let) [a-zA-Z_][A-Za-z0-9_]*(: [^=]+)? = (async )?(\([^)]*\)|[a-zA-Z_][A-Za-z0-9_]*) =>)`
+   Detection: the hits are the non-exported functions, arrow functions and classes of the scope's non-test files, also inside a hook or a component. Score each hit with R1's scorecard. Read the scorecard in the same Bash call as the hits:
+   `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
+   `R1-primitive-obsession.md` in this rule file's directory. Do not report a hit with
+   a score of 3 or less, or a constructor of an API type (R4). An `export` added only for the test is a Q2 finding, not a direct test. For each new exported function on a leaf module,
    `grep -rn '<function>' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules .` —
-   is it exercised directly, or only through a page's render test? Then list the new
-   or changed non-exported functions and classes:
-   `grep -nE '^\s*((async )?function\*? [a-zA-Z_]|class [a-zA-Z_]|(const|let) [a-zA-Z_]\w*(: [^=]+)? = )'`
-   in the changed `.ts` and `.tsx` files. The grep also finds a helper inside a hook or
-   a component, and a typed `const`. Keep only the functions, the arrow functions and
-   the classes. Score each one with R1's scorecard. Read the scorecard
-   in the same Bash call as the grep: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
-   over `R1-primitive-obsession.md` in this rule file's directory. Do not judge or
-   report a helper with a score of 3 or less. An `export` added only for the test is a
-   Q2 finding, not a direct test.
-   Violation: leaf behavior with no direct test, reached only from above. This
-   applies to an exported function of a leaf module and to a non-exported function or
-   class with a score of 4 or more. The usual test above it renders a tree, registers
-   `server.use` handlers or builds a `QueryClient`. Fix an exported function: add the
-   rung-0 test; the page test keeps only the seam. Fix a non-exported leaf in a module that
-   does I/O with R4's "Split the pure leaf out of an I/O package". Fix one in a module
-   with no I/O with "Promote to feature sub-package (rung 2)". Then add the rung-0 test
-   in a `.ts` module.
+   is it exercised directly, or only through a page's render test?
+   On a whole-repository review this question is not judged: scoring every
+   non-exported declaration of the repository does not fit a hunter's budget. The receipt reads
+   `R7 Q4: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,
+   and the `not reached:` line names the three directories with the most hits, each
+   as the review that judges it: `R7 Q4: /{{.CmdPrefix}}-review <dir>`. On a scoped
+   review the question is judged in full.
+   Violation: leaf behavior with no direct test. This applies to an exported function of a leaf module and to
+   a non-exported function or class with a score of 4 or more, in any module, with or without a
+   test above it. The usual test above it renders a tree, registers
+   `server.use` handlers or builds a `QueryClient`.
+   Fix an exported function: add the rung-0 test; the page test keeps only the
+   seam. Fix a non-exported leaf in a module that does I/O with R4's "Split the pure leaf out
+   of an I/O package". Fix one in any other module with "Promote to feature sub-package
+   (rung 2)". Then add the rung-0 test in a `.ts` module.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `toHaveBeenCalled(Times|With|Once)?\(|toHaveBeen(Last|Nth)CalledWith|\.mock\.(calls|results|lastCall)` files=test

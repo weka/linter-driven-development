@@ -125,7 +125,7 @@ package nested under its feature can hold a single type.
 - **Demote (rung 1)**: a helper exported from its parent only so tests can reach it →
   unexport it, delete the direct tests, cover it through the parent's public API.
 - **Promote to feature sub-package (rung 2)**: a juicy helper that no second package
-  imports, tested through awkward big-object setups → move it into a rung-2 package or
+  imports, with or without a test above it → move it into a rung-2 package or
   module, export it there, test its public API directly.
 - **Split the pure leaf out of an I/O package**: a juicy pure function or type sits in
   a package that does I/O (network, files, environment variables). Only tests through

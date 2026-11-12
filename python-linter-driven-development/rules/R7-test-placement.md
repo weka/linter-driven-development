@@ -226,24 +226,26 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    owns (or should own) — move the test down a rung, extracting the leaf if needed.
 
 4. **Does a new behavior's test sit above the lowest rung that contains it?**
-   Detect: judgment
-   Detection: for each new public method on a leaf type,
-   `grep -rn '<method>' --include='test_*.py' --include='*_test.py' .` — is it
-   exercised directly, or only through an orchestrator's test? Then list the new or
-   changed underscore-prefixed functions and classes:
-   `grep -nE '^\s*(async def|def|class) _[a-zA-Z]'` in the changed files. Score each
-   one with R1's scorecard. Read the scorecard in the same Bash call as the grep:
+   Detect-grep: `^\s*(async def|def|class) _[a-zA-Z]`
+   Detection: the hits are the underscore-prefixed functions, methods and classes of the scope's non-test files. Score each hit with R1's scorecard. Read the scorecard in the same Bash call as the hits:
    `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
-   `R1-primitive-obsession.md` in this rule file's directory. Do not judge or report
-   a helper with a score of 3 or less. A test that imports it is a Q2 finding, not a
-   direct test.
-   Violation: leaf behavior with no direct test, reached only from above. This
-   applies to a public method of a leaf type and to an underscore-prefixed function or
-   class with a score of 4 or more. The usual test above it builds a server, files or
-   a database. Fix a public method: add the rung-0 test; the orchestrator test keeps
-   only the seam. Fix an underscore-prefixed leaf in a module that does I/O with R4's
-   "Split the pure leaf out of an I/O package". Fix one in a module with no I/O with
-   "Promote to feature sub-package (rung 2)". Then add the rung-0 test.
+   `R1-primitive-obsession.md` in this rule file's directory. Do not report a hit with
+   a score of 3 or less, or a constructor of an API type (R4). A test that imports a hit is a Q2 finding, not a direct test. For each new public method on a leaf type,
+   `grep -rn '<method>' --include='test_*.py' --include='*_test.py' .` — is it
+   exercised directly, or only through an orchestrator's test?
+   On a whole-repository review this question is not judged: scoring every
+   underscore-prefixed declaration of the repository does not fit a hunter's budget. The receipt reads
+   `R7 Q4: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,
+   and the `not reached:` line names the three directories with the most hits, each
+   as the review that judges it: `R7 Q4: /py-ldd-review <dir>`. On a scoped
+   review the question is judged in full.
+   Violation: leaf behavior with no direct test. This applies to a public method of a leaf type and to
+   an underscore-prefixed function or class with a score of 4 or more, in any module, with or without a
+   test above it. The usual test above it builds a server, files or a database.
+   Fix a public method: add the rung-0 test; the orchestrator test keeps only the
+   seam. Fix an underscore-prefixed leaf in a module that does I/O with R4's "Split the pure leaf out
+   of an I/O package". Fix one in any other module with "Promote to feature sub-package
+   (rung 2)". Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `assert_called|assert_any_call|assert_has_calls|\.call_count|\.call_args|\.mock_calls|\.calls\b` files=test

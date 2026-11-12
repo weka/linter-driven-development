@@ -1,5 +1,5 @@
 - **Promote to feature sub-package (rung 2)**: a juicy helper that no second package
-  imports, tested through awkward big-object setups → move it into a rung-2
+  imports, with or without a test above it → move it into a rung-2
   sub-package, export it there, test its public API directly.
 - **Split the pure leaf out of an I/O package**: a juicy pure function or type sits in
   a package that does I/O (network, files, environment variables). Only tests through
