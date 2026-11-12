@@ -7,7 +7,8 @@
    references exist — it was exported for tests; demote (rung 1) or promote
    (rung 2/3). An exported helper of the feature package that no code outside the
    package calls is the same finding, with or without test references. Score it: 4
-   or more → a nested package (rung 2); 0–3 → unexport it (rung 1).
+   or more → a nested package (rung 2); 0–3 → unexport it (rung 1). A constructor
+   of an API type, a function that builds and returns it, is not a helper.
 
 2. **Are unexported helpers tested directly?**
    Detect-grep: `^package [a-z][a-z0-9]*$` files=test

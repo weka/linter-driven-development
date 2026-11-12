@@ -11,8 +11,9 @@ privates, and never export a helper into its parent package just so a test can r
 it. The ladder places helpers: code the feature would otherwise keep internal. A
 type that is part of the feature package's public API stays in that package, whatever
 its R1 score.
-When a rung-2 helper builds that type, the helper's package can define it. The
-feature package then re-exports it.
+A function that builds and returns an API type is that type's constructor, not a
+helper. It stays beside the type in the feature package. It is public, so its tests
+call it directly. A juicy constructor is never internal.
 
 ## Why
 
@@ -130,6 +131,8 @@ package nested under its feature can hold a single type.
   it leaf unit tests (rung 0 of `R7-test-placement.md`) with 100% coverage and a
   mutation run. The I/O code stays in the parent and calls it. This applies also
   when the leaf is internal.
+  When the leaf builds and returns an API type, it is that type's constructor: make it
+  public beside the type, with the same tests and mutation run.
 - **Promote to domain package (rung 3)**: a juicy helper that a second package
   imports → create or extend the shared domain package; move the generic types; leave feature policy home as a thin
   storified method (see Stage 2 of `R1-primitive-obsession.md`'s canonical example).

@@ -11,10 +11,9 @@ privates, and never export a helper into its parent package just so a test can r
 it. The ladder places helpers: code the feature would otherwise keep unexported. A
 type that is part of the feature package's public API stays in that package, whatever
 its R1 score.
-When a nested package builds that type, the nested package defines it. The feature
-package re-exports it with a type alias (`type Verdict = classify.Verdict`) and its
-constants. The feature package cannot define it: the nested package would import its
-parent, and Go rejects that import cycle.
+A function that builds and returns an API type is that type's constructor, not a
+helper. It stays beside the type in the feature package. It is public, so its tests
+call it directly. A juicy constructor is never unexported.
 
 ## Why
 
@@ -124,6 +123,8 @@ package nested under its feature can hold a single type.
   it leaf unit tests (rung 0 of `R7-test-placement.md`) with 100% coverage and a
   mutation run. The I/O code stays in the parent and calls it. This applies also
   when the leaf is unexported.
+  When the leaf builds and returns an API type, it is that type's constructor: make it
+  public beside the type, with the same tests and mutation run.
 - **Promote to domain package (rung 3)**: a juicy helper that a second package
   imports → create or extend the shared domain package; move the generic types; leave feature policy home as a thin
   storified method (see Stage 2 of `R1-primitive-obsession.md`'s canonical example).
@@ -171,7 +172,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    references exist — it was exported for tests; demote (rung 1) or promote
    (rung 2/3). An exported helper of the feature package that no code outside the
    package calls is the same finding, with or without test references. Score it: 4
-   or more → a nested package (rung 2); 0–3 → unexport it (rung 1).
+   or more → a nested package (rung 2); 0–3 → unexport it (rung 1). A constructor
+   of an API type, a function that builds and returns it, is not a helper.
 
 2. **Are unexported helpers tested directly?**
    Detect-grep: `^package [a-z][a-z0-9]*$` files=test

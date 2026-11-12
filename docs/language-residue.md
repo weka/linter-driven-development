@@ -246,10 +246,8 @@ package maps to a Python package, and a Go file to a module. So the ladder's run
 item, the two rung-2 Fix-pattern bullets and the skeptic's refinement paragraph are
 includes (`rules/R4/ladder-rung-2.md`, `rules/R4/promote-rung-2.md`,
 `agents/overabstraction-skeptic/refinement.md`) whose core default is that text. The
-Go files name only a nested package, and the Python files only a sub-package. Go
-also overrides `rules/R4/api-type-home.md`: a Go package cannot import its parent, so
-a nested package that builds an API type defines it, and the feature package aliases
-it. The two bullets keep their move names verbatim,
+Go files name only a nested package, and the Python files only a sub-package. The
+two bullets keep their move names verbatim,
 and the rendered-tree check holds the names to the catalogue.
 
 The binding also holds stances that are not Python community norms and says so

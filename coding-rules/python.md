@@ -187,8 +187,9 @@ privates, and never export a helper into its parent package just so a test can r
 it. The ladder places helpers: code the feature would otherwise keep underscore-prefixed. A
 type that is part of the feature package's public API stays in that package, whatever
 its R1 score.
-When a rung-2 helper builds that type, the helper's package can define it. The
-feature package then re-exports it.
+A function that builds and returns an API type is that type's constructor, not a
+helper. It stays beside the type in the feature package. It is public, so its tests
+call it directly. A juicy constructor is never underscore-prefixed.
 
 ```python
 # ❌ imported by the test through its private name, so it stays where it should not

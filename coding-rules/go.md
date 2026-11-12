@@ -181,10 +181,9 @@ privates, and never export a helper into its parent package just so a test can r
 it. The ladder places helpers: code the feature would otherwise keep unexported. A
 type that is part of the feature package's public API stays in that package, whatever
 its R1 score.
-When a nested package builds that type, the nested package defines it. The feature
-package re-exports it with a type alias (`type Verdict = classify.Verdict`) and its
-constants. The feature package cannot define it: the nested package would import its
-parent, and Go rejects that import cycle.
+A function that builds and returns an API type is that type's constructor, not a
+helper. It stays beside the type in the feature package. It is public, so its tests
+call it directly. A juicy constructor is never unexported.
 
 ```go
 // ❌ exported from the feature package only so the test can reach it
