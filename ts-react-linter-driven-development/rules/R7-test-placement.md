@@ -250,27 +250,32 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    should own) — rendering a page to check what `formatBytes` prints — move the test
    down a rung, extracting the leaf if needed.
 
-4. **Does a new behavior's test sit above the lowest rung that contains it?**
-   Detect-grep: `^\s*((async )?function\*? [a-zA-Z_]|class [a-zA-Z_]|(const|let) [a-zA-Z_][A-Za-z0-9_]*(: [^=]+)? = (async )?(\([^)]*\)|[a-zA-Z_][A-Za-z0-9_]*) =>)`
-   Detection: the hits are the non-exported functions, arrow functions and classes of the scope's non-test files, also inside a hook or a component. Score each hit with R1's scorecard. Read the scorecard in the same Bash call as the hits:
-   `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
-   `R1-primitive-obsession.md` in this rule file's directory. Do not report a hit with
-   a score of 3 or less, or a constructor of an API type (R4). An `export` added only for the test is a Q2 finding, not a direct test. For each new exported function on a leaf module,
-   `grep -rn '<function>' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules .` —
-   is it exercised directly, or only through a page's render test?
-   On a whole-repository review this question is not judged: scoring every
-   non-exported declaration of the repository does not fit a hunter's budget. The receipt reads
-   `R7 Q4: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,
-   and the `not reached:` line names the three directories with the most hits, each
-   as the review that judges it: `R7 Q4: /tsr-ldd-review <dir>`. On a scoped
-   review the question is judged in full.
-   Violation: leaf behavior with no direct test. This applies to an exported function of a leaf module and to
-   a non-exported function or class with a score of 4 or more, in any module, with or without a
-   test above it. The usual test above it renders a tree, registers
-   `server.use` handlers or builds a `QueryClient`.
-   Fix an exported function: add the rung-0 test; the page test keeps only the
-   seam. Fix a non-exported leaf in a module that does I/O with R4's "Split the pure leaf out
-   of an I/O package". Fix one in any other module with "Promote to feature sub-package
+4. **Does a private leaf or a new public behavior have no direct test?**
+   Detect-grep: `^\s*((async )?function\*? [a-zA-Z_]|(abstract )?class [a-zA-Z_]|(private (static )?(async )?|#)[a-zA-Z_][A-Za-z0-9_]*\(|(const|let) [a-zA-Z_][A-Za-z0-9_]*(: [^=]+)? = (async )?(function\b|(<[^>]*>)?(\(.*\)|[a-zA-Z_][A-Za-z0-9_]*)(: [^=]+)? =>))`
+   Detection: the hits are the non-exported functions, arrow functions, classes and
+   private methods of the scope's non-test files. A helper inside a hook or a
+   component is a hit too.
+   Score each hit with R1's scorecard. Read the scorecard in the same Bash call as
+   the hits: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
+   over `R1-primitive-obsession.md` in this rule file's directory. A hit with a score
+   of 3 or less is not a finding. Old non-exported code in a touched file is in scope.
+   A constructor of an API type is not a leaf finding. A non-exported constructor with a
+   score of 4 or more is a finding: make it public next to its type (R4).
+   An `export` added only for the test is a Q2 finding, not a direct test.
+   For each new exported function on a leaf module, run
+   `grep -rn '<function>' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules .`
+   and look for a direct test.
+   When the budget ends before every hit is scored, use the partial receipt:
+   `R7 Q4: <judged> of <hits> hit(s) judged → <findings> finding(s)`. The
+   `not reached:` line then names the three directories with the most hits that
+   were not scored, each as `R7 Q4: /tsr-ldd-review <dir>`.
+   Violation: a new exported function of a leaf module with no direct test. Also, a non-exported function or class with a score of 4 or
+   more and no direct test. This applies in any module. A test above it does not
+   count. The usual test above it renders a tree, registers `server.use` handlers or builds
+   a `QueryClient`.
+   Fix an exported function: add the rung-0 test. The page test keeps only the seam.
+   Fix a non-exported leaf in a module that does I/O: use R4's "Split the pure leaf out of an
+   I/O package". Fix one in any other module: use "Promote to feature sub-package
    (rung 2)". Then add the rung-0 test in a `.ts` module.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**

@@ -25,7 +25,7 @@ Test files are the ones the repository's test runner picks up (`*{{.TestGlob}}`,
    Violation: heavyweight construction whose assertions target logic a leaf type
    owns (or should own) — move the test down a rung, extracting the leaf if needed.
 
-4. **Does a new behavior's test sit above the lowest rung that contains it?**
+4. **Does a private leaf or a new public behavior have no direct test?**
    Detect: judgment
    Detection: for each new public method on a leaf type, search the test files for
    its name — is it exercised directly, or only through an orchestrator's test?
@@ -34,8 +34,11 @@ Test files are the ones the repository's test runner picks up (`*{{.TestGlob}}`,
    as the search: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
    `R1-primitive-obsession.md` in this rule file's directory. Do not judge or report
    a helper with a score of 3 or less. A test that calls an {{.Unexported}} name is a
-   Q2 finding, not a direct test.
-   Violation: leaf behavior with no direct test, reached only from above. This
+   Q2 finding, not a direct test. Old {{.Unexported}} code in a touched file is in
+   scope. A constructor of an API type is not a leaf finding. An {{.Unexported}}
+   constructor with a score of 4 or more is a finding: make it public next to its
+   type (R4).
+   Violation: leaf behavior with no direct test, in any package or module. This
    applies to a public method of a leaf type and to an {{.Unexported}} function or type
    with a score of 4 or more. The usual test above it builds a server, files, a
    database or a rendered tree. Fix a public method: add the rung-0 test; the
