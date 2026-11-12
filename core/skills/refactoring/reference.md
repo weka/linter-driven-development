@@ -282,8 +282,8 @@ Invoke @code-designing to validate the extractions.
 #### Step 3 — Only now, decide the physical split
 
 - Multiple vertical slices in one package → extract sub-packages (Step 1 naming).
-- One slice with undermodeled internals → types into their own files, possibly a leaf
-  sub-package for pure domain types.
+- One slice with undermodeled internals → the feature's API types into their own
+  files. A juicy helper goes to a leaf sub-package (R4 rung 2).
 - Often: both.
 
 **Persistence naming**: `Store`, not `Repository` (concrete, not a pattern name). Each

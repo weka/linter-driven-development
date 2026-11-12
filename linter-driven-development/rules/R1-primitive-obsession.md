@@ -213,8 +213,9 @@ it like any type: the receivers' operations are its methods and earn the scoreca
 
 ### Placement
 
-A juicy type must also land in the right package — nested under its feature, or
-shared when a second package imports it. That decision is `R4-helper-placement.md`;
+A juicy helper must also land in the right package — nested under its feature, or
+shared when a second package imports it. A type of the feature's public API stays in
+the feature package. That decision is `R4-helper-placement.md`;
 the canonical example's Stage 2 shows it applied.
 
 ## Fix pattern

@@ -2,7 +2,7 @@
 
 | File pattern | Action |
 |---|---|
-| Multiple juicy types | Route to @code-designing — one juicy type per file (juiciness per R1) |
+| Multiple juicy types | Route to @code-designing — one API type per file; each juicy helper to a nested package (R4 rung 2) (juiciness per R1) |
 | Single god type (>15 methods) | `reference.md` → god-object decomposition, then @code-designing for the composition |
 | Long functions, few types | Storify → extract functions (R3) |
 

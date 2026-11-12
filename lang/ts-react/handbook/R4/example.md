@@ -25,6 +25,6 @@ import { parsePort, Ports } from '@/networking/ports'
 > public API; with 4 or more it wants its own module with a public name.
 > Rung 1 is beside its only caller at module scope, never inside the component body,
 > where it is re-created every render; rung 2 is the page folder's own module or its
-> `hooks/`; rung 3 a shared `src/<domain>/` module, when a second page imports it.
+> `hooks/`, which `index.ts` does not re-export; rung 3 a shared `src/<domain>/` module, when a second page imports it.
 > There is no `internal/`. Extract Custom Hook climbs the same ladder: beside its only caller,
 > then the page's `hooks/`, then `src/hooks/` only when two pages share it.

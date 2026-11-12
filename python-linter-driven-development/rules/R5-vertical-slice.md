@@ -53,9 +53,10 @@ src/app/
 ```
 
 The whole feature is one `ls`. Each type of the feature's API with logic sits in its own
-module named after the type, and a juicy helper goes to a sub-package (rung 2 of
-`R4-helper-placement.md`); the package name is the feature's domain word, and module names carry the
-roles. `__init__.py` is the slice's front door: it re-exports what other slices may
+module named after the type. A juicy helper goes to a sub-package (rung 2 of
+`R4-helper-placement.md`).
+The package name is the feature's domain word, and module names carry the roles.
+`__init__.py` is the slice's front door: it re-exports what other slices may
 import and nothing else, so the module split inside the package is private to it.
 
 ## Design guidance

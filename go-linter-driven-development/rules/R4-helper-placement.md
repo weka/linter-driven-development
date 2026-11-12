@@ -10,8 +10,11 @@ feature, and a shared domain package when a second package imports it. Never tes
 privates, and never export a helper into its parent package just so a test can reach
 it. The ladder places helpers: code the feature would otherwise keep unexported. A
 type that is part of the feature package's public API stays in that package, whatever
-its R1 score. When a rung-2 helper builds that type, the helper's package can define
-it, and the feature package re-exports it.
+its R1 score.
+When a nested package builds that type, the nested package defines it. The feature
+package re-exports it with a type alias (`type Verdict = classify.Verdict`) and its
+constants. The feature package cannot define it: the nested package would import its
+parent, and Go rejects that import cycle.
 
 ## Why
 
@@ -77,7 +80,7 @@ signal, below).
    (`kubeport`), never a role (`util`/`helpers`/`common`).
 
 The rung paths in Go: rung 2 is `internal/<feature>/<leaf>`. Rung 3 is
-`internal/pkg/<domain>` (default) or `pkg/<domain>` (public).
+`internal/pkg/<domain>` (default) or `pkg/<domain>` when another repository could use it.
 
 "Juicy" is an R1 score of 4 or more — `R1-primitive-obsession.md` is the scorecard's
 only home.
@@ -166,7 +169,9 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    references outside its defining file.
    Violation: zero production call sites outside the package while `*_test.go`
    references exist — it was exported for tests; demote (rung 1) or promote
-   (rung 2/3).
+   (rung 2/3). An exported helper of the feature package that no code outside the
+   package calls is the same finding, with or without test references. Score it: 4
+   or more → a nested package (rung 2); 0–3 → unexport it (rung 1).
 
 2. **Are unexported helpers tested directly?**
    Detect-grep: `^package [a-z][a-z0-9]*$` files=test

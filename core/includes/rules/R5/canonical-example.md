@@ -29,7 +29,8 @@ project/
 ```
 
 The whole feature is one `ls`. Each type of the feature's API with logic sits in its own
-file named after the type, and a juicy helper goes to rung 2 of
-`R4-helper-placement.md`; the package name is the feature's domain word, and file names carry the
-roles. The directory is a package, module or namespace — whatever the language calls
+file named after the type. A juicy helper goes to rung 2 of
+`R4-helper-placement.md`.
+The package name is the feature's domain word, and file names carry the roles.
+The directory is a package, module or namespace — whatever the language calls
 one unit of code with its own public surface.

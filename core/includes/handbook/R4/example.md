@@ -12,7 +12,8 @@ public networking.parsePrefixes(raw)  # with the Prefixes type beside it
 
 > **Spelling:** rung 1 is the language's private form: a lower-case or underscored
 > name, a symbol the module does not export, a file-local declaration. Rung 2 is a
-> sub-package, sub-module or namespace under the feature, with public names; rung 3 a
+> sub-package, sub-module or namespace under the feature, with public names that the
+> feature's public surface does not expose; rung 3 a
 > shared package under the source root, when a second package imports it. A test that
 > has to reach a private name, through a friend module, a reflection helper or a
 > test-only export, is a placement signal, never a reason to add the seam. The

@@ -33,7 +33,7 @@ Backward counterpart (fixing code that already fails lint/review): @refactoring.
   - a tuple return (`[T, boolean]`, `[Data, Error]`), or a `Record<string, string>`, `string[]` or `Map` of primitives returned or accepted across a function boundary → the same named result type, with no ESLint rule to say so (R1, Name the Container)
   - `sonarjs/cognitive-complexity` or `sonarjs/max-lines-per-function` on a component, or `react/no-unstable-nested-components` → the component is the fat function: design the hook and the leaf type it should be reading (per `../../rules/R3-storifying.md`), not a smaller component nested inside it
   - the same `switch` on one discriminant in a second file, or `@typescript-eslint/no-explicit-any` at a boundary → design the discriminated union and its one dispatch owner (`../../rules/R11-conditional-dispatch.md`), or the parser that builds the type from `unknown` (`../../rules/R2-self-validating-types.md`)
-  - `sonarjs/max-lines` (the repository's limit, else the gap linter's 450 code lines) → split juicy types into their own modules (juiciness per R1; module-per-type per `../../rules/R5-vertical-slice.md`); a single god component or class routes to @refactoring's god-object decomposition procedure first
+  - `sonarjs/max-lines` (the repository's limit, else the gap linter's 450 code lines) → split the feature's API types into their own modules (module-per-type per `../../rules/R5-vertical-slice.md`), and move a juicy helper (juiciness per R1) to its own module, which `index.ts` does not re-export (rung 2 of `../../rules/R4-helper-placement.md`); a single god component or class routes to @refactoring's god-object decomposition procedure first
   - Package-size yellow/red zone → re-model with sub-folders *before* the zone escalates (`<package_decomposition>` in @refactoring's `reference.md` (`sed -n '/^<package_decomposition>/,/^<\/package_decomposition>/p; /^### Package decomposition/,$p'`))
 - A Phase 4 review CLUSTER (≥2 hunters converging on one anchor —
   @linter-driven-development routes it here) → **cluster-scoped mode**: skip
@@ -120,8 +120,8 @@ Before presenting the plan, verify against the rules (cite, don't restate):
 - [ ] Every planned signature names its types: no nested container, no flat container of primitives crossing a function boundary that its receivers operate on; a product result has a name and field names (R1, Name the Container)
 - [ ] Types are self-validating; composed types trusted, never re-validated (R2)
 - [ ] Orchestration planned as a story; most logic pushed into leaf types (R3, R7)
-- [ ] **Placement decided** for every helper and type via the ladder — internal helper vs feature sub-package vs domain package (`../../rules/R4-helper-placement.md`)
-- [ ] No helper or helper type with R1 score ≥4 on rung 1. A type of the feature's public API is not a helper: it stays in the feature package at any score (R4). A pure leaf with R1 score ≥4 can sit in a package that also does I/O. Move it to rung 2 with R4's "Split the pure leaf out of an I/O package". Before you choose rung 2, search the other packages for the same logic. For a match, check if the other package would import the shared leaf. Weigh it with the maxim "a little copying is better than a little dependency". If it would, use rung 3. On rung 3, the other package imports the shared leaf. It deletes its copy only after its tests pass against the shared leaf. When it has no tests, write characterization tests first.
+- [ ] **Placement decided** for every helper and type via the ladder — internal helper vs feature sub-package vs domain package — or the type is marked feature API (`../../rules/R4-helper-placement.md`)
+- [ ] No helper or helper type with R1 score ≥4 on rung 1. A type of the feature's public API is not a helper: it stays in the feature package at any score. When a rung-2 helper builds it, R4 says which package defines it. A pure leaf with R1 score ≥4 can sit in a package that also does I/O. Move it to rung 2 with R4's "Split the pure leaf out of an I/O package". Before you choose rung 2, search the other packages for the same logic. For a match, check if the other package would import the shared leaf. Weigh it with the maxim "a little copying is better than a little dependency". If it would, use rung 3. On rung 3, the other package imports the shared leaf. It deletes its copy only after its tests pass against the shared leaf. When it has no tests, write characterization tests first.
 - [ ] Vertical slice structure; package names are flatcase domain vocabulary, never roles/containers (R5)
 - [ ] No test-only interfaces: every interface has a second production implementation OR breaks a real import cycle, verified by grepping the import direction (detection command in `../../rules/R6-test-only-interfaces.md`); otherwise depend on the concrete type
 - [ ] Import direction strictly downward: leaf types ← sub-packages ← parent ← cmd/ (cycle-breaking move in `<package_decomposition>` in @refactoring's `reference.md` (`sed -n '/^<package_decomposition>/,/^<\/package_decomposition>/p; /^### Package decomposition/,$p'`))
@@ -152,7 +152,8 @@ pages/Snapshots/
   ├── SnapshotsPage.tsx      # the component: its render tree is the story
   ├── useSnapshots.ts        # the hook: the query and state the page reads
   ├── snapshotsApi.ts        # the api module: fetch and parse at the boundary
-  ├── snapshot.ts            # each juicy type in its own module (Snapshot, parseSnapshot)
+  ├── snapshot.ts            # each juicy type of the feature's API in its own module (Snapshot, parseSnapshot)
+  ├── [helper].ts            # a juicy helper: its own module, index.ts does not re-export it (R4 rung 2)
   └── SnapshotsPage.test.tsx
 
 Placement Decisions (R4):

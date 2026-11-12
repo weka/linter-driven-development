@@ -10,8 +10,9 @@ feature, and a shared domain package when a second package imports it. Never tes
 privates, and never export a helper into its parent package just so a test can reach
 it. The ladder places helpers: code the feature would otherwise keep internal. A
 type that is part of the feature package's public API stays in that package, whatever
-its R1 score. When a rung-2 helper builds that type, the helper's package can define
-it, and the feature package re-exports it.
+its R1 score.
+When a rung-2 helper builds that type, the helper's package can define it. The
+feature package then re-exports it.
 
 ## Why
 
@@ -72,7 +73,7 @@ signal, below).
    (`kubeport`), never a role (`util`/`helpers`/`common`).
 
 The rung paths: rung 2 is a sub-package, sub-module or namespace under the feature,
-with public names. Rung 3 is a shared package under the source root.
+with public names that the feature's public surface does not expose. Rung 3 is a shared package under the source root.
 
 "Juicy" is an R1 score of 4 or more — `R1-primitive-obsession.md` is the scorecard's
 only home.

@@ -40,8 +40,9 @@
    {{.FileMaxLines}} code lines. Where the repository's linter holds the rule, the row is measured
    against that rule's limit and names the rule. The linter stays the enforcer.
    Violation: a file over the limit standing in for the whole slice, or a `//nolint`
-   silencing the limit (the suppression row carries directives) — split it by role
-   (file-per-type) inside the package.
+   silencing the limit (the suppression row carries directives) — split the feature's
+   API types by role (file-per-type) inside the package. Move a juicy helper to a
+   nested package (rung 2 of `R4-helper-placement.md`).
 
 7. **Is any package over the file-count limit?**
    Detect-script: ldd-lint package-size --over-limit

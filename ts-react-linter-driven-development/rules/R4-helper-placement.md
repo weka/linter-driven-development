@@ -10,8 +10,9 @@ feature, and a shared domain package when a second package imports it. Never tes
 privates, and never export a helper into its parent package just so a test can reach
 it. The ladder places helpers: code the feature would otherwise keep internal. A
 type that is part of the feature package's public API stays in that package, whatever
-its R1 score. When a rung-2 helper builds that type, the helper's package can define
-it, and the feature package re-exports it.
+its R1 score.
+When a rung-2 helper builds that type, the helper's package can define it. The
+feature package then re-exports it.
 
 ## Why
 
@@ -84,7 +85,8 @@ caller, then the page's `hooks/`, then `src/hooks/` only when two pages share it
    (`kubeport`), never a role (`util`/`helpers`/`common`).
 
 The rung paths in TypeScript: rung 2 is a module in the page folder, with exported
-names that the folder's `index.ts` does not re-export (`pages/Cluster/managementPort.ts`). Rung 3 is a shared `src/<domain>/` module.
+names that the folder's `index.ts` does not re-export, except an API type that the module
+defines (`pages/Cluster/managementPort.ts`). Rung 3 is a shared `src/<domain>/` module.
 
 "Juicy" is an R1 score of 4 or more — `R1-primitive-obsession.md` is the scorecard's
 only home.

@@ -31,7 +31,7 @@ Backward counterpart (fixing code that already fails lint/review): @refactoring.
 - Linter failures that need a design decision, not a mechanical fix:
   - `PLR0913` (too many arguments) → design a frozen dataclass of the parameters that travel together (score it per `../../rules/R1-primitive-obsession.md`); a keyword-only `*` marker tidies the call sites but leaves the clump
   - `PLR0911` (too many returns), or a tuple return carrying a `bool` or an error member → design a named result type, or raise (same R1 scoring)
-  - a module over the file-length limit (pylint's `max-module-lines` where set, else the gap linter's 450 code lines; ruff has no file-length rule) → split the feature's own types into their own modules (module-per-type per `../../rules/R5-vertical-slice.md`), and move a juicy helper (juiciness per R1) to a sub-package with `__init__.py` (rung 2 of `../../rules/R4-helper-placement.md`); a single god class routes to @refactoring's god-object decomposition procedure first
+  - a module over the file-length limit (pylint's `max-module-lines` where set, else the gap linter's 450 code lines; ruff has no file-length rule) → split the feature's API types into their own modules (module-per-type per `../../rules/R5-vertical-slice.md`), and move a juicy helper (juiciness per R1) to a sub-package with `__init__.py` (rung 2 of `../../rules/R4-helper-placement.md`); a single god class routes to @refactoring's god-object decomposition procedure first
   - Package-size yellow/red zone → re-model with sub-packages *before* the zone escalates (`<package_decomposition>` in @refactoring's `reference.md` (`sed -n '/^<package_decomposition>/,/^<\/package_decomposition>/p; /^### Package decomposition/,$p'`))
 - A Phase 4 review CLUSTER (≥2 hunters converging on one anchor —
   @linter-driven-development routes it here) → **cluster-scoped mode**: skip
@@ -117,8 +117,8 @@ Before presenting the plan, verify against the rules (cite, don't restate):
 - [ ] Every planned signature names its types: no nested container, no flat container of primitives crossing a function boundary that its receivers operate on; a product result has a name and field names (R1, Name the Container)
 - [ ] Types are self-validating; composed types trusted, never re-validated (R2)
 - [ ] Orchestration planned as a story; most logic pushed into leaf types (R3, R7)
-- [ ] **Placement decided** for every helper and type via the ladder — underscore-prefixed helper vs feature sub-package vs domain package (`../../rules/R4-helper-placement.md`)
-- [ ] No helper or helper type with R1 score ≥4 on rung 1. A type of the feature's public API is not a helper: it stays in the feature package at any score (R4). A pure leaf with R1 score ≥4 can sit in a package that also does I/O. Move it to rung 2 with R4's "Split the pure leaf out of an I/O package". Before you choose rung 2, search the other packages for the same logic. For a match, check if the other package would import the shared leaf. Weigh it with the maxim "a little copying is better than a little dependency". If it would, use rung 3. On rung 3, the other package imports the shared leaf. It deletes its copy only after its tests pass against the shared leaf. When it has no tests, write characterization tests first.
+- [ ] **Placement decided** for every helper and type via the ladder — underscore-prefixed helper vs feature sub-package vs domain package — or the type is marked feature API (`../../rules/R4-helper-placement.md`)
+- [ ] No helper or helper type with R1 score ≥4 on rung 1. A type of the feature's public API is not a helper: it stays in the feature package at any score. When a rung-2 helper builds it, R4 says which package defines it. A pure leaf with R1 score ≥4 can sit in a package that also does I/O. Move it to rung 2 with R4's "Split the pure leaf out of an I/O package". Before you choose rung 2, search the other packages for the same logic. For a match, check if the other package would import the shared leaf. Weigh it with the maxim "a little copying is better than a little dependency". If it would, use rung 3. On rung 3, the other package imports the shared leaf. It deletes its copy only after its tests pass against the shared leaf. When it has no tests, write characterization tests first.
 - [ ] Vertical slice structure; package names are flatcase domain vocabulary, never roles/containers (R5)
 - [ ] No test-only interfaces: every interface has a second production implementation OR breaks a real import cycle, verified by grepping the import direction (detection command in `../../rules/R6-test-only-interfaces.md`); otherwise depend on the concrete type
 - [ ] Import direction strictly downward: leaf types ← sub-packages ← parent ← cmd/ (cycle-breaking move in `<package_decomposition>` in @refactoring's `reference.md` (`sed -n '/^<package_decomposition>/,/^<\/package_decomposition>/p; /^### Package decomposition/,$p'`))
@@ -146,7 +146,7 @@ Orchestrating Types:
 Package Structure:
 [feature]/
   ├── __init__.py      # the public surface: what a consumer imports
-  ├── [type].py        # each of the feature's own types in its own module
+  ├── [type].py        # each of the feature's API types in its own module
   ├── [helper]/        # a juicy helper that no second package imports: a sub-package (R4 rung 2)
   │   └── __init__.py
   ├── service.py

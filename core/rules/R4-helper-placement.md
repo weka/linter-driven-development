@@ -10,8 +10,8 @@ feature, and a shared domain package when a second package imports it. Never tes
 privates, and never export a helper into its parent package just so a test can reach
 it. The ladder places helpers: code the feature would otherwise keep {{.Unexported}}. A
 type that is part of the feature package's public API stays in that package, whatever
-its R1 score. When a rung-2 helper builds that type, the helper's package can define
-it, and the feature package re-exports it.
+its R1 score.
+{{include "rules/R4/api-type-home.md"}}
 
 ## Why
 

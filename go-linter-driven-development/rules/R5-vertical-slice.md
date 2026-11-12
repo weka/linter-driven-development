@@ -52,9 +52,9 @@ project/
 ```
 
 The whole feature is one `ls`. Each type of the feature's API with logic sits in its own
-file named after the type, and a juicy helper goes to rung 2 of
-`R4-helper-placement.md`; the package name is the feature's domain word, and file names carry the
-roles.
+file named after the type. A juicy helper goes to rung 2 of
+`R4-helper-placement.md`.
+The package name is the feature's domain word, and file names carry the roles.
 
 ## Design guidance
 
@@ -163,8 +163,9 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    450 code lines. Where the repository's linter holds the rule, the row is measured
    against that rule's limit and names the rule. The linter stays the enforcer.
    Violation: a file over the limit standing in for the whole slice, or a `//nolint`
-   silencing the limit (the suppression row carries directives) — split it by role
-   (file-per-type) inside the package.
+   silencing the limit (the suppression row carries directives) — split the feature's
+   API types by role (file-per-type) inside the package. Move a juicy helper to a
+   nested package (rung 2 of `R4-helper-placement.md`).
 
 7. **Is any package over the file-count limit?**
    Detect-script: ldd-lint package-size --over-limit

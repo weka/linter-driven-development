@@ -157,8 +157,9 @@ feature, and a shared domain package when a second package imports it. Never tes
 privates, and never export a helper into its parent package just so a test can reach
 it. The ladder places helpers: code the feature would otherwise keep internal. A
 type that is part of the feature package's public API stays in that package, whatever
-its R1 score. When a rung-2 helper builds that type, the helper's package can define
-it, and the feature package re-exports it.
+its R1 score.
+When a rung-2 helper builds that type, the helper's package can define it. The
+feature package then re-exports it.
 
 ```text
 # ❌ made public by the feature package only so the test can reach it
@@ -174,7 +175,8 @@ public networking.parsePrefixes(raw)  # with the Prefixes type beside it
 
 > **Spelling:** rung 1 is the language's private form: a lower-case or underscored
 > name, a symbol the module does not export, a file-local declaration. Rung 2 is a
-> sub-package, sub-module or namespace under the feature, with public names; rung 3 a
+> sub-package, sub-module or namespace under the feature, with public names that the
+> feature's public surface does not expose; rung 3 a
 > shared package under the source root, when a second package imports it. A test that
 > has to reach a private name, through a friend module, a reflection helper or a
 > test-only export, is a placement signal, never a reason to add the seam. The
