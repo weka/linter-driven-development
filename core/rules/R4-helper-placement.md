@@ -9,8 +9,8 @@ There are three rungs: {{.Unexported}} in place, a sub-package nested under the
 feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
 it. The ladder places helper types: types the feature would otherwise keep
-{{.Unexported}}. A private function is fine where it is. When its logic is juicy, R1
-models that logic as a type, and the type climbs the ladder. A
+{{.Unexported}}. A private function is fine where it is, juicy or not: its tests go
+through the parent's public API. A
 type that is part of the feature package's public API stays in that package, whatever
 its R1 score.
 {{include "rules/R4/api-type-home.md"}}
@@ -61,8 +61,8 @@ act on that urge by testing privates, and never by exporting the helper into the
 parent. The R1 score decides the home. With a score of 0–3, the helper stays
 {{.Unexported}} at rung 1, and its tests go through the parent's public API. With a
 score of 4 or more, with or without the urge, the helper deserves its own package: a
-real home where a test can call its exported API with literal inputs. For a function,
-R1 first models that logic as a type, and the type gets the package. Use rung 2 by
+real home where a test can call its exported API with literal inputs. This is for a
+helper type; a private function stays at rung 1 at any score. Use rung 2 by
 default, and rung 3 on the trigger the ladder gives.
 
 ### The reuse objection

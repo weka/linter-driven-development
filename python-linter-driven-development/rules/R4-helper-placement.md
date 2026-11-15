@@ -9,8 +9,8 @@ There are three rungs: underscore-prefixed in place, a sub-package nested under 
 feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
 it. The ladder places helper types: types the feature would otherwise keep
-underscore-prefixed. A private function is fine where it is. When its logic is juicy, R1
-models that logic as a type, and the type climbs the ladder. A
+underscore-prefixed. A private function is fine where it is, juicy or not: its tests go
+through the parent's public API. A
 type that is part of the feature package's public API stays in that package, whatever
 its R1 score.
 A type is part of the API when the public entry takes or returns it. A function that
@@ -104,8 +104,8 @@ act on that urge by testing privates, and never by exporting the helper into the
 parent. The R1 score decides the home. With a score of 0–3, the helper stays
 underscore-prefixed at rung 1, and its tests go through the parent's public API. With a
 score of 4 or more, with or without the urge, the helper deserves its own package: a
-real home where a test can call its exported API with literal inputs. For a function,
-R1 first models that logic as a type, and the type gets the package. Use rung 2 by
+real home where a test can call its exported API with literal inputs. This is for a
+helper type; a private function stays at rung 1 at any score. Use rung 2 by
 default, and rung 3 on the trigger the ladder gives.
 
 ### The reuse objection
@@ -196,7 +196,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    the helper on R1's scorecard. A score of 0–3 keeps it private: delete the direct
    test and cover the helper through the parent's public API (rung 1). A
    score of 4 or more gives the helper its own package: a sub-package of the feature
-   (rung 2), or a top-level package (rung 3). For a function, R1 first models that logic as a type. The underscore is a convention, not a
+   (rung 2), or a top-level package (rung 3). A private function stays
+   private at any score: delete the direct test and cover it through the parent's public API. The underscore is a convention, not a
    wall: the test runs, and that is why the question is asked.
 
 3. **Does a new shared package have a role name?**

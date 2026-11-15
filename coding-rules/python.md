@@ -185,8 +185,8 @@ There are three rungs: underscore-prefixed in place, a sub-package nested under 
 feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
 it. The ladder places helper types: types the feature would otherwise keep
-underscore-prefixed. A private function is fine where it is. When its logic is juicy, R1
-models that logic as a type, and the type climbs the ladder. A
+underscore-prefixed. A private function is fine where it is, juicy or not: its tests go
+through the parent's public API. A
 type that is part of the feature package's public API stays in that package, whatever
 its R1 score.
 A type is part of the API when the public entry takes or returns it. A function that

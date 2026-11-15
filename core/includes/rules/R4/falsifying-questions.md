@@ -20,7 +20,8 @@ directory, or whatever the repository uses).
    Violation: any direct test of a private helper. The urge is a signal to score
    the helper on R1's scorecard. A score of 0–3 keeps it private: delete the direct
    test and cover the helper through the parent's public API (rung 1). A
-   score of 4 or more gives the helper its own package (rung 2 or 3). For a function, R1 first models that logic as a type.
+   score of 4 or more gives the helper its own package (rung 2 or 3). A private function stays
+   private at any score: delete the direct test and cover it through the parent's public API.
 
 3. **Does a new shared package have a role name?**
    Detect-path: `(^|/)(util|utils|helpers|helper|common|shared|misc)(/|\.[a-z]+$)`

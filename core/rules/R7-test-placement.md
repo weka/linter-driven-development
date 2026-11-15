@@ -89,8 +89,8 @@ and review contract.
   dependency over fake data (`R6-test-only-interfaces.md`; @testing for harnesses).
 - **Replace sleep with synchronization**: an event, channel or wait primitive with a
   timeout, never a fixed pause.
-- **Delete private-function tests**: cover through the parent's public API, or, for
-  juicy logic, model it as a type and promote the type (`R4-helper-placement.md`).
+- **Delete private-function tests**: cover the function through the parent's public
+  API. A juicy private type moves instead (`R4-helper-placement.md`).
 
 ## Falsifying questions
 
