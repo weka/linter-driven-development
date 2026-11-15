@@ -35,6 +35,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
   shape of new code, and the decision goes to the repository's architecture doc. A
   decision recorded there holds. A rung-3 package goes where the repository keeps
   its shared code, never a role-named folder, and the plan proposes the rung-3 path.
+- **The design plan scores every planned helper.** Each function or type with a
+  branch or a loop gets a placement line with an R1 score, private helpers included.
 - **A deferral ledger.** `scripts/ldd-ledger.sh` records the review findings that the
   user defers, the deferred preparation moves, and the mutation runs that did not
   execute. It keeps one file for each branch in the common git directory, so a row
