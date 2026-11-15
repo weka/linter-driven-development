@@ -21,7 +21,7 @@
    Violation: any direct test of a private helper. The urge is a signal to score
    the helper on R1's scorecard. A score of 0–3 keeps it private: delete the direct
    test and cover the helper through the parent's public API (rung 1). A
-   score of 4 or more gives the helper its own module (rung 2 or 3). The re-export is
+   score of 4 or more gives the helper its own module (rung 2 or 3). For a function, R1 first models that logic as a type. The re-export is
    a convention the test runs through, and that is why the question is asked.
 
 3. **Does a new shared module have a role name?**

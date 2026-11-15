@@ -61,7 +61,8 @@ act on that urge by testing privates, and never by exporting the helper into the
 parent. The R1 score decides the home. With a score of 0–3, the helper stays
 {{.Unexported}} at rung 1, and its tests go through the parent's public API. With a
 score of 4 or more, with or without the urge, the helper deserves its own package: a
-real home where a test can call its exported API with literal inputs. Use rung 2 by
+real home where a test can call its exported API with literal inputs. For a function,
+R1 first models that logic as a type, and the type gets the package. Use rung 2 by
 default, and rung 3 on the trigger the ladder gives.
 
 ### The reuse objection

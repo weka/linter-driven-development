@@ -19,7 +19,7 @@
    the helper on R1's scorecard. A score of 0–3 keeps it private: delete the direct
    test and cover the helper through the parent's public API (rung 1). A
    score of 4 or more gives the helper its own package: a sub-package of the feature
-   (rung 2), or a top-level package (rung 3). The underscore is a convention, not a
+   (rung 2), or a top-level package (rung 3). For a function, R1 first models that logic as a type. The underscore is a convention, not a
    wall: the test runs, and that is why the question is asked.
 
 3. **Does a new shared package have a role name?**
