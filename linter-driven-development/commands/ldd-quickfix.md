@@ -73,8 +73,10 @@ isolated context, spawned with the package list)
   respawn ceiling ends Phase 3 with that list
 
 **Mutation check** (you, the main agent, after the tests pass)
-- When the fix touches a leaf package or module, run the mutation tool over it as
-  the mutation mechanics in `../rules/R7-test-placement.md` say.
+- Run the mutation tool only over a pure logic leaf that the fix makes or changes:
+  code with no I/O, which its tests call with literal inputs. Run it after the move,
+  over the new leaf. Never run it over a package or module that does I/O. Use the
+  mutation mechanics in `../rules/R7-test-placement.md`.
 - When the tool cannot run, write the `mutation-not-run` row, and read the exit code:
 
 ```bash
@@ -100,12 +102,19 @@ ROW
   user can answer, fix every finding and defer none. In that run, fix a finding that
   the skeptic REFUTED with the skeptic's cheaper alternative.
 
+**No documentation phase.** Quickfix does not run the skill's @documentation step.
+Fix a doc only when it cites a symbol that the fix moved, renamed or removed. Never
+build the documentation network here: that is `/wire-repo-brain`.
+
 **Phase 5 — SHIP**: tests and lint green and the tree dirty → commit, then the ship
 summary with the hash, the scope line, the lint-fixer's `FIXED:` / `ESCALATED:`
 tallies and — when @refactoring ran — its `Stop check` block verbatim, six labelled
 lines; without the block the refactoring did not finish and the summary is not final.
 Paste the `ldd-ledger.sh show` output at the end of the summary (`<deferral_ledger>` in
 the skill). Never write that all items are closed while the ledger has rows.
+Put each item outside the scope under one heading, `Outside the scope, not
+reviewed`. Never call such an item open or deferred. An in-scope finding that is not
+fixed is a ledger row.
 
 **Loop until**:
 ✅ Tests pass | ✅ `LINT STATUS: green` over the scope | ✅ @pre-commit-review INCREMENTAL delta clean (or findings that the user said to defer, each one a ledger row)

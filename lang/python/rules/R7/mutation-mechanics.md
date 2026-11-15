@@ -9,6 +9,9 @@
   `mutmut run && mutmut results`; with no task runner and no dev group, propose
   `pipx install mutmut` for the developer to run. Ask first, never install silently,
   and never read a run that did not execute as a clean one.
+  A mutation run targets only a pure logic leaf: code with no I/O (network, files,
+  environment variables, clock) that its tests call with literal inputs. Never run it
+  over a package or module that does I/O.
   The actor that tried the tool writes each run that did not execute to the deferral
   ledger, and reads the exit code. That actor is the testing skill, or the main agent
   when it runs the tool itself on `/{{.CmdPrefix}}-quickfix`. The call:

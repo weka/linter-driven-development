@@ -29,6 +29,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
   A type of the feature's public API stays in the feature package at any score.
   A function that builds and returns an API type is its constructor: it stays
   beside the type and is public, with direct tests.
+  Quickfix runs no documentation phase. It runs the mutation tool only over a
+  pure logic leaf, never over code that does I/O.
 - **A deferral ledger.** `scripts/ldd-ledger.sh` records the review findings that the
   user defers, the deferred preparation moves, and the mutation runs that did not
   execute. It keeps one file for each branch in the common git directory, so a row

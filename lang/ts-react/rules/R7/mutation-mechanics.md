@@ -21,6 +21,9 @@
   Stryker mutates equality, relational and logical operators, literals and optional
   chaining, so the hand check's boundary rows mostly confirm its report rather than
   cover a blind spot.
+  A mutation run targets only a pure logic leaf: code with no I/O (network, files,
+  environment variables, clock) that its tests call with literal inputs. Never run it
+  over a package or module that does I/O.
   The actor that tried the tool writes each run that did not execute to the deferral
   ledger, and reads the exit code. That actor is the testing skill, or the main agent
   when it runs the tool itself on `/{{.CmdPrefix}}-quickfix`. The call:
