@@ -18,14 +18,14 @@ builds and returns an API type is that type's constructor, not a helper. It stay
 beside the type in the feature package. It is public, so its tests call it directly.
 A juicy constructor that nothing public on its type calls is never internal. A
 internal constructor that a public factory of the same type calls is covered
-through that factory, so it is not a finding. A juicy part that the constructor calls
-and that returns another type is a helper, and it follows the ladder.
+through that factory, so it is not a finding. A juicy helper type that the constructor
+uses follows the ladder; a private function that it calls stays where it is.
 
 ## Why
 
 Wrong placement rots in both directions. Helpers exported into the parent package for
 testability pollute its API — callers see symbols that exist only for tests, and the
-package's real surface becomes unreadable. Juicy helpers buried as internal code
+package's real surface becomes unreadable. Juicy helper types buried as internal code
 either go untested or push the team into testing privates, breaking the
 public-API-only discipline (`R7-test-placement.md`). And role-named dumping grounds
 (`util`, `helpers`, `common`) accrete unrelated code that nobody can find, name, or
@@ -82,12 +82,12 @@ caller, then the page's `hooks/`, then `src/hooks/` only when two pages share it
 
 1. **Trivial helper** (R1 score 0–3) → internal, same package, tested only
    through the parent's public API.
-2. **Juicy, and no second package imports it** → a package nested under the feature
+2. **A juicy helper type, and no second package imports it** → a package nested under the feature
    package, or a module inside the feature package. Its names are public there, and
    the feature's public surface does not expose them. The feature needs no minimum
    size for it. See `R5-vertical-slice.md`.
    The constructor of an API type is not a helper and does not move.
-3. **Juicy, and a second package imports it** → a top-level shared package. Extend
+3. **A juicy helper type, and a second package imports it** → a top-level shared package. Extend
    the domain package that fits it, or create one.
    Granularity: a package is a domain *vocabulary* (`networking`), not a single noun
    (`kubeport`), never a role (`util`/`helpers`/`common`).
@@ -145,7 +145,7 @@ package nested under its feature can hold a single type.
   it leaf unit tests (rung 0 of `R7-test-placement.md`) with 100% coverage and a
   mutation run. The I/O code stays in the parent and calls it. This applies also
   when the leaf is internal.
-- **Promote to domain package (rung 3)**: a juicy helper that a second package
+- **Promote to domain package (rung 3)**: a juicy helper type that a second package
   imports → create or extend the shared domain package; move the generic types; leave feature policy home as a thin
   storified method (see Stage 2 of `R1-primitive-obsession.md`'s canonical example).
 - **Split policy from vocabulary during promotion**: feature constants and preference
@@ -206,7 +206,7 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Violation: any direct test of a private helper. The urge is a signal to score
    the helper on R1's scorecard. A score of 0–3 keeps it private: delete the direct
    test and cover the helper through the parent's public API (rung 1). A
-   score of 4 or more gives the helper its own module (rung 2 or 3). A private function stays
+   score of 4 or more gives a helper type its own module (rung 2 or 3). A private function stays
    private at any score: delete the direct test and cover it through the parent's public API. The re-export is
    a convention the test runs through, and that is why the question is asked.
 

@@ -19,7 +19,7 @@ its R1 score.
 
 Wrong placement rots in both directions. Helpers exported into the parent package for
 testability pollute its API — callers see symbols that exist only for tests, and the
-package's real surface becomes unreadable. Juicy helpers buried as {{.Unexported}} code
+package's real surface becomes unreadable. Juicy helper types buried as {{.Unexported}} code
 either go untested or push the team into testing privates, breaking the
 public-API-only discipline (`R7-test-placement.md`). And role-named dumping grounds
 (`util`, `helpers`, `common`) accrete unrelated code that nobody can find, name, or
@@ -37,7 +37,7 @@ unit tests against a legitimate public API.
 1. **Trivial helper** (R1 score 0–3) → {{.Unexported}}, same package, tested only
    through the parent's public API.
 {{include "rules/R4/ladder-rung-2.md"}}
-3. **Juicy, and a second package imports it** → a top-level shared package. Extend
+3. **A juicy helper type, and a second package imports it** → a top-level shared package. Extend
    the domain package that fits it, or create one.
    Granularity: a package is a domain *vocabulary* (`networking`), not a single noun
    (`kubeport`), never a role (`util`/`helpers`/`common`).
@@ -86,7 +86,7 @@ package nested under its feature can hold a single type.
 - **Demote (rung 1)**: a helper exported from its parent only so tests can reach it →
   unexport it, delete the direct tests, cover it through the parent's public API.
 {{include "rules/R4/promote-rung-2.md"}}
-- **Promote to domain package (rung 3)**: a juicy helper that a second package
+- **Promote to domain package (rung 3)**: a juicy helper type that a second package
   imports → create or extend the shared domain package; move the generic types; leave feature policy home as a thin
   storified method (see Stage 2 of `R1-primitive-obsession.md`'s canonical example).
 - **Split policy from vocabulary during promotion**: feature constants and preference

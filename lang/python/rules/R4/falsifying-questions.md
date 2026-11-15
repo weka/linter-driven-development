@@ -18,7 +18,7 @@
    Violation: any direct test of a private helper. The urge is a signal to score
    the helper on R1's scorecard. A score of 0–3 keeps it private: delete the direct
    test and cover the helper through the parent's public API (rung 1). A
-   score of 4 or more gives the helper its own package: a sub-package of the feature
+   score of 4 or more gives a helper type its own package: a sub-package of the feature
    (rung 2), or a top-level package (rung 3). A private function stays
    private at any score: delete the direct test and cover it through the parent's public API. The underscore is a convention, not a
    wall: the test runs, and that is why the question is asked.

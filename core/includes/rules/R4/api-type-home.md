@@ -3,5 +3,5 @@ builds and returns an API type is that type's constructor, not a helper. It stay
 beside the type in the feature package. It is public, so its tests call it directly.
 A juicy constructor that nothing public on its type calls is never {{.Unexported}}. A
 {{.Unexported}} constructor that a public factory of the same type calls is covered
-through that factory, so it is not a finding. A juicy part that the constructor calls
-and that returns another type is a helper, and it follows the ladder.
+through that factory, so it is not a finding. A juicy helper type that the constructor
+uses follows the ladder; a private function that it calls stays where it is.
