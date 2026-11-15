@@ -8,7 +8,9 @@ decide the answer. One is juiciness: the scorecard in `R1-primitive-obsession.md
 There are three rungs: internal in place, a sub-package nested under the
 feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
-it. The ladder places helpers: code the feature would otherwise keep internal. A
+it. The ladder places helper types: types the feature would otherwise keep
+internal. A private function is fine where it is. When its logic is juicy, R1
+models that logic as a type, and the type climbs the ladder. A
 type that is part of the feature package's public API stays in that package, whatever
 its R1 score.
 A type is part of the API when the public entry takes or returns it. A function that
@@ -121,17 +123,15 @@ package nested under its feature can hold a single type.
 
 - **Demote (rung 1)**: a helper exported from its parent only so tests can reach it →
   unexport it, delete the direct tests, cover it through the parent's public API.
-- **Promote to feature sub-package (rung 2)**: a juicy helper that no second package
+- **Promote to feature sub-package (rung 2)**: a juicy helper type that no second package
   imports, with or without a test above it → move it into a rung-2 package or
   module, export it there, test its public API directly.
-- **Split the pure leaf out of an I/O package**: a juicy pure function or type sits in
+- **Split the pure leaf out of an I/O package**: a juicy pure private type sits in
   a package that does I/O (network, files, environment variables). Only tests through
   that I/O reach it. Move it to a rung-2 package or module and export it there. Give
   it leaf unit tests (rung 0 of `R7-test-placement.md`) with 100% coverage and a
   mutation run. The I/O code stays in the parent and calls it. This applies also
   when the leaf is internal.
-  A leaf that builds and returns an API type is that type's constructor. Do not move it.
-  Make it public beside the type. Give it the same tests and the same mutation run.
 - **Promote to domain package (rung 3)**: a juicy helper that a second package
   imports → create or extend the shared domain package; move the generic types; leave feature policy home as a thin
   storified method (see Stage 2 of `R1-primitive-obsession.md`'s canonical example).

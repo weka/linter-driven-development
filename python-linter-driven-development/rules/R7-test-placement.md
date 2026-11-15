@@ -230,16 +230,14 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    owns (or should own) — move the test down a rung, extracting the leaf if needed.
 
 4. **Does a private leaf or a new public behavior have no direct test?**
-   Detect-grep: `^\s*(async def|def|class) _[a-zA-Z]`
-   Detection: the hits are the underscore-prefixed functions, methods and classes of
+   Detect-grep: `^\s*class _[a-zA-Z]`
+   Detection: the hits are the underscore-prefixed classes of
    the scope's non-test files.
    Score each hit with R1's scorecard. Read the scorecard in the same Bash call as
    the hits: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
    over `R1-primitive-obsession.md` in this rule file's directory. A hit with a score
-   of 3 or less is not a finding. Old underscore-prefixed code in a touched file is in scope.
-   A constructor of an API type is not a leaf finding. An underscore-prefixed constructor is a finding only when no public
-   function of its type calls it, and its score is 4 or more: make it public next
-   to its type (R4).
+   of 3 or less is not a finding. Old underscore-prefixed types in a touched file are in scope. A private
+   function is not a hit: it is fine where it is.
    A test that imports a hit is a Q2 finding, not a direct test.
    For each new public method on a leaf type, run
    `grep -rn '<method>' --include='test_*.py' --include='*_test.py' .` and look for a
@@ -248,7 +246,7 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    `R7 Q4: <judged> of <hits> hit(s) judged → <findings> finding(s)`. The
    `not reached:` line then names the three directories with the most hits that
    were not scored, each as `R7 Q4: /py-ldd-review <dir>`.
-   Violation: a new public method of a leaf type with no direct test. Also, an underscore-prefixed function or class with a score of 4 or
+   Violation: a new public method of a leaf type with no direct test. Also, an underscore-prefixed class with a score of 4 or
    more and no direct test. This applies in any module. A test above it does not
    count. The usual test above it builds a server, files or a database.
    Fix a public method: add the rung-0 test. The orchestrator test keeps only the seam.

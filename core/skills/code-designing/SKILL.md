@@ -118,8 +118,8 @@ Before presenting the plan, verify against the rules (cite, don't restate):
 - [ ] Types are self-validating; composed types trusted, never re-validated (R2)
 - [ ] Orchestration planned as a story; most logic pushed into leaf types (R3, R7)
 - [ ] **Placement decided** for every helper and type via the ladder — {{.Unexported}} helper vs feature sub-package vs domain package — or the type is marked feature API (`../../rules/R4-helper-placement.md`)
-- [ ] Every planned function or type that holds a branch or a loop has its own placement line, with an R1 score. A private helper is in the list too: a helper that the plan does not list gets no score, so the next check cannot see it.
-- [ ] No helper or helper type with R1 score ≥4 on rung 1. A type of the feature's public API is not a helper: it stays in the feature package at any score. Its constructor, a function that builds and returns it, stays beside it and is public, with direct tests. A private constructor that a public factory of the type calls is covered through that factory (R4). A pure leaf with R1 score ≥4 can sit in a package that also does I/O. Move it to rung 2 with R4's "Split the pure leaf out of an I/O package". Before you choose rung 2, search the other packages for the same logic. For a match, check if the other package would import the shared leaf. Weigh it with the maxim "a little copying is better than a little dependency". If it would, use rung 3. On rung 3, the other package imports the shared leaf. It deletes its copy only after its tests pass against the shared leaf. When it has no tests, write characterization tests first.
+- [ ] Every planned type with logic (a method with a branch or a loop) has its own placement line, with an R1 score. A private helper type is in the list too: a type that the plan does not list gets no score, so the next check cannot see it. A private function needs no line.
+- [ ] No helper type with R1 score ≥4 on rung 1. A type of the feature's public API is not a helper: it stays in the feature package at any score. Its constructor, a function that builds and returns it, stays beside it and is public, with direct tests. A private constructor that a public factory of the type calls is covered through that factory (R4). A pure leaf with R1 score ≥4 can sit in a package that also does I/O. Move it to rung 2 with R4's "Split the pure leaf out of an I/O package". Before you choose rung 2, search the other packages for the same logic. For a match, check if the other package would import the shared leaf. Weigh it with the maxim "a little copying is better than a little dependency". If it would, use rung 3. On rung 3, the other package imports the shared leaf. It deletes its copy only after its tests pass against the shared leaf. When it has no tests, write characterization tests first.
 - [ ] New code follows the recorded decision, else the layout of the code next to it; package names are flatcase domain vocabulary, never roles/containers (R5)
 - [ ] No test-only interfaces: every interface has a second production implementation OR breaks a real import cycle, verified by grepping the import direction (detection command in `../../rules/R6-test-only-interfaces.md`); otherwise depend on the concrete type
 - [ ] Import direction strictly downward: leaf types ← sub-packages ← parent ← cmd/ (cycle-breaking move in `<package_decomposition>` in @refactoring's `reference.md` (`sed -n '/^<package_decomposition>/,/^<\/package_decomposition>/p; /^### Package decomposition/,$p'`))
@@ -149,8 +149,7 @@ Orchestrating Types:
 Placement Decisions (R4):
 - [type/helper] — R1 score N → rung K (<package path>) — reason
 - [API type or its constructor] — R1 score N → feature API (<package path>) — reason
-One line for each planned function or type that holds a branch or a loop, private
-helpers included. Each line has a number for the R1 score, a `feature API` line too.
+One line for each planned type with logic, private helper types included. Each line has a number for the R1 score, a `feature API` line too.
 
 Design Decisions:
 - [decision] — rationale, citing the owning rule

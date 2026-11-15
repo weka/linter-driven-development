@@ -30,17 +30,13 @@
    down a rung, extracting the leaf if needed.
 
 4. **Does a private leaf or a new public behavior have no direct test?**
-   Detect-grep: `^\s*((async )?function\*? [a-zA-Z_]|(abstract )?class [a-zA-Z_]|(private (static )?(async )?|#)[a-zA-Z_][A-Za-z0-9_]*\(|(const|let) [a-zA-Z_][A-Za-z0-9_]*(: [^=]+)? = (async )?(function\b|(<[^>]*>)?(\(.*\)|[a-zA-Z_][A-Za-z0-9_]*)(: [^=]+)? =>))`
-   Detection: the hits are the non-exported functions, arrow functions, classes and
-   private methods of the scope's non-test files. A helper inside a hook or a
-   component is a hit too.
+   Detect-grep: `^\s*(abstract )?class [a-zA-Z_]`
+   Detection: the hits are the non-exported classes of the scope's non-test files.
+   A non-exported function is not a hit: it is fine where it is.
    Score each hit with R1's scorecard. Read the scorecard in the same Bash call as
    the hits: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
    over `R1-primitive-obsession.md` in this rule file's directory. A hit with a score
-   of 3 or less is not a finding. Old non-exported code in a touched file is in scope.
-   A constructor of an API type is not a leaf finding. A non-exported constructor is a finding only when no public
-   function of its type calls it, and its score is 4 or more: make it public next
-   to its type (R4).
+   of 3 or less is not a finding. Old non-exported classes in a touched file are in scope.
    An `export` added only for the test is a Q2 finding, not a direct test.
    For each new exported function on a leaf module, run
    `grep -rn '<function>' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules .`
@@ -49,7 +45,7 @@
    `R7 Q4: <judged> of <hits> hit(s) judged → <findings> finding(s)`. The
    `not reached:` line then names the three directories with the most hits that
    were not scored, each as `R7 Q4: /{{.CmdPrefix}}-review <dir>`.
-   Violation: a new exported function of a leaf module with no direct test. Also, a non-exported function or class with a score of 4 or
+   Violation: a new exported function of a leaf module with no direct test. Also, a non-exported class with a score of 4 or
    more and no direct test. This applies in any module. A test above it does not
    count. The usual test above it renders a tree, registers `server.use` handlers or builds
    a `QueryClient`.

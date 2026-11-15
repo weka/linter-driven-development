@@ -198,17 +198,14 @@ Test files are the ones the repository's test runner picks up (`*<test-file suff
    Detect: judgment
    Detection: for each new public method on a leaf type, search the test files for
    its name — is it exercised directly, or only through an orchestrator's test?
-   Then search the changed source for new or changed internal functions and
-   types. Score each one with R1's scorecard. Read the scorecard in the same Bash call
+   Then search the changed source for internal types. Score each one with R1's scorecard. Read the scorecard in the same Bash call
    as the search: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'` over
    `R1-primitive-obsession.md` in this rule file's directory. Do not judge or report
    a helper with a score of 3 or less. A test that calls an internal name is a
-   Q2 finding, not a direct test. Old internal code in a touched file is in
-   scope. A constructor of an API type is not a leaf finding. An internal constructor is a finding only when no public
-   function of its type calls it, and its score is 4 or more: make it public next
-   to its type (R4).
+   Q2 finding, not a direct test. Old internal types in a touched file are in
+   scope. A private function is not a finding: it is fine where it is.
    Violation: leaf behavior with no direct test, in any package or module. This
-   applies to a public method of a leaf type and to an internal function or type
+   applies to a public method of a leaf type and to an internal type
    with a score of 4 or more. The usual test above it builds a server, files, a
    database or a rendered tree. Fix a public method: add the rung-0 test; the
    orchestrator test keeps only the seam. Fix an internal leaf in a package that

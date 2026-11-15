@@ -20,16 +20,14 @@
    owns (or should own) — move the test down a rung, extracting the leaf if needed.
 
 4. **Does a private leaf or a new public behavior have no direct test?**
-   Detect-grep: `^func (\([^)]*\) )?[a-z]|^type [a-z]`
-   Detection: the hits are the unexported functions, methods and types of the
+   Detect-grep: `^type [a-z]`
+   Detection: the hits are the unexported types of the
    scope's non-test files.
    Score each hit with R1's scorecard. Read the scorecard in the same Bash call as
    the hits: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
    over `R1-primitive-obsession.md` in this rule file's directory. A hit with a score
-   of 3 or less is not a finding. Old unexported code in a touched file is in scope.
-   A constructor of an API type is not a leaf finding. An unexported constructor is a finding only when no public
-   function of its type calls it, and its score is 4 or more: make it public next
-   to its type (R4).
+   of 3 or less is not a finding. Old unexported types in a touched file are in scope. A private
+   function is not a hit: it is fine where it is.
    An in-package test that calls a hit is a Q2 finding, not a direct test.
    For each new public method on a leaf type, run
    `grep -rn '<Method>' --include='*_test.go' .` and look for a direct test.
@@ -37,7 +35,7 @@
    `R7 Q4: <judged> of <hits> hit(s) judged → <findings> finding(s)`. The
    `not reached:` line then names the three directories with the most hits that
    were not scored, each as `R7 Q4: /{{.CmdPrefix}}-review <dir>`.
-   Violation: a new public method of a leaf type with no direct test. Also, an unexported function, method or type with a score of 4 or
+   Violation: a new public method of a leaf type with no direct test. Also, an unexported type with a score of 4 or
    more and no direct test. This applies in any package. A test above it does not
    count. The usual test above it builds a server, files or a database.
    Fix a public method: add the rung-0 test. The orchestrator test keeps only the seam.
