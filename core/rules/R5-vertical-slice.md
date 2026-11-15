@@ -49,7 +49,11 @@ concern moves to a shared domain package (rung 3) — placement is R4's decision
 
 ### Migration template
 
-New features are always built as vertical slices. Existing layer-structured code
+Propose vertical slices for new code. In a repository with a layered layout, the
+user decides. Until the user agrees, new code follows the layout of its siblings.
+Existing code moves only on the user's request. Write the user's decision to the
+repository's architecture doc: an `architecture.md`, the doc under `docs/` that describes the layout, or `docs/architecture/vertical-slice-migration.md`. A decision recorded there holds: follow it,
+and do not ask again. Existing layer-structured code
 migrates incrementally — never as a big bang, and never leaving one feature in both
 shapes. Track the migration in `docs/architecture/vertical-slice-migration.md`:
 

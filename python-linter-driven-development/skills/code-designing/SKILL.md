@@ -47,18 +47,23 @@ Backward counterpart (fixing code that already fails lint/review): @refactoring.
 <architecture_scan priority="FIRST_STEP">
 **Default: vertical slice architecture** — `../../rules/R5-vertical-slice.md`.
 
+First read the repository's architecture doc: an `architecture.md`, the doc under `docs/` that describes the layout, or `docs/architecture/vertical-slice-migration.md`, or `CLAUDE.md`. A decision
+recorded there on the shape of new code holds. Follow it, and do not ask.
+
 Scan the codebase structure: vertical (`app/feature/{handler,service}.py`, one
 package per feature) vs horizontal (`app/{handlers,services}/feature.py`, or one
 `models.py`/`views.py`/`services.py` per layer)?
 
 1. **Pure vertical** → continue the pattern: implement as `internal/<new-feature>/`.
-2. **Pure horizontal** → propose starting migration (template in R5's Design
-   guidance); implement the new feature as the first vertical slice.
-3. **Mixed** → check `docs/architecture/vertical-slice-migration.md`, continue as a slice.
+2. **Pure horizontal** → propose the vertical slice for new code, and a migration
+   (template in R5's Design guidance). The user decides.
+3. **Mixed** → follow the recorded decision. With none, ask the user.
 
 Architecture advises, it doesn't veto (R5's advisory posture). Ask the user:
 Option A — vertical slice (recommended); Option B — match the existing pattern
-(time pressure and team conventions are valid reasons).
+(time pressure and team conventions are valid reasons). Write the answer to the
+architecture doc, so that the next session does not ask again. When no user can
+answer, follow the layout of the siblings and propose the vertical slice in the plan.
 </architecture_scan>
 
 <understand_domain>

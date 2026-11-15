@@ -86,6 +86,12 @@ signal, below).
 The rung paths in Go: rung 2 is `internal/<feature>/<leaf>`. Rung 3 is
 `internal/pkg/<domain>` (default) or `pkg/<domain>` when another repository could use it.
 
+In a repository that keeps shared code in a layer folder, a rung-3 package goes where
+the repository keeps its shared code. The architecture doc can record another
+decision (`R5-vertical-slice.md`); follow that doc. When the place is not the rung-3
+path above, the plan or the report proposes that path to the user, as a suggestion
+only. A rung-3 package never sits inside the feature package.
+
 "Juicy" is an R1 score of 4 or more — `R1-primitive-obsession.md` is the scorecard's
 only home.
 

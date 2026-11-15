@@ -84,7 +84,11 @@ concern moves to a shared domain package (rung 3) — placement is R4's decision
 
 ### Migration template
 
-New features are always built as vertical slices. Existing layer-structured code
+Propose vertical slices for new code. In a repository with a layered layout, the
+user decides. Until the user agrees, new code follows the layout of its siblings.
+Existing code moves only on the user's request. Write the user's decision to the
+repository's architecture doc: an `architecture.md`, the doc under `docs/` that describes the layout, or `docs/architecture/vertical-slice-migration.md`. A decision recorded there holds: follow it,
+and do not ask again. Existing layer-structured code
 migrates incrementally — never as a big bang, and never leaving one feature in both
 shapes. Track the migration in `docs/architecture/vertical-slice-migration.md`:
 
@@ -142,8 +146,9 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect: judgment
    Detection: list the files the diff adds (`git diff --name-only --diff-filter=A`)
    and check each new path's directory against the layer names above.
-   Violation: new feature code placed in a layer directory — new code is always
-   sliced, even mid-migration.
+   Violation: new feature code placed in a layer directory, when the repository's
+   architecture doc records that new code is sliced. With no recorded decision, it is
+   a proposal to the user, not a violation (Q5 asks for the record).
 
 4. **Do both shapes coexist for one feature?**
    Detect: judgment
@@ -157,8 +162,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect: judgment
    Detection: layer directories exist alongside slices, and
    `docs/architecture/vertical-slice-migration.md` does not.
-   Violation: mixed state with no documented strategy/progress — add the template
-   above.
+   Violation: mixed state with no recorded decision on the shape of new code — ask
+   the user, then record the answer in the architecture doc or the template above.
 
 6. **Is any file over the file-length limit?**
    Detect-script: ldd-lint file-length --measure-held

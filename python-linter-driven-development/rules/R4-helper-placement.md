@@ -85,6 +85,12 @@ nested in the feature package, with public names (`alerts/vectorenv/__init__.py`
 Rung 3 is a top-level package under the source root, only when a second package
 imports the helper. It is never a separate distributable package.
 
+In a repository that keeps shared code in a layer folder, a rung-3 package goes where
+the repository keeps its shared code. The architecture doc can record another
+decision (`R5-vertical-slice.md`); follow that doc. When the place is not the rung-3
+path above, the plan or the report proposes that path to the user, as a suggestion
+only. A rung-3 package never sits inside the feature package.
+
 "Juicy" is an R1 score of 4 or more — `R1-primitive-obsession.md` is the scorecard's
 only home.
 
