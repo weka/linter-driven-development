@@ -114,7 +114,7 @@ private-function test.
   inputs. Never run the tool over a package or module that does I/O. When a package
   holds pure code and I/O code, move the pure code to its own leaf first (R4).
   The actor that tried the tool writes each run that did not execute to the deferral
-  ledger, and reads the exit code. That actor is the testing skill, or the main agent
+  ledger, also when it did a hand check instead, and reads the exit code. That actor is the testing skill, or the main agent
   when it runs the tool itself on `/ldd-quickfix`. The call:
 
 ```bash
@@ -244,8 +244,10 @@ Test files are the ones the repository's test runner picks up (`*<test-file suff
    each side of each condition, and hand-flip any operator whose rows are missing
    (`<` to `<=`, `>` to `>=`, a condition negated), run the leaf's tests, revert.
    When the tool run did not execute for a leaf, the receipt says so on its own line:
-   `R7 Q7: mutation run did not execute — <leaf>`. A hand check alone runs no tool
-   and writes no such line.
+   `R7 Q7: mutation run did not execute — <leaf>`. A hand check does not replace the tool: when the
+   language has a mutation tool and it did not run, the line and the
+   `mutation-not-run` ledger row are written, also after a hand check. Only a language
+   with no mutation tool takes the hand check alone, with no such line.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,

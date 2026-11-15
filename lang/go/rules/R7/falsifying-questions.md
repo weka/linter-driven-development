@@ -73,8 +73,10 @@
    boundary value and on each side of each condition, and name the row that is
    missing.
    When the tool run did not execute for a leaf, the receipt says so on its own line:
-   `R7 Q7: mutation run did not execute — <leaf>`. A hand check alone runs no tool
-   and writes no such line.
+   `R7 Q7: mutation run did not execute — <leaf>`. A hand check does not replace the tool: when the
+   language has a mutation tool and it did not run, the line and the
+   `mutation-not-run` ledger row are written, also after a hand check. Only a language
+   with no mutation tool takes the hand check alone, with no such line.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,

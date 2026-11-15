@@ -26,7 +26,7 @@
   inputs. Never run the tool over a package or module that does I/O. When a package
   holds pure code and I/O code, move the pure code to its own leaf first (R4).
   The actor that tried the tool writes each run that did not execute to the deferral
-  ledger, and reads the exit code. That actor is the testing skill, or the main agent
+  ledger, also when it did a hand check instead, and reads the exit code. That actor is the testing skill, or the main agent
   when it runs the tool itself on `/{{.CmdPrefix}}-quickfix`. The call:
 
 ```bash
