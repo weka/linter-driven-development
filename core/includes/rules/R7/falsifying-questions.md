@@ -23,7 +23,9 @@ Test files are the ones the repository's test runner picks up (`*{{.TestGlob}}`,
    servers) against the assertion's subject; count setup lines vs. the one predicate
    actually checked.
    Violation: heavyweight construction whose assertions target logic a leaf type
-   owns (or should own) — move the test down a rung, extracting the leaf if needed.
+   owns (or should own) — move the test down a rung, extracting the leaf if needed. When the leaf is a
+   private type, it is Q4's finding: the fix moves the type to its own package (R4),
+   not only the test.
 
 4. **Does a private leaf or a new public behavior have no direct test?**
    Detect: judgment

@@ -27,7 +27,9 @@
    handler or a `QueryClient` is real infrastructure.
    Violation: heavyweight construction whose assertions target logic a leaf owns (or
    should own) — rendering a page to check what `formatBytes` prints — move the test
-   down a rung, extracting the leaf if needed.
+   down a rung, extracting the leaf if needed. When the leaf is a
+   private type, it is Q4's finding: the fix moves the type to its own package (R4),
+   not only the test.
 
 4. **Does a private leaf or a new public behavior have no direct test?**
    Detect-grep: `^\s*(abstract )?class [a-zA-Z_]`
