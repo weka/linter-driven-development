@@ -86,8 +86,8 @@ private-function test.
   constructors; inputs are literals; imported as a consumer would, so privates are
   unreachable.
   Most of the codebase's logic should live here (`R1-primitive-obsession.md`).
-- **Mutation score on leaf types only**: once a leaf's tests cover it, run the
-  mutation tool over that leaf's package — never over orchestrators, the top rung or
+- **Mutation score on leaf types only**: once a pure logic leaf's tests cover it, run
+  the mutation tool over that leaf's package — never over orchestrators, the top rung or
   the whole module — and triage every survivor: a *missing row* (add the literal that
   tells the mutant from the original), *dead logic* (the mutant is unreachable —
   delete the code, not the mutant), or an *equivalent mutant* (the change is
@@ -109,9 +109,10 @@ private-function test.
   boundary value and one just past it, for every boolean condition a row on each
   side, and a suspected gap is confirmed by flipping the operator, running the
   leaf's tests, and putting it back — green tests mean a survivor.
-  A mutation run targets only a pure logic leaf: code with no I/O (network, files,
-  environment variables, clock) that its tests call with literal inputs. Never run it
-  over a package or module that does I/O.
+  A mutation run targets only a pure logic leaf. A pure logic leaf does no I/O
+  (network, files, environment variables, clock), and its tests call it with literal
+  inputs. Never run the tool over a package or module that does I/O. When a package
+  holds pure code and I/O code, move the pure code to its own leaf first (R4).
   The actor that tried the tool writes each run that did not execute to the deferral
   ledger, and reads the exit code. That actor is the testing skill, or the main agent
   when it runs the tool itself on `/ldd-quickfix`. The call:
@@ -236,7 +237,8 @@ Test files are the ones the repository's test runner picks up (`*<test-file suff
    testing tool over that leaf's package only (the mechanics bullet names the tool
    and the command) and read its list of survivors; skip orchestrators, the top
    rung and any package that does I/O. Judge a pure leaf inside such a package
-   with Q4. Do not skip it. A tool the language has but the machine
+   with Q4. Do not skip it. Code that does I/O gets no
+   mutation run, no `did not execute` line and no finding. A tool the language has but the machine
    lacks is proposed for install as the mechanics bullet says, never skipped and
    never counted as a pass. Without any tool, list the leaf's comparisons
    and boolean conditions, check the table for a row at each boundary value and on

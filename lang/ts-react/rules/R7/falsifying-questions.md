@@ -86,7 +86,8 @@
    the `clear-text` reporter: a `Survived` line carries the file, the line and the
    replacement, and a `CompileError` line is a mutant the types rejected, not a
    kill. Skip orchestrators, the top rung and any module that does I/O. Judge a pure leaf
-   inside such a module with Q4. Do not skip it. Stryker
+   inside such a module with Q4. Do not skip it. Code that does I/O gets no
+   mutation run, no `did not execute` line and no finding. Stryker
    not installed (`@stryker-mutator/core` absent from `devDependencies`): propose
    the install the mechanics bullet describes before hunting; no survivors from a
    run that did not execute is not a pass. In a read-only review, where no tests

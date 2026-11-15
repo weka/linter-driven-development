@@ -61,7 +61,8 @@
    Detection: for each new or changed leaf package,
    `gremlins unleash ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|NOT COVERED|TIMED OUT)|Killed:|Not covered:|Timed out:'`;
    skip orchestrators, the top rung and any package that does I/O. Judge a pure leaf
-   inside such a package with Q4. Do not skip it. `gremlins` not on `PATH`: propose
+   inside such a package with Q4. Do not skip it. Code that does I/O gets no
+   mutation run, no `did not execute` line and no finding. `gremlins` not on `PATH`: propose
    the install the mechanics bullet describes before hunting; an empty `LIVED` list from
    a run that did not execute, or whose mutants all timed out, is not a pass. A
    `NOT COVERED` mutant is a finding, the same as a `LIVED` one: a missing test row.

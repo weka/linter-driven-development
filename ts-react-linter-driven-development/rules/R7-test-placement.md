@@ -127,8 +127,8 @@ throw, and neither case body branches.
   constructors; inputs are literals; imported as a consumer would, so privates are
   unreachable.
   Most of the codebase's logic should live here (`R1-primitive-obsession.md`).
-- **Mutation score on leaf types only**: once a leaf's tests cover it, run the
-  mutation tool over that leaf's package — never over orchestrators, the top rung or
+- **Mutation score on leaf types only**: once a pure logic leaf's tests cover it, run
+  the mutation tool over that leaf's package — never over orchestrators, the top rung or
   the whole module — and triage every survivor: a *missing row* (add the literal that
   tells the mutant from the original), *dead logic* (the mutant is unreachable —
   delete the code, not the mutant), or an *equivalent mutant* (the change is
@@ -158,9 +158,10 @@ throw, and neither case body branches.
   Stryker mutates equality, relational and logical operators, literals and optional
   chaining, so the hand check's boundary rows mostly confirm its report rather than
   cover a blind spot.
-  A mutation run targets only a pure logic leaf: code with no I/O (network, files,
-  environment variables, clock) that its tests call with literal inputs. Never run it
-  over a package or module that does I/O.
+  A mutation run targets only a pure logic leaf. A pure logic leaf does no I/O
+  (network, files, environment variables, clock), and its tests call it with literal
+  inputs. Never run the tool over a package or module that does I/O. When a package
+  holds pure code and I/O code, move the pure code to its own leaf first (R4).
   The actor that tried the tool writes each run that did not execute to the deferral
   ledger, and reads the exit code. That actor is the testing skill, or the main agent
   when it runs the tool itself on `/tsr-ldd-quickfix`. The call:
@@ -310,7 +311,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    the `clear-text` reporter: a `Survived` line carries the file, the line and the
    replacement, and a `CompileError` line is a mutant the types rejected, not a
    kill. Skip orchestrators, the top rung and any module that does I/O. Judge a pure leaf
-   inside such a module with Q4. Do not skip it. Stryker
+   inside such a module with Q4. Do not skip it. Code that does I/O gets no
+   mutation run, no `did not execute` line and no finding. Stryker
    not installed (`@stryker-mutator/core` absent from `devDependencies`): propose
    the install the mechanics bullet describes before hunting; no survivors from a
    run that did not execute is not a pass. In a read-only review, where no tests

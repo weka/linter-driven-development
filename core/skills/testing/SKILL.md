@@ -55,7 +55,8 @@ Writes tests autonomously based on code structure and type design, and serves as
 
 **Coverage targets**
 - Rung 0 (leaf types): 100% unit test coverage, and no untriaged survivor when the
-  mutation tool runs over the leaf's package (`../../rules/R7-test-placement.md`,
+  mutation tool runs over the leaf's package, when the leaf is pure logic with no I/O
+  (`../../rules/R7-test-placement.md`,
   Mutation score on leaf types only) — coverage is the floor, the mutation score the claim.
   A run that did not execute is not a pass. Write it to the ledger, and read the exit
   code. Write each line of this call at the start of its line, with no indent:

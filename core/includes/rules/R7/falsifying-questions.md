@@ -68,7 +68,8 @@ Test files are the ones the repository's test runner picks up (`*{{.TestGlob}}`,
    testing tool over that leaf's package only (the mechanics bullet names the tool
    and the command) and read its list of survivors; skip orchestrators, the top
    rung and any package that does I/O. Judge a pure leaf inside such a package
-   with Q4. Do not skip it. A tool the language has but the machine
+   with Q4. Do not skip it. Code that does I/O gets no
+   mutation run, no `did not execute` line and no finding. A tool the language has but the machine
    lacks is proposed for install as the mechanics bullet says, never skipped and
    never counted as a pass. Without any tool, list the leaf's comparisons
    and boolean conditions, check the table for a row at each boundary value and on

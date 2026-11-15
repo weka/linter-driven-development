@@ -256,7 +256,7 @@ before.
 </phase_4_review>
 
 <phase_5_ship>
-1. Invoke @documentation (FEATURE mode): godoc + feature docs, wired into the
+1. Invoke @documentation (FEATURE mode), except on `/go-ldd-quickfix`: godoc + feature docs, wired into the
    documentation network (index line, edges both directions, root import), plus its
    R9 self-check over the diff and its comment-critic critique loop (the critic
    reviews every comment in the diff against R9's three-test standard;
@@ -315,7 +315,7 @@ it.
 - [ ] lint-fixer reported `LINT STATUS: green`; all escalations resolved via @refactoring
 - [ ] @pre-commit-review INCREMENTAL delta clean, or findings that the user said to
       defer, each one a ledger row
-- [ ] @documentation (FEATURE mode) done — docs wired into the network, R9 self-check
+- [ ] @documentation (FEATURE mode) done, except on `/go-ldd-quickfix` — docs wired into the network, R9 self-check
       clean, comment-critic critique loop applied and confirmed clean (or remainder
       reported); the green slice committed and the ship summary presented with its
       hash and the `ldd-ledger.sh show` output

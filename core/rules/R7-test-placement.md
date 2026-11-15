@@ -45,8 +45,8 @@ and review contract.
   constructors; inputs are literals; imported as a consumer would, so privates are
   unreachable.
   Most of the codebase's logic should live here (`R1-primitive-obsession.md`).
-- **Mutation score on leaf types only**: once a leaf's tests cover it, run the
-  mutation tool over that leaf's package — never over orchestrators, the top rung or
+- **Mutation score on leaf types only**: once a pure logic leaf's tests cover it, run
+  the mutation tool over that leaf's package — never over orchestrators, the top rung or
   the whole module — and triage every survivor: a *missing row* (add the literal that
   tells the mutant from the original), *dead logic* (the mutant is unreachable —
   delete the code, not the mutant), or an *equivalent mutant* (the change is

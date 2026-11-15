@@ -71,7 +71,8 @@
    Detection: for each new or changed leaf package, with `paths_to_mutate` under
    `[tool.mutmut]` naming that package only, `mutmut run` then `mutmut results`;
    skip orchestrators, the top rung and any module that does I/O. Judge a pure leaf
-   inside such a module with Q4. Do not skip it. `mutmut` not installed: propose the
+   inside such a module with Q4. Do not skip it. Code that does I/O gets no
+   mutation run, no `did not execute` line and no finding. `mutmut` not installed: propose the
    install the mechanics bullet describes before hunting; no
    survivors from a run that did not execute is not a pass. In a read-only review,
    where no tests may run, take the hand check instead: list the leaf's comparisons
