@@ -81,11 +81,12 @@ signal, below).
 The rung paths: rung 2 is a sub-package, sub-module or namespace under the feature,
 with public names that the feature's public surface does not expose. Rung 3 is a shared package under the source root.
 
-In a repository that keeps shared code in a layer folder, a rung-3 package goes where
-the repository keeps its shared code. The architecture doc can record another
-decision (`R5-vertical-slice.md`); follow that doc. When the place is not the rung-3
-path above, the plan or the report proposes that path to the user, as a suggestion
-only. A rung-3 package never sits inside the feature package.
+In a repository with a layered layout, a rung-3 package goes to the shared folder
+that the repository uses, unless the architecture doc records another decision
+(`R5-vertical-slice.md`). A role-named folder (`utils`, `common`) is never that place;
+use the rung-3 path above. When the package does not go to the rung-3 path, the plan
+or the report proposes that path to the user. A rung-3 package never goes inside the
+feature package.
 
 "Juicy" is an R1 score of 4 or more — `R1-primitive-obsession.md` is the scorecard's
 only home.

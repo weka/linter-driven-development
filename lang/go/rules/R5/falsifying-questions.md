@@ -3,6 +3,10 @@
    Detection: any scope path under a layer- or role-named directory; a Go package is
    named after its directory, so the `package` line says the same.
    Violation: any hit — the package describes a role, not a domain.
+   A layer name (`services`, `handlers`, `models`, `repositories`, `domain`) is a
+   violation only when the architecture doc records that new code is sliced.
+   Otherwise it is a proposal to the user, and the fix moves nothing. A role name
+   (`util`, `helpers`, `common`, `shared`, `misc`) is always a violation.
 
 2. **Is one feature's code spread across ≥2 layer directories?**
    Detect: judgment
@@ -11,14 +15,16 @@
    distinct layer-named directories.
    Violation: the same feature living in `handlers/` and `services/` (etc.) — it is
    horizontally scattered.
+   This is a violation only when the architecture doc records that new code is
+   sliced. Otherwise it is a proposal to the user, and the fix moves nothing.
 
 3. **Does the diff add a new file into a layer directory instead of a slice?**
    Detect: judgment
    Detection: the diff's added files (`new file mode` in the patch) — check each new
    path's directory against the layer names above.
    Violation: new feature code placed in a layer directory, when the repository's
-   architecture doc records that new code is sliced. With no recorded decision, it is
-   a proposal to the user, not a violation (Q5 asks for the record).
+   architecture doc records that new code is sliced. With no recorded decision, the
+   placement is a proposal to the user, not a violation. Q5 asks for the record.
 
 4. **Do both shapes coexist for one feature?**
    Detect: judgment
@@ -30,9 +36,11 @@
 5. **Is a mixed-architecture repo missing its migration plan?**
    Detect: judgment
    Detection: layer directories exist alongside slices, and
-   `ls docs/architecture/vertical-slice-migration.md` fails.
+   no architecture doc (R5's list) records the shape of new code.
    Violation: mixed state with no recorded decision on the shape of new code — ask
-   the user, then record the answer in the architecture doc or the template above.
+   the user, then write the answer to the architecture doc.
+   With no recorded decision this stays a proposal: only the user makes the
+   decision. In a run where no user can answer, report it and write no decision.
 
 6. **Is any file over the file-length limit?**
    Detect-script: ldd-lint file-length --measure-held

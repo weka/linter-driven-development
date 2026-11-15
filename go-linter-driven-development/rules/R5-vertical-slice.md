@@ -83,12 +83,18 @@ concern moves to a shared domain package (rung 3) — placement is R4's decision
 ### Migration template
 
 Propose vertical slices for new code. In a repository with a layered layout, the
-user decides. Until the user agrees, new code follows the layout of its siblings.
-Existing code moves only on the user's request. Write the user's decision to the
-repository's architecture doc: an `architecture.md`, the doc under `docs/` that describes the layout, or `docs/architecture/vertical-slice-migration.md`. A decision recorded there holds: follow it,
-and do not ask again. Existing layer-structured code
-migrates incrementally — never as a big bang, and never leaving one feature in both
-shapes. Track the migration in `docs/architecture/vertical-slice-migration.md`:
+user decides the shape of new code. Until the user agrees to slices, new code follows
+the layout of the code next to it. Existing code moves only on the user's request.
+
+The architecture doc is the first of these that exists: an `architecture.md`, a doc
+under `docs/` that describes the layout, `docs/architecture/vertical-slice-migration.md`,
+`CLAUDE.md` or `README.md`. Write the user's decision there. When none exists,
+propose `docs/architecture.md` to the user. A decision in the architecture doc is the
+rule: follow it, and do not ask again. Review and analysis only report; they write no
+decision.
+
+After the user agrees, existing layer-structured code migrates one feature at a time,
+and never leaves one feature in both shapes. Track the migration in `docs/architecture/vertical-slice-migration.md`:
 
 ```markdown
 # Vertical Slice Migration Plan
@@ -112,8 +118,8 @@ are never acceptable (`R4-helper-placement.md`).
 
 ## Fix pattern
 
-- **Slice out a feature**: apply the migration template above — one feature per
-  iteration, each iteration a working, deployable state.
+- **Slice out a feature**: only after the user agrees, apply the migration template
+  above — one feature per iteration, each iteration a working, deployable state.
 - **Rename layer files by role during the move**: `<feature>_service.go` →
   `service.go`; the package name now carries the feature.
 - **Split a generic package by owner**: for each symbol in a `util`/`common`
@@ -130,6 +136,10 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detection: any scope path under a layer- or role-named directory; a Go package is
    named after its directory, so the `package` line says the same.
    Violation: any hit — the package describes a role, not a domain.
+   A layer name (`services`, `handlers`, `models`, `repositories`, `domain`) is a
+   violation only when the architecture doc records that new code is sliced.
+   Otherwise it is a proposal to the user, and the fix moves nothing. A role name
+   (`util`, `helpers`, `common`, `shared`, `misc`) is always a violation.
 
 2. **Is one feature's code spread across ≥2 layer directories?**
    Detect: judgment
@@ -138,14 +148,16 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    distinct layer-named directories.
    Violation: the same feature living in `handlers/` and `services/` (etc.) — it is
    horizontally scattered.
+   This is a violation only when the architecture doc records that new code is
+   sliced. Otherwise it is a proposal to the user, and the fix moves nothing.
 
 3. **Does the diff add a new file into a layer directory instead of a slice?**
    Detect: judgment
    Detection: the diff's added files (`new file mode` in the patch) — check each new
    path's directory against the layer names above.
    Violation: new feature code placed in a layer directory, when the repository's
-   architecture doc records that new code is sliced. With no recorded decision, it is
-   a proposal to the user, not a violation (Q5 asks for the record).
+   architecture doc records that new code is sliced. With no recorded decision, the
+   placement is a proposal to the user, not a violation. Q5 asks for the record.
 
 4. **Do both shapes coexist for one feature?**
    Detect: judgment
@@ -157,9 +169,11 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
 5. **Is a mixed-architecture repo missing its migration plan?**
    Detect: judgment
    Detection: layer directories exist alongside slices, and
-   `ls docs/architecture/vertical-slice-migration.md` fails.
+   no architecture doc (R5's list) records the shape of new code.
    Violation: mixed state with no recorded decision on the shape of new code — ask
-   the user, then record the answer in the architecture doc or the template above.
+   the user, then write the answer to the architecture doc.
+   With no recorded decision this stays a proposal: only the user makes the
+   decision. In a run where no user can answer, report it and write no decision.
 
 6. **Is any file over the file-length limit?**
    Detect-script: ldd-lint file-length --measure-held

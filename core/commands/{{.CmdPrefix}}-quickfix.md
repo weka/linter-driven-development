@@ -103,7 +103,8 @@ ROW
   doc that cites a symbol the fix moved, renamed or removed is in the scope: fix it.
 - Defer a finding only when the user says to defer it, and write it as a `finding`
   row (`<deferral_ledger>` in the skill). When the prompt or the system says that no
-  user can answer, fix every finding and defer none. In that run, fix a finding that
+  user can answer, fix every finding and defer none. An R5 proposal about the shape of new
+  code is not such a finding: report it, and write no decision. In that run, fix a finding that
   the skeptic REFUTED with the skeptic's cheaper alternative.
 
 **No documentation phase.** Quickfix does not run the skill's @documentation step.

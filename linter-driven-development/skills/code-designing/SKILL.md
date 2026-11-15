@@ -48,24 +48,25 @@ Backward counterpart (fixing code that already fails lint/review): @refactoring.
 <protocol>
 
 <architecture_scan priority="FIRST_STEP">
-**Default: vertical slice architecture** — `../../rules/R5-vertical-slice.md`.
+**Proposed default: vertical slice architecture** — `../../rules/R5-vertical-slice.md`.
 
-First read the repository's architecture doc: an `architecture.md`, the doc under `docs/` that describes the layout, or `docs/architecture/vertical-slice-migration.md`, or `CLAUDE.md`. A decision
-recorded there on the shape of new code holds. Follow it, and do not ask.
+First read the architecture doc (R5's Migration template lists where to look). A
+decision there on the shape of new code is the rule. Follow it, and do not ask.
 
 Scan the codebase structure: vertical (`<feature>/{handler,service}.<ext>`) vs
 horizontal (`{handlers,services}/<feature>.<ext>`)?
 
 1. **Pure vertical** → continue the pattern: implement as `internal/<new-feature>/`.
-2. **Pure horizontal** → propose the vertical slice for new code, and a migration
-   (template in R5's Design guidance). The user decides.
-3. **Mixed** → follow the recorded decision. With none, ask the user.
+2. **Pure horizontal or mixed, with a recorded decision** → follow the decision.
+3. **Pure horizontal or mixed, with no recorded decision** → ask the user. Option A:
+   new code is sliced (recommended). Option B: new code follows the existing layout
+   (time pressure and team conventions are valid reasons). Either option can add a
+   migration guide for existing code (template in R5's Design guidance). Write the
+   answer to the architecture doc, so that the next session does not ask again.
+   When no user can answer, follow the layout of the code next to it, and propose
+   the vertical slice in the plan.
 
-Architecture advises, it doesn't veto (R5's advisory posture). Ask the user:
-Option A — vertical slice (recommended); Option B — match the existing pattern
-(time pressure and team conventions are valid reasons). Write the answer to the
-architecture doc, so that the next session does not ask again. When no user can
-answer, follow the layout of the siblings and propose the vertical slice in the plan.
+Architecture advises, it doesn't veto (R5's advisory posture).
 </architecture_scan>
 
 <understand_domain>
@@ -126,7 +127,7 @@ Before presenting the plan, verify against the rules (cite, don't restate):
 - [ ] Orchestration planned as a story; most logic pushed into leaf types (R3, R7)
 - [ ] **Placement decided** for every helper and type via the ladder — internal helper vs feature sub-package vs domain package — or the type is marked feature API (`../../rules/R4-helper-placement.md`)
 - [ ] No helper or helper type with R1 score ≥4 on rung 1. A type of the feature's public API is not a helper: it stays in the feature package at any score. Its constructor, a function that builds and returns it, stays beside it and is public, with direct tests. A private constructor that a public factory of the type calls is covered through that factory (R4). A pure leaf with R1 score ≥4 can sit in a package that also does I/O. Move it to rung 2 with R4's "Split the pure leaf out of an I/O package". Before you choose rung 2, search the other packages for the same logic. For a match, check if the other package would import the shared leaf. Weigh it with the maxim "a little copying is better than a little dependency". If it would, use rung 3. On rung 3, the other package imports the shared leaf. It deletes its copy only after its tests pass against the shared leaf. When it has no tests, write characterization tests first.
-- [ ] Vertical slice structure; package names are flatcase domain vocabulary, never roles/containers (R5)
+- [ ] New code follows the recorded decision, else the layout of the code next to it; package names are flatcase domain vocabulary, never roles/containers (R5)
 - [ ] No test-only interfaces: every interface has a second production implementation OR breaks a real import cycle, verified by grepping the import direction (detection command in `../../rules/R6-test-only-interfaces.md`); otherwise depend on the concrete type
 - [ ] Import direction strictly downward: leaf types ← sub-packages ← parent ← cmd/ (cycle-breaking move in `<package_decomposition>` in @refactoring's `reference.md` (`sed -n '/^<package_decomposition>/,/^<\/package_decomposition>/p; /^### Package decomposition/,$p'`))
 - [ ] Dependencies constructor-injected and validated; cancellation flows down; no new globals (R8, R2)
