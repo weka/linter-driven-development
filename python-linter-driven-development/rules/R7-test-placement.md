@@ -233,8 +233,9 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    the hits: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
    over `R1-primitive-obsession.md` in this rule file's directory. A hit with a score
    of 3 or less is not a finding. Old underscore-prefixed code in a touched file is in scope.
-   A constructor of an API type is not a leaf finding. An underscore-prefixed constructor with a
-   score of 4 or more is a finding: make it public next to its type (R4).
+   A constructor of an API type is not a leaf finding. An underscore-prefixed constructor is a finding only when no public
+   function of its type calls it, and its score is 4 or more: make it public next
+   to its type (R4).
    A test that imports a hit is a Q2 finding, not a direct test.
    For each new public method on a leaf type, run
    `grep -rn '<method>' --include='test_*.py' --include='*_test.py' .` and look for a

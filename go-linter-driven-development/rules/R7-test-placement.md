@@ -213,8 +213,9 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    the hits: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
    over `R1-primitive-obsession.md` in this rule file's directory. A hit with a score
    of 3 or less is not a finding. Old unexported code in a touched file is in scope.
-   A constructor of an API type is not a leaf finding. An unexported constructor with a
-   score of 4 or more is a finding: make it public next to its type (R4).
+   A constructor of an API type is not a leaf finding. An unexported constructor is a finding only when no public
+   function of its type calls it, and its score is 4 or more: make it public next
+   to its type (R4).
    An in-package test that calls a hit is a Q2 finding, not a direct test.
    For each new public method on a leaf type, run
    `grep -rn '<Method>' --include='*_test.go' .` and look for a direct test.

@@ -200,9 +200,9 @@ Test files are the ones the repository's test runner picks up (`*<test-file suff
    `R1-primitive-obsession.md` in this rule file's directory. Do not judge or report
    a helper with a score of 3 or less. A test that calls an internal name is a
    Q2 finding, not a direct test. Old internal code in a touched file is in
-   scope. A constructor of an API type is not a leaf finding. An internal
-   constructor with a score of 4 or more is a finding: make it public next to its
-   type (R4).
+   scope. A constructor of an API type is not a leaf finding. An internal constructor is a finding only when no public
+   function of its type calls it, and its score is 4 or more: make it public next
+   to its type (R4).
    Violation: leaf behavior with no direct test, in any package or module. This
    applies to a public method of a leaf type and to an internal function or type
    with a score of 4 or more. The usual test above it builds a server, files, a

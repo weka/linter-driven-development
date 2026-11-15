@@ -38,8 +38,9 @@
    the hits: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
    over `R1-primitive-obsession.md` in this rule file's directory. A hit with a score
    of 3 or less is not a finding. Old non-exported code in a touched file is in scope.
-   A constructor of an API type is not a leaf finding. A non-exported constructor with a
-   score of 4 or more is a finding: make it public next to its type (R4).
+   A constructor of an API type is not a leaf finding. A non-exported constructor is a finding only when no public
+   function of its type calls it, and its score is 4 or more: make it public next
+   to its type (R4).
    An `export` added only for the test is a Q2 finding, not a direct test.
    For each new exported function on a leaf module, run
    `grep -rn '<function>' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules .`
