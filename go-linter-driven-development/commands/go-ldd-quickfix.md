@@ -115,8 +115,11 @@ build the documentation network here: that is `/wire-repo-brain`.
 summary with the hash, the scope line, the lint-fixer's `FIXED:` / `ESCALATED:`
 tallies and — when @refactoring ran — its `Stop check` block verbatim, six labelled
 lines; without the block the refactoring did not finish and the summary is not final.
-Paste the `ldd-ledger.sh show` output at the end of the summary (`<deferral_ledger>` in
-the skill). Never write that all items are closed while the ledger has rows.
+Call `ldd-ledger.sh show` one time, just before the commit (`<deferral_ledger>` in the
+skill). The summary puts its parts in this order: the hash, the scope line, the
+tallies, the `Outside the scope` heading, the `show` output, then the `Stop check`
+block last. Write nothing after the block. Never write that all items are closed while
+the ledger has rows.
 Never write that all items are closed while the summary names an open item, such as
 a pending lint escalation or a delta that is not clean. Put each item outside the
 scope under one heading, `Outside the scope`. That heading also holds the BROADER
