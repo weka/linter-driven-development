@@ -25,7 +25,8 @@ Test files are the ones the repository's test runner picks up (`*{{.TestGlob}}`,
    Violation: heavyweight construction whose assertions target logic a leaf type
    owns (or should own) — move the test down a rung, extracting the leaf if needed. When the leaf is a
    private type, it is Q4's finding: the fix moves the type to its own package (R4),
-   not only the test.
+   not only the test. A private function stays where it is,
+   pure or not: the test above covers it. Never move it out of its module.
 
 4. **Does a private leaf or a new public behavior have no direct test?**
    Detect: judgment
@@ -43,7 +44,9 @@ Test files are the ones the repository's test runner picks up (`*{{.TestGlob}}`,
    database or a rendered tree. Fix a public method: add the rung-0 test; the
    orchestrator test keeps only the seam. Fix an {{.Unexported}} leaf in a package that
    does I/O with R4's "Split the pure leaf out of an I/O package". Fix one in a package
-   with no I/O with "Promote to feature sub-package (rung 2)". Then add the rung-0 test.
+   with no I/O with "Promote to feature sub-package (rung 2)". Move only the type and
+   the code that it calls. Name the type alone in the finding. A private function that
+   only the I/O code calls stays private in the parent. Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `[Aa]ssert(_?[Cc]alled|_?[Ee]xpectations|_?[Aa]ny_?[Cc]all|_?[Hh]as_?[Cc]alls)|\.call_count|\.mock_calls|\.calls\b` files=test
@@ -66,8 +69,8 @@ Test files are the ones the repository's test runner picks up (`*{{.TestGlob}}`,
    Detection: for each new or changed leaf type, run the repository's mutation
    testing tool over that leaf's package only (the mechanics bullet names the tool
    and the command) and read its list of survivors; skip orchestrators, the top
-   rung and any package that does I/O. Judge a pure leaf inside such a package
-   with Q4. Do not skip it. Code that does I/O gets no
+   rung and any package that does I/O. Judge a private type inside such a package
+   with Q4. Do not skip it. A private function there gets no run and no finding. Code that does I/O gets no
    mutation run, no `did not execute` line and no finding. A tool the language has but the machine
    lacks is proposed for install as the mechanics bullet says, never skipped and
    never counted as a pass. Without any tool, list the leaf's comparisons

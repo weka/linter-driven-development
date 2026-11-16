@@ -57,7 +57,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 - **The split out of an I/O package moves only the juicy type.** "Split the pure leaf
   out of an I/O package" moves the juicy type and the code that it calls. A private
   function that only the I/O code calls stays private in the parent. R7's mutation
-  text says the same.
+  text says the same. R7 Q3, Q4 and Q7 say that a private function
+  stays in its module, and that a finding names the juicy type alone.
 
 - **R7 Q4 judges private leaves.** A private function or type with an R1 score of 4
   or more and no direct test is a finding, whatever code reaches it. R7 Q7 sends a

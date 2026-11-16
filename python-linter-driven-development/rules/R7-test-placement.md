@@ -230,7 +230,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Violation: heavyweight construction whose assertions target logic a leaf type
    owns (or should own) — move the test down a rung, extracting the leaf if needed. When the leaf is a
    private type, it is Q4's finding: the fix moves the type to its own package (R4),
-   not only the test.
+   not only the test. A private function stays where it is,
+   pure or not: the test above covers it. Never move it out of its module.
 
 4. **Does a private leaf or a new public behavior have no direct test?**
    Detect-grep: `^\s*class _[a-zA-Z]`
@@ -255,7 +256,9 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Fix a public method: add the rung-0 test. The orchestrator test keeps only the seam.
    Fix an underscore-prefixed leaf in a module that does I/O: use R4's "Split the pure leaf out of an
    I/O package". Fix one in any other module: use "Promote to feature sub-package
-   (rung 2)". Then add the rung-0 test.
+   (rung 2)". Move only the type and the code that it calls.
+   Name the type alone in the finding. A private function that only the I/O code calls
+   stays private in the parent. Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `assert_called|assert_any_call|assert_has_calls|\.call_count|\.call_args|\.mock_calls|\.calls\b` files=test
@@ -275,8 +278,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*len\b)|\blen\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)handlers/,(^|/)__main__\.py$,(^|/)main\.py$,(^|/)cli\.py$
    Detection: for each new or changed leaf package, with `paths_to_mutate` under
    `[tool.mutmut]` naming that package only, `mutmut run` then `mutmut results`;
-   skip orchestrators, the top rung and any module that does I/O. Judge a pure leaf
-   inside such a module with Q4. Do not skip it. Code that does I/O gets no
+   skip orchestrators, the top rung and any module that does I/O. Judge a private type
+   inside such a module with Q4. Do not skip it. A private function there gets no run and no finding. Code that does I/O gets no
    mutation run, no `did not execute` line and no finding. `mutmut` not installed: propose the
    install the mechanics bullet describes before hunting; no
    survivors from a run that did not execute is not a pass. In a read-only review,

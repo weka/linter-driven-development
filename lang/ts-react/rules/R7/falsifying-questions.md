@@ -29,7 +29,8 @@
    should own) — rendering a page to check what `formatBytes` prints — move the test
    down a rung, extracting the leaf if needed. When the leaf is a
    private type, it is Q4's finding: the fix moves the type to its own package (R4),
-   not only the test.
+   not only the test. A private function stays where it is,
+   pure or not: the test above covers it. Never move it out of its module.
 
 4. **Does a private leaf or a new public behavior have no direct test?**
    Detect-grep: `^\s*(abstract )?class [a-zA-Z_]`
@@ -54,7 +55,9 @@
    Fix an exported function: add the rung-0 test. The page test keeps only the seam.
    Fix a non-exported leaf in a module that does I/O: use R4's "Split the pure leaf out of an
    I/O package". Fix one in any other module: use "Promote to feature sub-package
-   (rung 2)". Then add the rung-0 test in a `.ts` module.
+   (rung 2)". Move only the type and the code that it calls.
+   Name the type alone in the finding. A private function that only the I/O code calls
+   stays private in the parent. Then add the rung-0 test in a `.ts` module.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `toHaveBeenCalled(Times|With|Once)?\(|toHaveBeen(Last|Nth)CalledWith|\.mock\.(calls|results|lastCall)` files=test
@@ -83,8 +86,8 @@
    each mutant in a sandbox copy under `.stryker-tmp/`, never in the checkout. Read
    the `clear-text` reporter: a `Survived` line carries the file, the line and the
    replacement, and a `CompileError` line is a mutant the types rejected, not a
-   kill. Skip orchestrators, the top rung and any module that does I/O. Judge a pure leaf
-   inside such a module with Q4. Do not skip it. Code that does I/O gets no
+   kill. Skip orchestrators, the top rung and any module that does I/O. Judge a private type
+   inside such a module with Q4. Do not skip it. A private function there gets no run and no finding. Code that does I/O gets no
    mutation run, no `did not execute` line and no finding. Stryker
    not installed (`@stryker-mutator/core` absent from `devDependencies`): propose
    the install the mechanics bullet describes before hunting; no survivors from a
