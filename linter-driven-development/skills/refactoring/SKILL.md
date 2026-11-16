@@ -134,7 +134,7 @@ touched packages' declarations carry none of the routed rules' directives, not w
 the one directive the request named is gone and its neighbours keep their `TODO`. A
 directive elsewhere in a touched file, or one naming a linter of a rule this session
 never routed — a complexity suppression → R3 on the function whose one global read
-was just replaced — is a BROADER CONTEXT line under the `Stop check` block: reported
+was just replaced — is a BROADER CONTEXT line of the `Stop check` report: reported
 with its rule, not fixed in this session, not silent.
 </nolint_prohibition>
 

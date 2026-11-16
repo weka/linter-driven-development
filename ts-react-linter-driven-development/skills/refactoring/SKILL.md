@@ -142,7 +142,7 @@ modules' top-level declarations carry none of the routed rules' directives, not 
 the one directive the request named is gone and its neighbours keep their `// TODO`.
 A directive elsewhere in a touched file, or one naming a rule this session never
 routed — `sonarjs/cognitive-complexity` → R3 on the function whose one global read
-was just replaced — is a BROADER CONTEXT line under the `Stop check` block: reported
+was just replaced — is a BROADER CONTEXT line of the `Stop check` report: reported
 with its rule, not fixed in this session, not silent.
 </nolint_prohibition>
 
