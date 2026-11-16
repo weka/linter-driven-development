@@ -29,8 +29,8 @@
    should own) — rendering a page to check what `formatBytes` prints — move the test
    down a rung, extracting the leaf if needed. When the leaf is a
    private type, it is Q4's finding: the fix moves the type to its own package (R4),
-   not only the test. A private function stays where it is,
-   pure or not: the test above covers it. Never move it out of its module.
+   not only the test. A private function that the moved type does not
+   call stays where it is, pure or not: the test above covers it.
 
 4. **Does a private leaf or a new public behavior have no direct test?**
    Detect-grep: `^\s*(abstract )?class [a-zA-Z_]`
