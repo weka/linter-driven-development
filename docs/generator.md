@@ -46,7 +46,7 @@ its README is current, and every falsifying question in `core/includes/rules/` a
 lead the review's detection script runs; the kinds and their shape are in
 [token-budget.md](token-budget.md), "S8"), `task docs:check`, `task test-gate` (each
 generated script passes its own fixture matrix — the repo-brain gate, the review's
-scope bundle and its detection pass, the Go, Python and TypeScript plugins on their
+scope bundle and its detection pass, the deferral ledger with one file for each branch, the Go, Python and TypeScript plugins on their
 own row, the generic plugin once per language its block has a row for, and every
 plugin on the mixed repository — D, Python, Go and TypeScript in one tree — that
 proves the split by language), and the generator's unit tests and linter. The fixture matrix uses

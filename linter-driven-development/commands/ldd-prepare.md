@@ -7,6 +7,8 @@ allowed-tools:
   - Skill(linter-driven-development:code-designing)
   - Skill(linter-driven-development:testing)
   - Agent
+  - Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh add *)
+  - Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh show)
 ---
 
 Run standalone preparatory refactoring (Fowler: "make the change easy, then make the
@@ -31,12 +33,22 @@ belongs to `/ldd-quickfix`.
    scoped to the touch points.
 3. **Gate autonomously**: MULTIPLY → SAFE → BOUNDED → SKEPTICIZED, per
    @linter-driven-development `<phase_1_5_prepare>`. No user questions — the gates
-   decide; deferred findings are reported, not asked about.
+   decide; deferred findings are reported, not asked about. Write each deferral at
+   gate 3 or gate 4 as a `prep` row, and read the exit code:
+
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh add prep <<'ROW'
+<the prep move> — <the gate that failed>
+ROW
+```
+
 4. **Apply survivors** via `Skill(linter-driven-development:refactoring)` in
    `<preparatory_mode>`: characterization tests first on uncovered paths, full suite
    green after every move, prep work in its own commit(s).
 5. **Emit the PREPARATION LOG** and state the landing shape ("adding the SMS channel
-   is now one new file + one ParseChannel case").
+   is now one new file + one ParseChannel case"). End the log with the output of
+   `bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh show`. When an `add` did not exit
+   0, list that row under `Deferred (not in the ledger):` with the error line.
 
 Use this before starting work on a known change. For fixing code that already fails
 gates, use `/ldd-quickfix`; for a read-only assessment, `/ldd-analyze`.

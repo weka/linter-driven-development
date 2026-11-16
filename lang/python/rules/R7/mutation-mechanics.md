@@ -9,3 +9,17 @@
   `mutmut run && mutmut results`; with no task runner and no dev group, propose
   `pipx install mutmut` for the developer to run. Ask first, never install silently,
   and never read a run that did not execute as a clean one.
+  A mutation run targets only a pure logic leaf. A pure logic leaf does no I/O
+  (network, files, environment variables, clock), and its tests call it with literal
+  inputs. Never run the tool over a package or module that does I/O. When a package
+  holds pure code and I/O code, move the pure code to its own leaf first (R4).
+  The actor that tried the tool writes each run that did not execute to the deferral
+  ledger, also when it did a hand check instead, and reads the exit code. That actor is the testing skill, or the main agent
+  when it runs the tool itself on `/{{.CmdPrefix}}-quickfix`. The call:
+
+```bash
+bash <this rule file's directory>/../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
+<leaf> — <why the run did not execute>
+ROW
+```
+

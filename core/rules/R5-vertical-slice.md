@@ -42,16 +42,26 @@ instead of above it.
 ### Inside the slice
 
 Separate by role and responsibility within the feature package: `parser{{.SrcExt}}`,
-`handler{{.SrcExt}}`, `repository{{.SrcExt}}`. Types with logic get their own file named after the
-type. When a slice grows a juicy sub-concern, it becomes a feature sub-package
-(rung 2 of `R4-helper-placement.md`); when a concern turns out to be domain-generic,
-it promotes to a shared domain package (rung 3) — placement is R4's decision.
+`handler{{.SrcExt}}`, `repository{{.SrcExt}}`. Each type of the feature's API with logic gets its own file
+named after the type. A juicy helper that the feature keeps out of its API goes to
+rung 2 of `R4-helper-placement.md`. When a second package imports a concern, the
+concern moves to a shared domain package (rung 3) — placement is R4's decision.
 
 ### Migration template
 
-New features are always built as vertical slices. Existing layer-structured code
-migrates incrementally — never as a big bang, and never leaving one feature in both
-shapes. Track the migration in `docs/architecture/vertical-slice-migration.md`:
+Propose vertical slices for new code. In a repository with a layered layout, the
+user decides the shape of new code. Until the user agrees to slices, new code follows
+the layout of the code next to it. Existing code moves only on the user's request.
+
+The architecture doc is the first of these that exists: an `architecture.md`, a doc
+under `docs/` that describes the layout, `docs/architecture/vertical-slice-migration.md`,
+`CLAUDE.md` or `README.md`. Write the user's decision there. When none exists,
+propose `docs/architecture.md` to the user. A decision in the architecture doc is the
+rule: follow it, and do not ask again. Review and analysis only report; they write no
+decision.
+
+After the user agrees, existing layer-structured code migrates one feature at a time,
+and never leaves one feature in both shapes. Track the migration in `docs/architecture/vertical-slice-migration.md`:
 
 ```markdown
 # Vertical Slice Migration Plan
@@ -75,8 +85,8 @@ are never acceptable (`R4-helper-placement.md`).
 
 ## Fix pattern
 
-- **Slice out a feature**: apply the migration template above — one feature per
-  iteration, each iteration a working, deployable state.
+- **Slice out a feature**: only after the user agrees, apply the migration template
+  above — one feature per iteration, each iteration a working, deployable state.
 - **Rename layer files by role during the move**: `<feature>_service{{.SrcExt}}` →
   `service{{.SrcExt}}`; the package name now carries the feature.
 - **Split a generic package by owner**: for each symbol in a `util`/`common`

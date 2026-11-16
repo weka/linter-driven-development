@@ -45,8 +45,8 @@ and review contract.
   constructors; inputs are literals; imported as a consumer would, so privates are
   unreachable.
   Most of the codebase's logic should live here (`R1-primitive-obsession.md`).
-- **Mutation score on leaf types only**: once a leaf's tests cover it, run the
-  mutation tool over that leaf's package — never over orchestrators, the top rung or
+- **Mutation score on leaf types only**: once a pure logic leaf's tests cover it, run
+  the mutation tool over that leaf's package — never over orchestrators, the top rung or
   the whole module — and triage every survivor: a *missing row* (add the literal that
   tells the mutant from the original), *dead logic* (the mutant is unreachable —
   delete the code, not the mutant), or an *equivalent mutant* (the change is
@@ -64,9 +64,10 @@ and review contract.
   flag in one table is the canonical violation — it folds success and error cases
   into one table and pays with a conditional. Split into a success function and an
   error function.
-- **The urge to test a private is a placement signal**, never a license: it means
-  the helper deserves its own package (`R4-helper-placement.md`), where its public
-  API is legitimately testable.
+- **The urge to test a private is a placement signal**, never a license. With an R1
+  score of 0–3, test the helper through the parent's public API. With 4 or more, the
+  helper deserves its own package (`R4-helper-placement.md`), where its public API is
+  legitimately testable.
 {{include "rules/R7/mechanics.md"}}
 - Full ladder, harness patterns, and dependency levels (in-memory → binary →
   containers): @testing.
@@ -75,7 +76,10 @@ and review contract.
 
 - **Move the behavior down a rung**: rewrite the big-object test as a leaf unit test
   with literal inputs; if the leaf doesn't exist yet, that is an R1/R3 extraction
-  first (`../examples/storify-leaf-type.md` shows the pair).
+  first (`../examples/storify-leaf-type.md` shows the pair). When an
+  {{.Unexported}} leaf with an R1 score of 4 or more is in a package that does I/O,
+  apply "Split the pure leaf out of an
+  I/O package" (`R4-helper-placement.md`) first.
 - **Split Success and Error Tables**: one function asserting values, one asserting
   errors — complexity 1 in both.
 - **Kill the surviving mutant**: add the table row whose literal input distinguishes
@@ -85,8 +89,8 @@ and review contract.
   dependency over fake data (`R6-test-only-interfaces.md`; @testing for harnesses).
 - **Replace sleep with synchronization**: an event, channel or wait primitive with a
   timeout, never a fixed pause.
-- **Delete private-function tests**: cover through the parent's public API, or
-  promote the helper (`R4-helper-placement.md`).
+- **Delete private-function tests**: cover the function through the parent's public
+  API. A juicy private type moves instead (`R4-helper-placement.md`).
 
 ## Falsifying questions
 

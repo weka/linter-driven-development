@@ -29,7 +29,9 @@ src/app/
     └── test_rotator.py  # or tests/rotator/ — whichever the repository uses
 ```
 
-The whole feature is one `ls`. Each type with logic sits in its own module named after
-the type; the package name is the feature's domain word, and module names carry the
-roles. `__init__.py` is the slice's front door: it re-exports what other slices may
+The whole feature is one `ls`. Each type of the feature's API with logic sits in its own
+module named after the type. A juicy helper goes to a sub-package (rung 2 of
+`R4-helper-placement.md`).
+The package name is the feature's domain word, and module names carry the roles.
+`__init__.py` is the slice's front door: it re-exports what other slices may
 import and nothing else, so the module split inside the package is private to it.

@@ -41,7 +41,8 @@ Name the rung and list the files in the report's scope line. The lint scope is t
 of packages (directories) that contain those files; the review scope is the files.
 
 **Use the Skill tool** to invoke `Skill(go-linter-driven-development:linter-driven-development)` with the
-resolved scope, telling it Phases 1–2 are skipped:
+resolved scope, telling it that Phases 1–2 and the @documentation step of Phase 5
+are skipped. Where this command and the skill differ, this command wins:
 
 **Phase 3 — TESTS + LINT over the scope** (via the `go-linter-driven-development:lint-fixer` agent, Agent tool,
 isolated context, spawned with the package list)
@@ -72,6 +73,19 @@ isolated context, spawned with the package list)
 - Repeat until the agent reports `LINT STATUS: green` for the scope, or until the
   respawn ceiling ends Phase 3 with that list
 
+**Mutation check** (you, the main agent, after the tests pass)
+- Run the mutation tool only over a pure logic leaf that the fix makes or changes.
+  A pure logic leaf does no I/O, and its tests call it with literal inputs. Never run
+  the tool over a package or module that does I/O. Use the mutation mechanics in
+  `../rules/R7-test-placement.md`.
+- When the tool cannot run, write the `mutation-not-run` row, and read the exit code:
+
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
+<leaf> — <why the run did not execute>
+ROW
+```
+
 **Phase 4 — REVIEW over the scope's diff** (via @pre-commit-review)
 - @pre-commit-review orchestrates parallel `go-linter-driven-development:rule-hunter` agents + the
   `go-linter-driven-development:overabstraction-skeptic` against the diff; it reports, never edits, never widens;
@@ -84,14 +98,35 @@ isolated context, spawned with the package list)
   never member-by-member
 - Fix bugs and user-accepted singleton findings via @refactoring, then re-invoke
   @pre-commit-review in INCREMENTAL mode
+- An R9 finding about the documentation network is outside the scope. Report it
+  under the `Outside the scope` heading, and do not invoke @documentation for it. A
+  doc that cites a symbol the fix moved, renamed or removed is in the scope: fix it.
+- Defer a finding only when the user says to defer it, and write it as a `finding`
+  row (`<deferral_ledger>` in the skill). When the prompt or the system says that no
+  user can answer, fix every finding and defer none. An R5 proposal about the shape of new
+  code is not such a finding: report it, and write no decision. In that run, fix a finding that
+  the skeptic REFUTED with the skeptic's cheaper alternative.
+
+**No documentation phase.** Quickfix does not run the skill's @documentation step.
+Fix a doc only when it cites a symbol that the fix moved, renamed or removed. Never
+build the documentation network here: that is `/wire-repo-brain`.
 
 **Phase 5 — SHIP**: tests and lint green and the tree dirty → commit, then the ship
 summary with the hash, the scope line, the lint-fixer's `FIXED:` / `ESCALATED:`
 tallies and — when @refactoring ran — its `Stop check` block verbatim, six labelled
 lines; without the block the refactoring did not finish and the summary is not final.
+Paste the `ldd-ledger.sh show` output at the end of the summary (`<deferral_ledger>` in
+the skill). Never write that all items are closed while the ledger has rows.
+Never write that all items are closed while the summary names an open item, such as
+a pending lint escalation or a delta that is not clean. Put each item outside the
+scope under one heading, `Outside the scope`. That heading also holds the BROADER
+CONTEXT lines of the review and of the Stop check. Never call such an item open or
+deferred. An in-scope finding that is not fixed is a ledger row. In a run where no
+user can answer, a `finding` row is allowed only for a finding that a gate blocks.
+The row names that gate.
 
 **Loop until**:
-✅ Tests pass | ✅ `LINT STATUS: green` over the scope | ✅ @pre-commit-review INCREMENTAL delta clean (or findings explicitly deferred)
+✅ Tests pass | ✅ `LINT STATUS: green` over the scope | ✅ @pre-commit-review INCREMENTAL delta clean (or findings that the user said to defer, each one a ledger row)
 
 Use this when code is already written and needs to pass quality gates: your branch
 before a PR, a reviewer's findings, one package you name. It goes straight to fixing

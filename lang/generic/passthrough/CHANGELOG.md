@@ -20,6 +20,45 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
   limit the script cannot read from the config is measured at the plugin's default,
   and the threshold line says so. Without the flag, the script still measures none
   there. R5 Q6 no longer tells the hunter to list the longest files with `wc -l`.
+- **A juicy private helper type gets its own package.** The R4 placement ladder has three
+  rungs. A helper with an R1 score of 0–3 stays private in its package. A helper type
+  with a score of 4 or more moves to a package or module nested under the feature, with
+  public names and direct tests. It moves to a top-level shared package only when a
+  second package imports it. The new fix pattern "Split the pure leaf out of an I/O
+  package" moves a pure helper type out of code that does I/O.
+  A type of the feature's public API stays in the feature package at any score.
+  A function that builds and returns an API type is its constructor: it stays
+  beside the type and is public, with direct tests.
+  Quickfix runs no documentation phase. It runs the mutation tool only over a
+  pure logic leaf, never over code that does I/O.
+- **Vertical slices are a proposal in a layered repository.** The user decides the
+  shape of new code, and the decision goes to the repository's architecture doc. A
+  decision recorded there holds. A rung-3 package goes where the repository keeps
+  its shared code, never a role-named folder, and the plan proposes the rung-3 path.
+- **The design plan scores every planned helper type.** Each type with logic gets a
+  placement line with an R1 score, private helper types included. A private function
+  is fine where it is, juicy or not, and is tested through the parent's public API.
+- **A deferral ledger.** `scripts/ldd-ledger.sh` records the review findings that the
+  user defers, the deferred preparation moves, and the mutation runs that did not
+  execute. It keeps one file for each branch in the common git directory, so a row
+  stays after a worktree is removed. Two writes at the same moment take turns.
+  The ship summary, the final message and `/ldd-status` print it. `clear` runs only when
+  the user asks. The script needs git 2.31 or later.
+- **Only the user defers a review finding.** When no user can answer, the agent fixes
+  every finding and writes no finding row.
+
+### Changed
+
+- **R7 Q4 judges private leaves.** A private function or type with an R1 score of 4
+  or more and no direct test is a finding, whatever code reaches it. R7 Q7 sends a
+  pure leaf inside an I/O package to Q4 and does not skip it.
+- **No test-only door to a private name.** The over-abstraction skeptic never offers
+  a test-only export of a private name as the cheaper alternative. It offers a test
+  through the parent's public entry for a score of 0–3, and its own package for a
+  score of 4 or more.
+- **The design placement block gives a score and a rung for each type.**
+- **`/ldd-quickfix` runs the repository's mutation tool** on a leaf that the fix
+  changes. When the tool cannot run, it writes a ledger row.
 
 ## [0.7.0] - 2026-10-29
 

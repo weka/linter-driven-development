@@ -23,15 +23,34 @@
    port(): return Port("api", 8080)`) hides the input; a fixture for a temp
    directory or a fake server is real infrastructure.
    Violation: heavyweight construction whose assertions target logic a leaf type
-   owns (or should own) — move the test down a rung, extracting the leaf if needed.
+   owns (or should own) — move the test down a rung, extracting the leaf if needed. When the leaf is a
+   private type, it is Q4's finding: the fix moves the type to its own package (R4),
+   not only the test.
 
-4. **Does a new behavior's test sit above the lowest rung that contains it?**
-   Detect: judgment
-   Detection: for each new public method on a leaf type,
-   `grep -rn '<method>' --include='test_*.py' --include='*_test.py' .` — is it
-   exercised directly, or only through an orchestrator's test?
-   Violation: leaf behavior reached only from above — add the rung-0 test; the
-   orchestrator test keeps only the seam.
+4. **Does a private leaf or a new public behavior have no direct test?**
+   Detect-grep: `^\s*class _[a-zA-Z]`
+   Detection: the hits are the underscore-prefixed classes of
+   the scope's non-test files.
+   Score each hit with R1's scorecard. Read the scorecard in the same Bash call as
+   the hits: `sed -n '/^### Juiciness scoring/,/^### The over-abstraction trap/p'`
+   over `R1-primitive-obsession.md` in this rule file's directory. A hit with a score
+   of 3 or less is not a finding. Old underscore-prefixed types in a touched file are in scope. A private
+   function is not a hit: it is fine where it is.
+   A test that imports a hit is a Q2 finding, not a direct test.
+   For each new public method on a leaf type, run
+   `grep -rn '<method>' --include='test_*.py' --include='*_test.py' .` and look for a
+   direct test.
+   When the budget ends before every hit is scored, use the partial receipt:
+   `R7 Q4: <judged> of <hits> hit(s) judged → <findings> finding(s)`. The
+   `not reached:` line then names the three directories with the most hits that
+   were not scored, each as `R7 Q4: /{{.CmdPrefix}}-review <dir>`.
+   Violation: a new public method of a leaf type with no direct test. Also, an underscore-prefixed class with a score of 4 or
+   more and no direct test. This applies in any module. A test above it does not
+   count. The usual test above it builds a server, files or a database.
+   Fix a public method: add the rung-0 test. The orchestrator test keeps only the seam.
+   Fix an underscore-prefixed leaf in a module that does I/O: use R4's "Split the pure leaf out of an
+   I/O package". Fix one in any other module: use "Promote to feature sub-package
+   (rung 2)". Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `assert_called|assert_any_call|assert_has_calls|\.call_count|\.call_args|\.mock_calls|\.calls\b` files=test
@@ -51,8 +70,10 @@
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*len\b)|\blen\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)handlers/,(^|/)__main__\.py$,(^|/)main\.py$,(^|/)cli\.py$
    Detection: for each new or changed leaf package, with `paths_to_mutate` under
    `[tool.mutmut]` naming that package only, `mutmut run` then `mutmut results`;
-   skip orchestrators, the top rung and any module that does I/O. `mutmut` not
-   installed: propose the install the mechanics bullet describes before hunting; no
+   skip orchestrators, the top rung and any module that does I/O. Judge a pure leaf
+   inside such a module with Q4. Do not skip it. Code that does I/O gets no
+   mutation run, no `did not execute` line and no finding. `mutmut` not installed: propose the
+   install the mechanics bullet describes before hunting; no
    survivors from a run that did not execute is not a pass. In a read-only review,
    where no tests may run, take the hand check instead: list the leaf's comparisons
    and boolean conditions, check the parametrize table for a row at each boundary
@@ -62,6 +83,11 @@
    only where a hit row points. An assertion that matches only a word all the
    leaf's errors share (`match="tenant"`) cannot tell one error path from another, so
    a removed check or a changed message survives.
+   When the tool run did not execute for a leaf, the receipt says so on its own line:
+   `R7 Q7: mutation run did not execute — <leaf>`. A hand check does not replace the tool: when the
+   language has a mutation tool and it did not run, the line and the
+   `mutation-not-run` ledger row are written, also after a hand check. Only a language
+   with no mutation tool takes the hand check alone, with no such line.
    On a whole-repository review this question is not judged: a mutation run or a
    hand check over every leaf does not fit a hunter's budget. The receipt reads
    `R7 Q7: <hits> hit(s) → per-leaf, not judged`, R7's tally takes the partial form,

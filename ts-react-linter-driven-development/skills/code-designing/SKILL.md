@@ -33,7 +33,7 @@ Backward counterpart (fixing code that already fails lint/review): @refactoring.
   - a tuple return (`[T, boolean]`, `[Data, Error]`), or a `Record<string, string>`, `string[]` or `Map` of primitives returned or accepted across a function boundary → the same named result type, with no ESLint rule to say so (R1, Name the Container)
   - `sonarjs/cognitive-complexity` or `sonarjs/max-lines-per-function` on a component, or `react/no-unstable-nested-components` → the component is the fat function: design the hook and the leaf type it should be reading (per `../../rules/R3-storifying.md`), not a smaller component nested inside it
   - the same `switch` on one discriminant in a second file, or `@typescript-eslint/no-explicit-any` at a boundary → design the discriminated union and its one dispatch owner (`../../rules/R11-conditional-dispatch.md`), or the parser that builds the type from `unknown` (`../../rules/R2-self-validating-types.md`)
-  - `sonarjs/max-lines` (the repository's limit, else the gap linter's 450 code lines) → split juicy types into their own modules (juiciness per R1; module-per-type per `../../rules/R5-vertical-slice.md`); a single god component or class routes to @refactoring's god-object decomposition procedure first
+  - `sonarjs/max-lines` (the repository's limit, else the gap linter's 450 code lines) → split the feature's API types into their own modules (module-per-type per `../../rules/R5-vertical-slice.md`), and move a juicy helper (juiciness per R1) to its own module, which `index.ts` does not re-export (rung 2 of `../../rules/R4-helper-placement.md`); a single god component or class routes to @refactoring's god-object decomposition procedure first
   - Package-size yellow/red zone → re-model with sub-folders *before* the zone escalates (`<package_decomposition>` in @refactoring's `reference.md` (`sed -n '/^<package_decomposition>/,/^<\/package_decomposition>/p; /^### Package decomposition/,$p'`))
 - A Phase 4 review CLUSTER (≥2 hunters converging on one anchor —
   @linter-driven-development routes it here) → **cluster-scoped mode**: skip
@@ -47,7 +47,10 @@ Backward counterpart (fixing code that already fails lint/review): @refactoring.
 <protocol>
 
 <architecture_scan priority="FIRST_STEP">
-**Default: vertical slice architecture** — `../../rules/R5-vertical-slice.md`.
+**Proposed default: vertical slice architecture** — `../../rules/R5-vertical-slice.md`.
+
+First read the architecture doc (R5's Migration template lists where to look). A
+decision there on the shape of new code is the rule. Follow it, and do not ask.
 
 Scan the codebase structure: vertical (`pages/<Page>/` holding the page's components,
 hooks, api module, types and tests — one folder per feature) vs horizontal (top-level
@@ -55,13 +58,16 @@ hooks, api module, types and tests — one folder per feature) vs horizontal (to
 feature)?
 
 1. **Pure vertical** → continue the pattern: implement as `internal/<new-feature>/`.
-2. **Pure horizontal** → propose starting migration (template in R5's Design
-   guidance); implement the new feature as the first vertical slice.
-3. **Mixed** → check `docs/architecture/vertical-slice-migration.md`, continue as a slice.
+2. **Pure horizontal or mixed, with a recorded decision** → follow the decision.
+3. **Pure horizontal or mixed, with no recorded decision** → ask the user. Option A:
+   new code is sliced (recommended). Option B: new code follows the existing layout
+   (time pressure and team conventions are valid reasons). Either option can add a
+   migration guide for existing code (template in R5's Design guidance). Write the
+   answer to the architecture doc, so that the next session does not ask again.
+   When no user can answer, follow the layout of the code next to it, and propose
+   the vertical slice in the plan.
 
-Architecture advises, it doesn't veto (R5's advisory posture). Ask the user:
-Option A — vertical slice (recommended); Option B — match the existing pattern
-(time pressure and team conventions are valid reasons).
+Architecture advises, it doesn't veto (R5's advisory posture).
 </architecture_scan>
 
 <understand_domain>
@@ -103,7 +109,7 @@ For each concept in the design, open the rule that owns the question and apply i
 | `../../rules/R1-primitive-obsession.md` | Which primitives become types — score every candidate with R1's juiciness scorecard; reject ceremony wrappers (over-abstraction trap). |
 | `../../rules/R2-self-validating-types.md` | Constructor-only entry, validation ownership, trusting composed values, undefined is not a value, no defensive checks in methods. |
 | `../../rules/R3-storifying.md` | Plan orchestration functions as 3–5 named steps at one conceptual level; honest names for mutators. |
-| `../../rules/R4-helper-placement.md` | WHERE each helper/type lands — the placement ladder (internal → feature sub-package → shared domain package). |
+| `../../rules/R4-helper-placement.md` | WHERE each helper/type lands — the placement ladder (internal helper → nested feature package → shared domain package when a second package imports it). |
 | `../../rules/R5-vertical-slice.md` | Package structure and naming: feature slices with roles inside, flatcase domain vocabulary, migration template. |
 | `../../rules/R6-test-only-interfaces.md` | Default dependencies to concrete types; an interface must be earned by a second production implementation or a grep-verified import cycle. |
 | `../../rules/R7-test-placement.md` | The test plan per type: leaf types 100% unit coverage via public constructors, checked by a mutation run over the leaf's package; orchestrators integration-tested over real collaborators, never mutated. |
@@ -120,8 +126,10 @@ Before presenting the plan, verify against the rules (cite, don't restate):
 - [ ] Every planned signature names its types: no nested container, no flat container of primitives crossing a function boundary that its receivers operate on; a product result has a name and field names (R1, Name the Container)
 - [ ] Types are self-validating; composed types trusted, never re-validated (R2)
 - [ ] Orchestration planned as a story; most logic pushed into leaf types (R3, R7)
-- [ ] **Placement decided** for every helper and type via the ladder — internal helper vs feature sub-package vs domain package (`../../rules/R4-helper-placement.md`)
-- [ ] Vertical slice structure; package names are flatcase domain vocabulary, never roles/containers (R5)
+- [ ] **Placement decided** for every helper and type via the ladder — internal helper vs feature sub-package vs domain package — or the type is marked feature API (`../../rules/R4-helper-placement.md`)
+- [ ] Every planned type with logic (a method with a branch or a loop) has its own placement line, with an R1 score. A private helper type is in the list too: a type that the plan does not list gets no score, so the next check cannot see it. A private function needs no line.
+- [ ] No helper type with R1 score ≥4 on rung 1. A type of the feature's public API is not a helper: it stays in the feature package at any score. Its constructor, a function that builds and returns it, stays beside it and is public, with direct tests. A private constructor that a public factory of the type calls is covered through that factory (R4). A pure leaf with R1 score ≥4 can sit in a package that also does I/O. Move it to rung 2 with R4's "Split the pure leaf out of an I/O package". Before you choose rung 2, search the other packages for the same logic. For a match, check if the other package would import the shared leaf. Weigh it with the maxim "a little copying is better than a little dependency". If it would, use rung 3. On rung 3, the other package imports the shared leaf. It deletes its copy only after its tests pass against the shared leaf. When it has no tests, write characterization tests first.
+- [ ] New code follows the recorded decision, else the layout of the code next to it; package names are flatcase domain vocabulary, never roles/containers (R5)
 - [ ] No test-only interfaces: every interface has a second production implementation OR breaks a real import cycle, verified by grepping the import direction (detection command in `../../rules/R6-test-only-interfaces.md`); otherwise depend on the concrete type
 - [ ] Import direction strictly downward: leaf types ← sub-packages ← parent ← cmd/ (cycle-breaking move in `<package_decomposition>` in @refactoring's `reference.md` (`sed -n '/^<package_decomposition>/,/^<\/package_decomposition>/p; /^### Package decomposition/,$p'`))
 - [ ] Dependencies constructor-injected and validated; cancellation flows down; no new globals (R8, R2)
@@ -151,11 +159,14 @@ pages/Snapshots/
   ├── SnapshotsPage.tsx      # the component: its render tree is the story
   ├── useSnapshots.ts        # the hook: the query and state the page reads
   ├── snapshotsApi.ts        # the api module: fetch and parse at the boundary
-  ├── snapshot.ts            # each juicy type in its own module (Snapshot, parseSnapshot)
+  ├── snapshot.ts            # each juicy type of the feature's API in its own module (Snapshot, parseSnapshot)
+  ├── [helper].ts            # a juicy helper: its own module, index.ts does not re-export it (R4 rung 2)
   └── SnapshotsPage.test.tsx
 
 Placement Decisions (R4):
-- [helper/type] → rung 1/2/3 and why
+- [type/helper] — R1 score N → rung K (<package path>) — reason
+- [API type or its constructor] — R1 score N → feature API (<package path>) — reason
+One line for each planned type with logic, private helper types included. Each line has a number for the R1 score, a `feature API` line too.
 
 Design Decisions:
 - [decision] — rationale, citing the owning rule
@@ -175,7 +186,7 @@ Design phase is complete when ALL are true:
 
 - [ ] Architecture pattern analyzed (vertical/horizontal/mixed) and user chose an option
 - [ ] Core domain types identified, each with its validation rules and R1 score
-- [ ] Placement decision recorded for every new type/helper (R4 ladder)
+- [ ] Placement line recorded for every new type/helper, with all four parts: name, R1 score, rung with its package path, reason (R4 ladder); no line puts a score of 4 or more on rung 1
 - [ ] Package structure follows R5 (slices, naming, downward imports)
 - [ ] Design checklist answered satisfactorily (every box cites its rule)
 - [ ] Design plan presented in the output format above

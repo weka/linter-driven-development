@@ -149,33 +149,48 @@ Handler.heartbeat(raw):
 
 ### R4 — Helper Placement
 
-Every extraction raises a second question: where does the helper live? The answer is
-decided by two axes — juiciness (the scorecard in R1; cite
-it, never re-derive it) and scope (feature-specific versus domain-generic). Three
-rungs: internal in place, feature sub-package, shared domain package. Never test
+Every extraction raises a second question: where does the helper live? Two axes
+decide the answer. One is juiciness: the scorecard in R1
+(cite it, never re-derive it). The other is scope: does a second package import it?
+There are three rungs: internal in place, a sub-package nested under the
+feature, and a shared domain package when a second package imports it. Never test
 privates, and never export a helper into its parent package just so a test can reach
-it.
+it. The ladder places helper types: types the feature would otherwise keep
+internal. A private function is fine where it is, juicy or not: its tests go
+through the parent's public API. A
+type that is part of the feature package's public API stays in that package, whatever
+its R1 score.
+A type is part of the API when the public entry takes or returns it. A function that
+builds and returns an API type is that type's constructor, not a helper. It stays
+beside the type in the feature package. It is public, so its tests call it directly.
+A juicy constructor that nothing public on its type calls is never internal. A
+internal constructor that a public factory of the same type calls is covered
+through that factory, so it is not a finding. A juicy helper type that the constructor
+uses follows the ladder; a private function that it calls stays where it is.
 
 ```text
 # ❌ made public by the feature package only so the test can reach it
-public parseCIDRList(raw)          # one caller, in this package
+public parseK3sArgument(arg)       # one caller, in this package
 
-# ✅ rung 1: hidden where it is used, tested through the public API that calls it
-parseCIDRList(raw)                 # private to the feature
+# ✅ rung 1: one caller, no vocabulary of its own; hidden where it is used,
+#    tested through the public API that calls it
+parseK3sArgument(arg)              # private to the feature
 
 # ✅ rung 3: networking vocabulary with three callers → its own package, named for the domain
-networking.parsePrefixes(raw)      # public, with the Prefixes type beside it
+public networking.parsePrefixes(raw)  # with the Prefixes type beside it
 ```
 
 > **Spelling:** rung 1 is the language's private form: a lower-case or underscored
 > name, a symbol the module does not export, a file-local declaration. Rung 2 is a
-> sub-package, sub-module or namespace under the feature; rung 3 a shared package
-> under the source root. A test that has to reach a private name, through a friend
-> module, a reflection helper or a test-only export, is a placement signal, never a
-> reason to add the seam. The `"weka-api"` port name is feature policy and stays in
-> the feature; `Port`, `Ports` and `firstNamed` are networking vocabulary and move.
+> sub-package, sub-module or namespace under the feature, with public names that the
+> feature's public surface does not expose; rung 3 a
+> shared package under the source root, when a second package imports it. A test that
+> has to reach a private name, through a friend module, a reflection helper or a
+> test-only export, is a placement signal, never a reason to add the seam. The
+> `"weka-api"` port name is feature policy and stays in the feature; `Port`, `Ports`
+> and `firstNamed` are networking vocabulary and move.
 
-**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
+**Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Split the pure leaf out of an I/O package · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
 
 ### R5 — Vertical Slice
 
@@ -197,7 +212,9 @@ src/handlers/rotator.<ext>           src/rotator/repository.<ext>     # role: pe
 > feature noun, `rotator`, never `services` or `models`; `utils`, `common` and
 > `helpers` name no vocabulary at all, so the first function that lands there has no
 > owner and the next lands beside it. Role names live in the file names inside the
-> slice, and a type with logic gets its own file named after the type.
+> slice. A type of the feature's API with logic gets its own file named after the
+> type. A juicy helper that the feature keeps out of its API goes to a package or
+> module nested under the feature (R4).
 
 **Moves:** Slice out a feature · Rename layer files by role during the move · Split a generic package by owner
 

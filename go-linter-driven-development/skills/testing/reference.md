@@ -17,7 +17,7 @@ Complete guide to Go testing principles and patterns.
 ### 1. Test Only Public API
 - **Use `pkg_test` package name** - Forces external perspective
 - **Test types via constructors** - No direct struct initialization
-- **No testing private methods** - the urge to test a helper directly is a promotion signal: give it its own package (see `../../rules/R4-helper-placement.md`) — never export it into the parent just for tests
+- **No testing private methods** - the urge to test a helper directly is a signal to score it: with an R1 score of 0–3, test it through the parent's public API; with 4 or more, give it its own package (see `../../rules/R4-helper-placement.md`) — never export it into the parent just for tests
 
 ```go
 // ✅ Good

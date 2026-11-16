@@ -7,10 +7,11 @@ description: how to write an eval case: prompt frontmatter, case.yaml, the five 
 A case is a directory under `<lang>/cases/` in the evals repository (`go/cases/`,
 `py/cases/`) with three parts. The file format is `claude plugin eval`'s, so a case
 needs no change when that command becomes available; only `case.yaml` and the
-suite-level `suite.yaml` are ours. The Python suite is the Go suite's 23 cases
-translated one for one: prompts invoke `/{{cmd_prefix}}-*` exactly as the Go ones
-do, so either suite runs under its own plugin or under the generic one, file graders
-match Python shapes, and every grader that reads the report contract is unchanged.
+suite-level `suite.yaml` are ours. The Python suite translates every Go case except
+the two Go-only mutation cases, `mutation-leaf-kill` and `mutation-leaf-review`. Its
+prompts invoke `/{{cmd_prefix}}-*` exactly as the Go ones do, so either suite runs
+under its own plugin or under the generic one, file graders match Python shapes, and
+every grader that reads the report contract is unchanged.
 
 ## prompt.md
 YAML frontmatter, then the prompt the agent receives.
@@ -115,6 +116,40 @@ Two shapes learned the hard way:
   invoked the skill (standalone, the workflow's ship summary, quickfix's), and under
   them one `BROADER CONTEXT` line per hit the detection re-run reported rather than
   fixed. The `stop-check` grader in every refactor case reads those six openings.
+
+## The private-leaf cases
+Three cases per suite measure the placement ladder for a private leaf. They all use
+the `R7.Q4.private-leaf-in-io` plant and its control from
+[eval-fixture.md](eval-fixture.md).
+
+| Case | Tier | Asks |
+|---|---|---|
+| `case-h-private-leaf-review` | cheap | a scoped review of the webhook file and its test |
+| `design-private-leaf` | cheap | a code-designing plan for the webhook spec; no code |
+| `promote-private-leaf` | medium | a quickfix that accepts every R4 and R7 finding |
+
+The review case expects the leaf as a finding with the fix "Split the pure leaf out of
+an I/O package". The trivial helper is not a finding. No report proposes a test-only
+export.
+
+The webhook spec has an expansion leaf, a reply classifier and an I/O probe. The design
+case expects a placement line for every type. Each line has an
+[R1 score](../core/rules/R1-primitive-obsession.md) and a rung. A type with a score of 4
+or more goes on
+[rung 2 or 3](../core/rules/R4-helper-placement.md).
+The probe stays in the feature package.
+
+The promotion case expects the leaf in a rung-2 home: a nested package in Go, a
+sub-package folder in Python, a module in TypeScript. The new package has direct tests
+and full coverage. The old name is gone. No test-only export exists. The trivial helper
+stays private. Each case runs the mutation tool over the new package, or writes a
+`mutation-not-run` row when the tool cannot run.
+
+The medium case also expects the closing report to print the
+[deferral ledger](quick-start.md). The run has no user, so it fixes every finding and
+the ledger holds no finding row. Its postcheck builds and tests the code. It checks
+the coverage of the new package. It checks that the old private name is gone, that no test-only export file exists and that the tree is clean.
+It checks that at least one commit exists.
 
 ## Postcheck
 Graders read the transcript and the tree; they do not run commands. A medium case

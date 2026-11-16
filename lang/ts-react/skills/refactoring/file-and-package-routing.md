@@ -2,7 +2,7 @@
 
 | File pattern | Action |
 |---|---|
-| Multiple juicy types | Route to @code-designing — one juicy type per module (juiciness per R1) |
+| Multiple juicy types | Route to @code-designing — one API type per module; each juicy helper to its own module, which `index.ts` does not re-export (R4 rung 2) (juiciness per R1) |
 | Single god component or class (>15 handlers/methods) | `reference.md` → god-object decomposition, then @code-designing for the composition |
 | Long functions, few types | Storify → extract functions and hooks (R3) |
 | Several components in one file (`react/no-multi-comp`) | One component per file; the page folder decides where the second lands (R4, R5) |
