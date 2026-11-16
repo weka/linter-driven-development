@@ -184,7 +184,7 @@ they govern steps 2 to 6.
 
 The six lines are the block, and the block goes in the message that ends the turn,
 whichever path invoked this skill; a caller that summarises this work carries it and
-its BROADER CONTEXT lines verbatim. Prose narrating the steps in place of the six lines
+its BROADER CONTEXT lines verbatim, in the order that the caller's summary sets. Prose narrating the steps in place of the six lines
 is the block missing, and a missing block means the refactoring did not finish.
 </stopping_criteria>
 

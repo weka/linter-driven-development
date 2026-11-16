@@ -272,15 +272,16 @@ before.
    @documentation applies the verdicts and re-critiques once — R3 routes from the
    critic go back through @refactoring like any R3 finding).
 2. Commit. When tests (`pytest`) and lint (Phase 3) are green and the tree
-   is dirty, commit the slice with the ship summary as the message. Just before the
-   commit, call `ldd-ledger.sh show` one time (`<deferral_ledger>`); the commit message
-   and the ship summary both use that output. A green slice left
+   is dirty, commit the slice with the ship summary as the message. Call
+   `ldd-ledger.sh show` one time, when you write the ship summary, also when no commit
+   occurs (`<deferral_ledger>`); the commit message and the ship summary both use that
+   output. A green slice left
    uncommitted "for the user" is the one state this workflow never ends in: the user
    can amend, split or revert a commit; an uncommitted tree evaporates with the
    session. Prep commits (Phase 1.5) stay separate.
 3. Present the ship summary in this order: the commit hash, tests green, lint green,
-   review delta (Phase 4), files changed, the BROADER CONTEXT lines of @refactoring,
-   the ledger (`<deferral_ledger>`), then — when @refactoring ran in this session — its
+   review delta (Phase 4), files changed, the BROADER CONTEXT and STATUS lines of
+   @refactoring, the ledger (`<deferral_ledger>`), then — when @refactoring ran in this session — its
    `Stop check` block verbatim. The block is the end of the summary: write nothing
    after it.
    The block is six labelled lines (`1 gates` … `6 commit`), not a prose account of
@@ -313,7 +314,7 @@ each `add`. When it is not 0, list the row by hand under
 `Deferred (not in the ledger):` with the error line. Then never print `Deferred: none`
 in that session.
 
-Call `ldd-ledger.sh show` one time: at ship time, just before the commit (Phase 5).
+Call `ldd-ledger.sh show` one time: when you write the ship summary (Phase 5).
 Never call it to check a row or between phases: the exit code of `add` is the receipt.
 Paste its output into the ship summary, before the `Stop check` block. A PR body that
 you write in the same turn copies that output; it does not call `show` again. Never write that all
