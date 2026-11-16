@@ -113,9 +113,12 @@ Two shapes learned the hard way:
   count, a verdict's punctuation — is wording, and a grader on it will flip.
   The refactoring skill promises the same of its `Stop check` block: six lines
   opening `1 gates` … `6 commit`, in the message that ends the turn, whichever path
-  invoked the skill (standalone, the workflow's ship summary, quickfix's), and under
-  them one `BROADER CONTEXT` line per hit the detection re-run reported rather than
-  fixed. The `stop-check` grader in every refactor case reads those six openings.
+  invoked the skill (standalone, the workflow's ship summary, quickfix's), and one
+  `BROADER CONTEXT` line per hit the detection re-run reported rather than fixed. A
+  standalone report puts those lines under the block. The workflow's and quickfix's
+  ship summaries put them first, then the `ldd-ledger.sh show` output, and end with the
+  block. The `stop-check` grader in every refactor case reads those six openings
+  anywhere in the final message.
 
 ## The private-leaf cases
 Three cases per suite measure the placement ladder for a private leaf. They all use
