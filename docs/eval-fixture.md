@@ -55,14 +55,16 @@ Ground rules, all enforced:
   alert channel is an HTTP webhook, so the test-double plants are demonstrably
   unnecessary.
 - **Pinned tools.** Each fixture pins its tool versions, so `task lint` gives the
-  same result on every host. go-mini installs golangci-lint v2.11.4 into `.bin/`
-  once and runs it on Go 1.26.10, because v2.11.4 cannot read Go 1.27 packages.
-  Later golangci-lint releases report goconst findings in the go-mini test files.
-  The Go scaffolds install the binary once into a per-user cache folder and put
-  a copy in each scaffold. py-mini runs Python 3.11, ruff 0.15.22, mypy 2.4.1
-  and pytest 9.2.0 through `uv`, so it needs no `python` on the PATH.
-  ts-react-mini takes its tools from
-  `package-lock.json`. The postchecks use the same pins.
+  same result on every host. Every go-mini task runs on Go 1.26.10. go-mini
+  installs golangci-lint v2.11.4 into `.bin/` once, because v2.11.4 cannot read
+  Go 1.27 packages. Later golangci-lint releases report goconst findings in the
+  go-mini test files. The Go scaffolds install the binary once into a per-user
+  cache folder and put a copy in each scaffold. go-mini's `.gremlins.yaml` sets
+  the gremlins timeout coefficient to 50. With the default of 3, mutants time
+  out at random on a fast host. py-mini runs Python 3.11, ruff 0.15.22, mypy
+  2.4.1 and pytest 9.2.0 through `uv`, so it needs no `python` on the PATH.
+  ts-react-mini takes its tools from `package-lock.json`. The postchecks use the
+  same pins.
 - **Two lint states from one tree.** Every design-level lint plant carries a
   suppression: `//nolint:<linter> // TODO` in Go, `# noqa: <codes>  # TODO` or
   `# type: ignore[<code>]` in Python. `scaffold/default.sh` copies the tree as is
