@@ -8,11 +8,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 ### Fixed
 
 - **gremlins runs with `--timeout-coefficient 50`.** gremlins gives each mutant a
-  timeout of three times its coverage run. On a fast host a mutant's compile takes
-  longer, so mutants timed out at random. R7 now runs gremlins with the flag, or
-  proposes `unleash: timeout-coefficient: 50` in `.gremlins.yaml`. A `Timed out:`
-  count above 0 makes the run inconclusive, never a pass: R7 Q7 runs it again with a
-  higher coefficient, and a count that stays above 0 is a run that did not execute.
+  timeout of three times the duration of the coverage run. On a fast host a mutant's
+  compile takes longer, so mutants timed out at random. R7 now runs gremlins with the
+  flag, or proposes the `unleash.timeout-coefficient` key in `.gremlins.yaml`, nested
+  on two lines. A `Timed out:` count above 0 makes the run inconclusive: R7 runs the
+  leaf once more with `--timeout-coefficient 100`. A mutant that times out in both
+  runs loops with no end, and R7 counts it as killed. `LIVED` and `NOT COVERED` lines
+  are findings in every run.
 
 ### Added
 

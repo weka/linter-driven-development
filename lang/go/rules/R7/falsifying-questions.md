@@ -68,12 +68,12 @@
    mutation run, no `did not execute` line and no finding. `gremlins` not on `PATH`: propose
    the install the mechanics bullet describes before hunting; an empty `LIVED` list from
    a run that did not execute is not a pass. A `Timed out:` count above 0 makes the run
-   inconclusive: a timed-out mutant is not killed. Run it again with a higher
-   `--timeout-coefficient`. A
+   inconclusive: run the leaf once more as the mechanics bullet says, and read each
+   `TIMED OUT` mutant from the two runs as it says. A
    `NOT COVERED` mutant is a finding, the same as a `LIVED` one: a missing test row.
    The run did not execute only when there is no summary line, when every count
-   (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0, or when the `Timed out:`
-   count stays above 0 after that second run. In a
+   (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0, or when every mutant
+   timed out in both runs. In a
    read-only review, where no tests may run, take the hand check instead: list the
    leaf's comparisons and boolean conditions, check the table for a row at each
    boundary value and on each side of each condition, and name the row that is

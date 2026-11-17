@@ -1,6 +1,6 @@
 ---
 type: architecture
-description: why the Go binding's R7 runs gremlins and not mewt — the four requirements the rule puts on a mutation tool, both tools measured on the same leaf packages, the blind spots the hand check covers, and the three changes in mewt that would reopen the decision
+description: why the Go binding's R7 runs gremlins and not mewt — the four requirements the rule puts on a mutation tool, both tools measured on the same leaf packages, the blind spots the hand check covers, the timeout coefficient a fast host needs, and the three changes in mewt that would reopen the decision
 status: stable
 ---
 # Mutation Tooling for the Go Binding
@@ -74,13 +74,16 @@ COVERED; that is recorded here as reported, not reproduced on the fixture.
 
 ## The timeout on a fast host
 
-gremlins 0.6.0 gives each mutant a timeout of three times the duration of its first
+gremlins 0.6.0 gives each mutant a timeout of three times the duration of the
 coverage run. On an 18-core Mac with Go 1.27, that run takes about 0.5 seconds for a
 small package, and the mutant's own `go test` compile takes longer. Mutants then time
 out at random: up to 12 of 12 in one go-mini package, with counts that change from run
 to run. With `--timeout-coefficient 50`, six runs per leaf package gave the same result,
-and that result matched the eval manifest. The Go mechanics run gremlins with that flag,
-and they read a `Timed out:` count above 0 as an inconclusive run, not as killed mutants.
+and that result matched the eval manifest. The Go mechanics run gremlins with that flag.
+A `Timed out:` count above 0 makes the run inconclusive, and the mechanics run the leaf
+once more at coefficient 100. A mutant that times out in both runs makes the code loop
+with no end, for example `i--` in a counting loop. No coefficient ends it, so the
+mechanics count it as killed.
 
 ## What would reopen the decision
 
