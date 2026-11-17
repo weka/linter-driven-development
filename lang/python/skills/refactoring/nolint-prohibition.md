@@ -24,5 +24,5 @@ the touched modules' top-level statements carry none of the routed rules'
 directives, not when the one directive the request named is gone and its neighbours
 keep their `# TODO`. A directive elsewhere in a touched file, or one naming a rule
 this session never routed — `C901,PLR0912` → R3 on the function whose one global
-read was just replaced — is a BROADER CONTEXT line under the `Stop check` block:
+read was just replaced — is a BROADER CONTEXT line of the `Stop check` report:
 reported with its rule, not fixed in this session, not silent.

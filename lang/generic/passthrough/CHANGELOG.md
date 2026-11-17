@@ -49,6 +49,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ### Changed
 
+- **The refactoring report ends the turn only when it runs alone.** When the
+  workflow or quickfix invokes @refactoring, its report is not the end of the turn:
+  the INCREMENTAL review and the ship step follow, and the ship summary ends the turn.
+- **The workflow reads the deferral ledger one time.** The orchestrator calls
+  `ldd-ledger.sh add` only when it defers an item, and `ldd-ledger.sh show` one time,
+  just before the ship commit. The ship summary of the workflow and of quickfix
+  prints the ledger output before the `Stop check` block. The block is the last part
+  of the summary.
+- **The split out of an I/O package moves only the juicy type.** "Split the pure leaf
+  out of an I/O package" moves the juicy type and the code that it calls. A private
+  function that only the I/O code calls stays private in the parent. R7's mutation
+  text says the same. R7 Q3, Q4 and Q7 say that a private function
+  stays in its module, and that a finding names the juicy type alone.
+
 - **R7 Q4 judges private leaves.** A private function or type with an R1 score of 4
   or more and no direct test is a finding, whatever code reaches it. R7 Q7 sends a
   pure leaf inside an I/O package to Q4 and does not skip it.

@@ -256,7 +256,10 @@ mid-implementation net; this pass is the verification net.
 Findings return categorized (Bugs / Design Debt / Readability Debt / Polish), all
 advisory. Fix bugs and user-accepted findings via @refactoring — except accepted R9
 (documentation-network) findings, whose fixer is @documentation — then re-invoke
-@pre-commit-review in INCREMENTAL mode until the delta reports clean.
+@pre-commit-review in INCREMENTAL mode until the delta reports clean. The report of
+@refactoring does not end the turn, even when it holds a commit and a `Stop check`
+block: after it, run the INCREMENTAL review, then Phase 5. The turn ends only with
+the ship summary.
 
 Defer a finding only when the user says to defer it. Write each deferral to the
 ledger at once (`<deferral_ledger>`) as a `finding` row. When the prompt or the system
@@ -286,20 +289,24 @@ before.
    @documentation applies the verdicts and re-critiques once — R3 routes from the
    critic go back through @refactoring like any R3 finding).
 2. Commit. When tests (`the repository's test command`) and lint (Phase 3) are green and the tree
-   is dirty, commit the slice with the ship summary as the message. Before the commit,
-   run `ldd-ledger.sh show` and paste its output into the summary (`<deferral_ledger>`).
-   A green slice left
+   is dirty, commit the slice with the ship summary as the message. Call
+   `ldd-ledger.sh show` one time, when you write the ship summary, also when no commit
+   occurs (`<deferral_ledger>`); the commit message and the ship summary both use that
+   output. A green slice left
    uncommitted "for the user" is the one state this workflow never ends in: the user
    can amend, split or revert a commit; an uncommitted tree evaporates with the
    session. Prep commits (Phase 1.5) stay separate.
-3. Present the ship summary: the commit hash, tests green, lint green, review delta
-   (Phase 4), files changed, and — when @refactoring ran in this session — its
-   `Stop check` block verbatim: the six labelled lines (`1 gates` … `6 commit`), not
-   a prose account of them. The block is a precondition of the summary, not an
-   ornament: no block, or fewer than six lines, means the refactoring did not finish —
-   run its `<stopping_criteria>` now, render the block, then present. Keep the
-   `ldd-ledger.sh show` output from step 2. User decides only about the deferred
-   advisory findings: fix them now or later.
+3. Present the ship summary in this order: the commit hash, tests green, lint green,
+   review delta (Phase 4), files changed, the BROADER CONTEXT and STATUS lines of
+   @refactoring, the ledger (`<deferral_ledger>`), then — when @refactoring ran in this session — its
+   `Stop check` block verbatim. The block is the end of the summary: write nothing
+   after it.
+   The block is six labelled lines (`1 gates` … `6 commit`), not a prose account of
+   them. The block is a precondition of the summary, not an ornament: no block, or
+   fewer than six lines, means the refactoring did not finish — run its
+   `<stopping_criteria>` now, render the block, then present. The ship summary is the
+   final message of the turn. User decides only about the deferred advisory findings:
+   fix them now or later.
 </phase_5_ship>
 
 <deferral_ledger>
@@ -319,14 +326,18 @@ bash <this skill dir>/../../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
 ROW
 ```
 
-Read the exit code of each `add`. When it is not 0, list the row by hand under
+Call `add` only when you defer an item, once for each item. Read the exit code of
+each `add`. When it is not 0, list the row by hand under
 `Deferred (not in the ledger):` with the error line. Then never print `Deferred: none`
-in that session. Every closing report prints the ledger: the ship summary, the final
-message, and any PR body that you write. Run `ldd-ledger.sh show` when you write the
-report, and paste its output. Never write that all items are closed while the ledger
-has rows. When the ledger has rows, tell the user: "When each row is fixed or accepted
-as debt, ask: clear the ledger." Run `ldd-ledger.sh clear` only when the user asks for
-it.
+in that session.
+
+Call `ldd-ledger.sh show` one time: when you write the ship summary (Phase 5).
+Never call it to check a row or between phases: the exit code of `add` is the receipt.
+Paste its output into the ship summary, before the `Stop check` block. A PR body that
+you write in the same turn copies that output; it does not call `show` again. Never write that all
+items are closed while the ledger has rows. When the ledger has rows, tell the user,
+under the ledger output: "When each row is fixed or accepted as debt, ask: clear the
+ledger." Run `ldd-ledger.sh clear` only when the user asks for it.
 </deferral_ledger>
 
 <success_criteria>
@@ -341,5 +352,6 @@ it.
 - [ ] @documentation (FEATURE mode) done, except on `/ldd-quickfix` — docs wired into the network, R9 self-check
       clean, comment-critic critique loop applied and confirmed clean (or remainder
       reported); the green slice committed and the ship summary presented with its
-      hash and the `ldd-ledger.sh show` output
+      hash, the `ldd-ledger.sh show` output from one call, and the `Stop check`
+      block last when @refactoring ran
 </success_criteria>

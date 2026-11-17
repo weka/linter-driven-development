@@ -131,7 +131,8 @@ private-function test.
   A mutation run targets only a pure logic leaf. A pure logic leaf does no I/O
   (network, files, environment variables, clock), and its tests call it with literal
   inputs. Never run the tool over a package or module that does I/O. When a package
-  holds pure code and I/O code, move the pure code to its own leaf first (R4).
+  holds a juicy pure type and I/O code, move that type and the code it calls to its
+  own leaf first (R4). A private function that only the I/O code calls stays.
   The actor that tried the tool writes each run that did not execute to the deferral
   ledger, also when it did a hand check instead, and reads the exit code. That actor is the testing skill, or the main agent
   when it runs the tool itself on `/go-ldd-quickfix`. The call:
@@ -209,7 +210,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Violation: heavyweight construction whose assertions target logic a leaf type
    owns (or should own) — move the test down a rung, extracting the leaf if needed. When the leaf is a
    private type, it is Q4's finding: the fix moves the type to its own package (R4),
-   not only the test.
+   not only the test. A private function that the moved type does not
+   call stays where it is, pure or not: the test above covers it.
 
 4. **Does a private leaf or a new public behavior have no direct test?**
    Detect-grep: `^type [a-z]`
@@ -233,7 +235,9 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Fix a public method: add the rung-0 test. The orchestrator test keeps only the seam.
    Fix an unexported leaf in a package that does I/O: use R4's "Split the pure leaf out of an
    I/O package". Fix one in any other package: use "Promote to feature sub-package
-   (rung 2)". Then add the rung-0 test.
+   (rung 2)". Move only the type and the code that it calls.
+   Name the type alone in the finding. A private function that only the I/O code calls
+   stays private in the parent. Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `AssertExpectations|AssertCalled|\.calls\b` files=test
@@ -250,8 +254,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*[Ll]en\b)|\b[Ll]en\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)cmd/,(^|/)main\.go$,(^|/)handlers/
    Detection: for each new or changed leaf package,
    `gremlins unleash ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|NOT COVERED|TIMED OUT)|Killed:|Not covered:|Timed out:'`;
-   skip orchestrators, the top rung and any package that does I/O. Judge a pure leaf
-   inside such a package with Q4. Do not skip it. Code that does I/O gets no
+   skip orchestrators, the top rung and any package that does I/O. Judge a private type
+   inside such a package with Q4. Do not skip it. A private function there gets no run and no finding. Code that does I/O gets no
    mutation run, no `did not execute` line and no finding. `gremlins` not on `PATH`: propose
    the install the mechanics bullet describes before hunting; an empty `LIVED` list from
    a run that did not execute, or whose mutants all timed out, is not a pass. A
