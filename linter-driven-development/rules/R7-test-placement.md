@@ -112,7 +112,8 @@ private-function test.
   A mutation run targets only a pure logic leaf. A pure logic leaf does no I/O
   (network, files, environment variables, clock), and its tests call it with literal
   inputs. Never run the tool over a package or module that does I/O. When a package
-  holds pure code and I/O code, move the pure code to its own leaf first (R4).
+  holds a juicy pure type and I/O code, move that type and the code it calls to its
+  own leaf first (R4). A private function that only the I/O code calls stays.
   The actor that tried the tool writes each run that did not execute to the deferral
   ledger, also when it did a hand check instead, and reads the exit code. That actor is the testing skill, or the main agent
   when it runs the tool itself on `/ldd-quickfix`. The call:
@@ -194,7 +195,8 @@ Test files are the ones the repository's test runner picks up (`*<test-file suff
    Violation: heavyweight construction whose assertions target logic a leaf type
    owns (or should own) — move the test down a rung, extracting the leaf if needed. When the leaf is a
    private type, it is Q4's finding: the fix moves the type to its own package (R4),
-   not only the test.
+   not only the test. A private function that the moved type does not
+   call stays where it is, pure or not: the test above covers it.
 
 4. **Does a private leaf or a new public behavior have no direct test?**
    Detect: judgment
@@ -212,7 +214,9 @@ Test files are the ones the repository's test runner picks up (`*<test-file suff
    database or a rendered tree. Fix a public method: add the rung-0 test; the
    orchestrator test keeps only the seam. Fix an internal leaf in a package that
    does I/O with R4's "Split the pure leaf out of an I/O package". Fix one in a package
-   with no I/O with "Promote to feature sub-package (rung 2)". Then add the rung-0 test.
+   with no I/O with "Promote to feature sub-package (rung 2)". Move only the type and
+   the code that it calls. Name the type alone in the finding. A private function that
+   only the I/O code calls stays private in the parent. Then add the rung-0 test.
 
 5. **Does a test assert on a fake's internals rather than observable behavior?**
    Detect-grep: `[Aa]ssert(_?[Cc]alled|_?[Ee]xpectations|_?[Aa]ny_?[Cc]all|_?[Hh]as_?[Cc]alls)|\.call_count|\.mock_calls|\.calls\b` files=test
@@ -235,8 +239,8 @@ Test files are the ones the repository's test runner picks up (`*<test-file suff
    Detection: for each new or changed leaf type, run the repository's mutation
    testing tool over that leaf's package only (the mechanics bullet names the tool
    and the command) and read its list of survivors; skip orchestrators, the top
-   rung and any package that does I/O. Judge a pure leaf inside such a package
-   with Q4. Do not skip it. Code that does I/O gets no
+   rung and any package that does I/O. Judge a private type inside such a package
+   with Q4. Do not skip it. A private function there gets no run and no finding. Code that does I/O gets no
    mutation run, no `did not execute` line and no finding. A tool the language has but the machine
    lacks is proposed for install as the mechanics bullet says, never skipped and
    never counted as a pass. Without any tool, list the leaf's comparisons

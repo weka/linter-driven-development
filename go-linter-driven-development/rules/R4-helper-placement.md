@@ -136,7 +136,9 @@ package nested under its feature can hold a single type.
   a package that does I/O (network, files, environment variables). Only tests through
   that I/O reach it. Move it to a nested rung-2 package and export it there. Give
   it leaf unit tests (rung 0 of `R7-test-placement.md`) with 100% coverage and a
-  mutation run. The I/O code stays in the parent and calls it. This applies also
+  mutation run. Move only that type and the code it calls. A private function that
+  only the I/O code calls is not part of the leaf: it stays private in the parent.
+  The I/O code stays in the parent and calls the leaf. This applies also
   when the leaf is unexported.
 - **Promote to domain package (rung 3)**: a juicy helper type that a second package
   imports → create or extend the shared domain package; move the generic types; leave feature policy home as a thin

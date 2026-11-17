@@ -5,5 +5,7 @@
   a package that does I/O (network, files, environment variables). Only tests through
   that I/O reach it. Move it to a rung-2 sub-package and export it there. Give
   it leaf unit tests (rung 0 of `R7-test-placement.md`) with 100% coverage and a
-  mutation run. The I/O code stays in the parent and calls it. This applies also
+  mutation run. Move only that type and the code it calls. A private function that
+  only the I/O code calls is not part of the leaf: it stays private in the parent.
+  The I/O code stays in the parent and calls the leaf. This applies also
   when the leaf is {{.Unexported}}.
