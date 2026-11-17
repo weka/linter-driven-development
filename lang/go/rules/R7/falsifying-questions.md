@@ -73,7 +73,8 @@
    `NOT COVERED` mutant is a finding, the same as a `LIVED` one: a missing test row.
    The run did not execute only when there is no summary line, when every count
    (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0, or when neither run
-   killed a mutant and every mutant that ran timed out in both runs. In a
+   killed a mutant and every mutant that ran timed out in both runs. A mutant that
+   times out in both runs outside a `for` header is unresolved, not killed. In a
    read-only review, where no tests may run, take the hand check instead: list the
    leaf's comparisons and boolean conditions, check the table for a row at each
    boundary value and on each side of each condition, and name the row that is

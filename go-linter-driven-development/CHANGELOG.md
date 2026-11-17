@@ -13,8 +13,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
   flag, or proposes the `unleash.timeout-coefficient` key in `.gremlins.yaml`, nested
   on two lines. A `Timed out:` count above 0 makes the run inconclusive: R7 runs the
   leaf once more with `--timeout-coefficient 100`. A mutant that times out in both
-  runs loops with no end, and R7 counts it as killed. `LIVED` and `NOT COVERED` lines
-  are findings in every run.
+  runs in the condition or the post statement of a `for` header makes the loop run
+  with no end, and R7 counts it as killed. Anywhere else the mutant is unresolved and
+  gets a `mutation-not-run` ledger row. `LIVED` and `NOT COVERED` lines are findings
+  in every run.
 
 ### Added
 

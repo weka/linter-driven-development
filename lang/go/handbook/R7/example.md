@@ -44,5 +44,6 @@ func TestParsePort_Error(t *testing.T) {
 > embedded database or a temp directory. Leaf packages, and only they, also run
 > under `gremlins unleash --timeout-coefficient 50`: a `LIVED` mutant is a missing row
 > or dead logic. After a `TIMED OUT` mutant, run the leaf again with
-> `--timeout-coefficient 100`: a mutant that times out in both runs loops with no end,
-> and it counts as killed.
+> `--timeout-coefficient 100`. A mutant that times out in both runs counts as killed
+> only in the condition or the post statement of a `for` header, where it makes the
+> loop run with no end. Anywhere else it is unresolved.

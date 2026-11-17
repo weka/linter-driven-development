@@ -15,16 +15,20 @@
   `  timeout-coefficient: 50` indented under it. One line is not valid YAML, and
   gremlins ignores an invalid file with no message.
   A `Timed out:` count above 0 makes the run inconclusive: run the leaf once more with
-  `--timeout-coefficient 100`. A mutant that times out in both runs makes the code
-  loop with no end, for example `i--` in a `for` loop: the tests detect it, so count
-  it as killed. A mutant that timed out in one run only takes its status from the
-  other run. `LIVED` and `NOT COVERED` lines are findings in every run.
+  `--timeout-coefficient 100`. A mutant that timed out in one run only takes its
+  status from the other run. For a mutant that times out in both runs, open the
+  `file:line:col` of its `TIMED OUT` line. In the condition or the post statement of
+  a `for` header, for example `i--` for `i++`, the mutant makes the loop run with no
+  end: count it as killed. Anywhere else, two timeouts do not prove a loop with no
+  end. The mutant is unresolved: write a `mutation-not-run` ledger row that names its
+  type and `file:line`.
+  `LIVED` and `NOT COVERED` lines are findings in every run.
   A loop mutant waits its full timeout, so run gremlins in the background or give the
   call a time limit of 10 minutes. A call that a time limit stops gives no result:
   run it again in the background.
   The run did not execute when there is no summary line, when every count is 0, or
-  when neither run killed a mutant and every `KILLED`, `LIVED` or `TIMED OUT` mutant
-  timed out in both runs.
+  when no mutant was killed in either run and every mutant that ran timed out in both
+  runs.
   gremlins never mutates an equality
   (`==`, `!=`) or a literal constant, so it cannot ask for the row where an element
   sorts below the needle or the row on the far side of a limit; the hand check's row
