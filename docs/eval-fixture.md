@@ -59,8 +59,9 @@ Ground rules, all enforced:
   once and runs it on Go 1.26.10, because v2.11.4 cannot read Go 1.27 packages.
   Later golangci-lint releases report goconst findings in the go-mini test files.
   The Go scaffolds install the binary once into a per-user cache folder and put
-  a copy in each scaffold. py-mini runs ruff 0.15.22, mypy 2.4.1 and
-  pytest 9.2.0 through `uvx`. ts-react-mini takes its tools from
+  a copy in each scaffold. py-mini runs Python 3.11, ruff 0.15.22, mypy 2.4.1
+  and pytest 9.2.0 through `uv`, so it needs no `python` on the PATH.
+  ts-react-mini takes its tools from
   `package-lock.json`. The postchecks use the same pins.
 - **Two lint states from one tree.** Every design-level lint plant carries a
   suppression: `//nolint:<linter> // TODO` in Go, `# noqa: <codes>  # TODO` or
