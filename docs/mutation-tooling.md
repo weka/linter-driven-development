@@ -1,6 +1,6 @@
 ---
 type: architecture
-description: why the Go binding's R7 runs gremlins and not mewt — the four requirements the rule puts on a mutation tool, both tools measured on the same leaf packages, the blind spots the hand check covers, and the three changes in mewt that would reopen the decision
+description: why the Go binding's R7 runs gremlins and not mewt — the four requirements the rule puts on a mutation tool, both tools measured on the same leaf packages, the blind spots the hand check covers, the timeout coefficient a fast host needs, and the three changes in mewt that would reopen the decision
 status: stable
 ---
 # Mutation Tooling for the Go Binding
@@ -71,6 +71,23 @@ say so, and Q7's hand check asks for a row at each boundary and one past it prec
 so the two findings above are reached by a reviewer who runs no tool. One adopting
 repository also reports that expressions inside a `switch` case come back NOT
 COVERED; that is recorded here as reported, not reproduced on the fixture.
+
+## The timeout on a fast host
+
+gremlins 0.6.0 gives each mutant a timeout of three times the duration of the
+coverage run. On an 18-core Mac with Go 1.27, that run takes about 0.5 seconds for a
+small package, and the mutant's own `go test` compile takes longer. Mutants then time
+out at random: up to 12 of 12 in one go-mini package, with counts that change from run
+to run. With `--timeout-coefficient 50`, six runs per leaf package gave the same result,
+and that result matched the eval manifest. The Go mechanics run gremlins with that flag.
+A `Timed out:` count above 0 makes the run inconclusive, and the mechanics run the leaf
+once more at coefficient 100. A mutant that times out in both runs in the condition or
+the post statement of a `for` header makes the loop run with no end, for example `i--`
+in a counting loop. No coefficient ends it, so the mechanics count it as killed.
+Anywhere else, two timeouts do not prove a loop with no end: a slow mutant can time out
+twice and still pass. The mechanics then record the mutant as unresolved. On the
+fixture and a counting-loop leaf, 54 runs at 50 and 100, idle, with the CPU loaded and
+with an empty build cache, gave the same result: only the loop mutant timed out.
 
 ## What would reopen the decision
 

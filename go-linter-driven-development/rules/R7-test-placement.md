@@ -113,18 +113,38 @@ private-function test.
   behavior-preserving — note it in the test file, once, with the reason). No survivor
   is left untriaged; scope the run to the leaf packages the change touched so it
   stays as fast as the tables it checks.
-- **Mutation mechanics**: `gremlins unleash ./path/to/leaf` (go-gremlins, a Go mutation
+- **Mutation mechanics**: `gremlins unleash --timeout-coefficient 50 ./path/to/leaf` (go-gremlins, a Go mutation
   tester that swaps comparison operators, negates conditions, flips arithmetic and
   removes statements) over the leaf package, after `go test` is green there and after
   each fix; its report's `LIVED` lines are the survivors to triage, `KILLED` the rows
-  that hold. In CI, `--threshold-efficacy` on that package only, never on `./...`, so
+  that hold. In CI, `--threshold-efficacy` with the same `--timeout-coefficient` on that package only, never on `./...`, so
   orchestrator packages are not mutated. When `gremlins` is not on `PATH`, propose a
   `mutate` target beside `test` and `lint` in the repository's Taskfile or Makefile
   that runs `go install github.com/go-gremlins/gremlins/cmd/gremlins@latest` and then
-  `gremlins unleash ./<leaf>`; with no task runner, propose that `go install` line for
+  `gremlins unleash --timeout-coefficient 50 ./<leaf>`; with no task runner, propose that `go install` line for
   the developer to run. Ask first, never install silently, and never substitute a
-  different invocation: a report whose mutants all timed out, with no `LIVED` and no
-  `KILLED` line, is a broken run, not a clean one. gremlins never mutates an equality
+  different invocation. The flag is necessary: gremlins gives each mutant a timeout of
+  three times the duration of the coverage run, and on a fast host a mutant's own
+  compile takes longer. When the repository runs gremlins without the flag, propose
+  this `.gremlins.yaml` at the module root, two lines: `unleash:`, then
+  `  timeout-coefficient: 50` indented under it. One line is not valid YAML, and
+  gremlins ignores an invalid file with no message.
+  A `Timed out:` count above 0 makes the run inconclusive: run the leaf once more with
+  `--timeout-coefficient 100`. A mutant that timed out in one run only takes its
+  status from the other run. For a mutant that times out in both runs, open the
+  `file:line:col` of its `TIMED OUT` line. In the condition or the post statement of
+  a `for` header, for example `i--` for `i++`, the mutant makes the loop run with no
+  end: count it as killed. Anywhere else, two timeouts do not prove a loop with no
+  end. The mutant is unresolved: write a `mutation-not-run` ledger row that names its
+  type and `file:line`.
+  `LIVED` and `NOT COVERED` lines are findings in every run.
+  A loop mutant waits its full timeout, so run gremlins in the background or give the
+  call a time limit of 10 minutes. A call that a time limit stops gives no result:
+  run it again in the background.
+  The run did not execute when there is no summary line, when every count is 0, or
+  when no mutant was killed in either run and every mutant that ran timed out in both
+  runs.
+  gremlins never mutates an equality
   (`==`, `!=`) or a literal constant, so it cannot ask for the row where an element
   sorts below the needle or the row on the far side of a limit; the hand check's row
   at each boundary and one past it covers those two on purpose, not by accident.
@@ -253,15 +273,19 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
 7. **Does a mutant survive a leaf type's tests?**
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*[Ll]en\b)|\b[Ll]en\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)cmd/,(^|/)main\.go$,(^|/)handlers/
    Detection: for each new or changed leaf package,
-   `gremlins unleash ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|NOT COVERED|TIMED OUT)|Killed:|Not covered:|Timed out:'`;
+   `gremlins unleash --timeout-coefficient 50 ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|NOT COVERED|TIMED OUT)|Killed:|Not covered:|Timed out:'`;
    skip orchestrators, the top rung and any package that does I/O. Judge a private type
    inside such a package with Q4. Do not skip it. A private function there gets no run and no finding. Code that does I/O gets no
    mutation run, no `did not execute` line and no finding. `gremlins` not on `PATH`: propose
    the install the mechanics bullet describes before hunting; an empty `LIVED` list from
-   a run that did not execute, or whose mutants all timed out, is not a pass. A
+   a run that did not execute is not a pass. A `Timed out:` count above 0 makes the run
+   inconclusive: run the leaf once more as the mechanics bullet says, and read each
+   `TIMED OUT` mutant from the two runs as it says. A
    `NOT COVERED` mutant is a finding, the same as a `LIVED` one: a missing test row.
-   The run did not execute only when there is no summary line, or when every count
-   (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0. In a
+   The run did not execute only when there is no summary line, when every count
+   (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0, or when neither run
+   killed a mutant and every mutant that ran timed out in both runs. A mutant that
+   times out in both runs outside a `for` header is unresolved, not killed. In a
    read-only review, where no tests may run, take the hand check instead: list the
    leaf's comparisons and boolean conditions, check the table for a row at each
    boundary value and on each side of each condition, and name the row that is
