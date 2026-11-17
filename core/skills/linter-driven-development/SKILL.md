@@ -230,7 +230,10 @@ mid-implementation net; this pass is the verification net.
 Findings return categorized (Bugs / Design Debt / Readability Debt / Polish), all
 advisory. Fix bugs and user-accepted findings via @refactoring — except accepted R9
 (documentation-network) findings, whose fixer is @documentation — then re-invoke
-@pre-commit-review in INCREMENTAL mode until the delta reports clean.
+@pre-commit-review in INCREMENTAL mode until the delta reports clean. The report of
+@refactoring does not end the turn, even when it holds a commit and a `Stop check`
+block: after it, run the INCREMENTAL review, then Phase 5. The turn ends only with
+the ship summary.
 
 Defer a finding only when the user says to defer it. Write each deferral to the
 ledger at once (`<deferral_ledger>`) as a `finding` row. When the prompt or the system

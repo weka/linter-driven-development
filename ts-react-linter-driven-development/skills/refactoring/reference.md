@@ -208,9 +208,11 @@ at the end.
    no next turn. Line `6 commit`: the hash and message, `Phase 5 commits the slice`,
    or `tree clean, nothing to commit`.
 
-The six lines are the block, and the block goes where the user reads: the message
-that ends the turn, whichever path invoked this skill — a standalone invocation's
-report, the workflow's Phase 5 ship summary, quickfix's ship summary. A caller that
+The six lines are the block, and the block goes where the user reads: a standalone
+invocation's report, the workflow's Phase 5 ship summary, quickfix's ship summary.
+Only the standalone report ends the turn. When the workflow or a command invoked this
+skill, its report is not the end of the turn: the caller's next step runs, and the
+turn ends with the caller's ship summary. A caller that
 summarises this skill's work carries the block verbatim, and the BROADER CONTEXT
 lines travel with the block: what step 2 reported instead of fixing is the caller's to
 hear, not this session's to bury. The caller's summary sets the order of its parts.

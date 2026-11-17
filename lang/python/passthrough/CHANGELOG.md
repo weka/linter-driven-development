@@ -49,6 +49,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ### Changed
 
+- **The refactoring report ends the turn only when it runs alone.** When the
+  workflow or quickfix invokes @refactoring, its report is not the end of the turn:
+  the INCREMENTAL review and the ship step follow, and the ship summary ends the turn.
 - **The workflow reads the deferral ledger one time.** The orchestrator calls
   `ldd-ledger.sh add` only when it defers an item, and `ldd-ledger.sh show` one time,
   just before the ship commit. The ship summary of the workflow and of quickfix

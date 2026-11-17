@@ -97,7 +97,9 @@ ROW
   @code-designing (cluster-scoped) produces one mini plan, @refactoring implements it —
   never member-by-member
 - Fix bugs and user-accepted singleton findings via @refactoring, then re-invoke
-  @pre-commit-review in INCREMENTAL mode
+  @pre-commit-review in INCREMENTAL mode. The report of @refactoring does not end
+  the turn: after it, run the INCREMENTAL review, the mutation check and Phase 5.
+  The turn ends only with the ship summary.
 - An R9 finding about the documentation network is outside the scope. Report it
   under the `Outside the scope` heading, and do not invoke @documentation for it. A
   doc that cites a symbol the fix moved, renamed or removed is in the scope: fix it.

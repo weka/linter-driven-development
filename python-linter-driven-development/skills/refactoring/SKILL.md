@@ -16,9 +16,10 @@ allowed-tools:
 Fix code that already fails lint or review. A thin directional view: every fix pattern
 lives once in `../../rules/`; this protocol routes each failure to its owning rule and
 loops until green. Autonomous — no user confirmation between patterns or at the end:
-every invocation ends with the green tree committed and the `Stop check` block in the
-message that ends the turn; "ready for your review" is this skill failing, not
-finishing. Each step's long form is in `reference.md` here, read by `sed` range inside
+every invocation ends with the green tree committed and the `Stop check` block
+written; "ready for your review" is this skill failing, not finishing. A standalone
+invocation's report ends the turn. When a workflow command invoked this skill, its
+report does not end the turn: go back to the caller's next step. Each step's long form is in `reference.md` here, read by `sed` range inside
 a Bash call the step already makes — the loop's first lint run, the Gates run of the
 exit — never the file whole and never a call of its own. Forward counterpart:
 @code-designing.
@@ -182,9 +183,11 @@ they govern steps 2 to 6.
    standalone invocation commits here, before the report. Line `6 commit`: the hash and
    message, `Phase 5 commits the slice`, or `tree clean, nothing to commit`.
 
-The six lines are the block, and the block goes in the message that ends the turn,
-whichever path invoked this skill; a caller that summarises this work carries it and
-its BROADER CONTEXT lines verbatim, in the order that the caller's summary sets. Prose narrating the steps in place of the six lines
+The six lines are the block. A standalone invocation puts the block in its report,
+and that report ends the turn. When the workflow or a command invoked this skill, the
+report is not the end of the turn: go back to the caller's next step. The caller's
+ship summary carries the block and its BROADER CONTEXT lines verbatim, in the order
+that the summary sets. Prose narrating the steps in place of the six lines
 is the block missing, and a missing block means the refactoring did not finish.
 </stopping_criteria>
 
