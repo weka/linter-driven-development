@@ -132,10 +132,14 @@ private-function test.
   A `Timed out:` count above 0 makes the run inconclusive: run the leaf once more with
   `--timeout-coefficient 100`. A mutant that times out in both runs makes the code
   loop with no end, for example `i--` in a `for` loop: the tests detect it, so count
-  it as killed. A mutant that timed out only in the first run takes its status from
-  the second run. `LIVED` and `NOT COVERED` lines are findings in every run.
+  it as killed. A mutant that timed out in one run only takes its status from the
+  other run. `LIVED` and `NOT COVERED` lines are findings in every run.
+  A loop mutant waits its full timeout, so run gremlins in the background or give the
+  call a time limit of 10 minutes. A call that a time limit stops gives no result:
+  run it again in the background.
   The run did not execute when there is no summary line, when every count is 0, or
-  when every mutant timed out in both runs.
+  when neither run killed a mutant and every `KILLED`, `LIVED` or `TIMED OUT` mutant
+  timed out in both runs.
   gremlins never mutates an equality
   (`==`, `!=`) or a literal constant, so it cannot ask for the row where an element
   sorts below the needle or the row on the far side of a limit; the hand check's row
@@ -275,8 +279,8 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    `TIMED OUT` mutant from the two runs as it says. A
    `NOT COVERED` mutant is a finding, the same as a `LIVED` one: a missing test row.
    The run did not execute only when there is no summary line, when every count
-   (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0, or when every mutant
-   timed out in both runs. In a
+   (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0, or when neither run
+   killed a mutant and every mutant that ran timed out in both runs. In a
    read-only review, where no tests may run, take the hand check instead: list the
    leaf's comparisons and boolean conditions, check the table for a row at each
    boundary value and on each side of each condition, and name the row that is

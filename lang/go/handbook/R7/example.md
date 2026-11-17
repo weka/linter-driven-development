@@ -43,5 +43,6 @@ func TestParsePort_Error(t *testing.T) {
 > Orchestrators are tested by wiring their real collaborators over `httptest`, an
 > embedded database or a temp directory. Leaf packages, and only they, also run
 > under `gremlins unleash --timeout-coefficient 50`: a `LIVED` mutant is a missing row
-> or dead logic, and a `TIMED OUT` mutant makes the run inconclusive until a second
-> run.
+> or dead logic. After a `TIMED OUT` mutant, run the leaf again with
+> `--timeout-coefficient 100`: a mutant that times out in both runs loops with no end,
+> and it counts as killed.
