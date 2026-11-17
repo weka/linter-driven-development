@@ -89,7 +89,11 @@ Pick the narrow cases from the rule ids in the plugin text that changed. A case 
 
 If the newest baseline of a language predates the last release of its plugin, run the main arm too. Then compare two live arms, not an old baseline.
 
-Write the scope and the result in the pull request: the cases, the run counts and the grader counts per arm.
+Pin each arm before it runs. An arm is the plugin at one commit or tag and the eval suite at one commit of `weka/ldd-evals`. When one round measures several changes, put the arms in merge order and read each arm against the arm before it.
+
+Run every arm with the tool versions that the fixtures pin ([the pinned tools](eval-fixture.md)). A linter of another version can fail a postcheck for a reason that does not come from the plugin.
+
+Write the scope and the result in the pull request: the commit of each arm, the cases, the run counts and the grader counts per arm.
 
 ## Comparing after a behavior change
 Each deliberate fix to the plugin names the cases it should flip. Re-run only those
