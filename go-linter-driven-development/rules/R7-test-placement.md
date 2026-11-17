@@ -113,7 +113,7 @@ private-function test.
   behavior-preserving — note it in the test file, once, with the reason). No survivor
   is left untriaged; scope the run to the leaf packages the change touched so it
   stays as fast as the tables it checks.
-- **Mutation mechanics**: `gremlins unleash ./path/to/leaf` (go-gremlins, a Go mutation
+- **Mutation mechanics**: `gremlins unleash --timeout-coefficient 50 ./path/to/leaf` (go-gremlins, a Go mutation
   tester that swaps comparison operators, negates conditions, flips arithmetic and
   removes statements) over the leaf package, after `go test` is green there and after
   each fix; its report's `LIVED` lines are the survivors to triage, `KILLED` the rows
@@ -121,10 +121,15 @@ private-function test.
   orchestrator packages are not mutated. When `gremlins` is not on `PATH`, propose a
   `mutate` target beside `test` and `lint` in the repository's Taskfile or Makefile
   that runs `go install github.com/go-gremlins/gremlins/cmd/gremlins@latest` and then
-  `gremlins unleash ./<leaf>`; with no task runner, propose that `go install` line for
+  `gremlins unleash --timeout-coefficient 50 ./<leaf>`; with no task runner, propose that `go install` line for
   the developer to run. Ask first, never install silently, and never substitute a
-  different invocation: a report whose mutants all timed out, with no `LIVED` and no
-  `KILLED` line, is a broken run, not a clean one. gremlins never mutates an equality
+  different invocation. The flag is necessary: gremlins gives each mutant a timeout of
+  three times its coverage run, and on a fast host a mutant's own compile takes longer.
+  When the repository runs gremlins without the flag, propose
+  `unleash: timeout-coefficient: 50` in `.gremlins.yaml` at the module root.
+  A timed-out mutant is not killed and did not live. A run with a `Timed out:` count
+  above 0 is inconclusive, not clean: run it again with a higher coefficient.
+  gremlins never mutates an equality
   (`==`, `!=`) or a literal constant, so it cannot ask for the row where an element
   sorts below the needle or the row on the far side of a limit; the hand check's row
   at each boundary and one past it covers those two on purpose, not by accident.
@@ -249,15 +254,18 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
 7. **Does a mutant survive a leaf type's tests?**
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*[Ll]en\b)|\b[Ll]en\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)cmd/,(^|/)main\.go$,(^|/)handlers/
    Detection: for each new or changed leaf package,
-   `gremlins unleash ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|NOT COVERED|TIMED OUT)|Killed:|Not covered:|Timed out:'`;
+   `gremlins unleash --timeout-coefficient 50 ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|NOT COVERED|TIMED OUT)|Killed:|Not covered:|Timed out:'`;
    skip orchestrators, the top rung and any package that does I/O. Judge a pure leaf
    inside such a package with Q4. Do not skip it. Code that does I/O gets no
    mutation run, no `did not execute` line and no finding. `gremlins` not on `PATH`: propose
    the install the mechanics bullet describes before hunting; an empty `LIVED` list from
-   a run that did not execute, or whose mutants all timed out, is not a pass. A
+   a run that did not execute is not a pass. A `Timed out:` count above 0 makes the run
+   inconclusive: a timed-out mutant is not killed. Run it again with a higher
+   `--timeout-coefficient`. A
    `NOT COVERED` mutant is a finding, the same as a `LIVED` one: a missing test row.
-   The run did not execute only when there is no summary line, or when every count
-   (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0. In a
+   The run did not execute only when there is no summary line, when every count
+   (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0, or when the `Timed out:`
+   count stays above 0 after that second run. In a
    read-only review, where no tests may run, take the hand check instead: list the
    leaf's comparisons and boolean conditions, check the table for a row at each
    boundary value and on each side of each condition, and name the row that is

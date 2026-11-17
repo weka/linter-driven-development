@@ -59,15 +59,18 @@
 7. **Does a mutant survive a leaf type's tests?**
    Detect-grep: `(<=?|>=?) *('.'|-?[0-9]+|[a-zA-Z_.]*[Ll]en\b)|\b[Ll]en\([^)]*\) *(<=?|>=?|==|!=)` exclude-path=(^|/)cmd/,(^|/)main\.go$,(^|/)handlers/
    Detection: for each new or changed leaf package,
-   `gremlins unleash ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|NOT COVERED|TIMED OUT)|Killed:|Not covered:|Timed out:'`;
+   `gremlins unleash --timeout-coefficient 50 ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|NOT COVERED|TIMED OUT)|Killed:|Not covered:|Timed out:'`;
    skip orchestrators, the top rung and any package that does I/O. Judge a pure leaf
    inside such a package with Q4. Do not skip it. Code that does I/O gets no
    mutation run, no `did not execute` line and no finding. `gremlins` not on `PATH`: propose
    the install the mechanics bullet describes before hunting; an empty `LIVED` list from
-   a run that did not execute, or whose mutants all timed out, is not a pass. A
+   a run that did not execute is not a pass. A `Timed out:` count above 0 makes the run
+   inconclusive: a timed-out mutant is not killed. Run it again with a higher
+   `--timeout-coefficient`. A
    `NOT COVERED` mutant is a finding, the same as a `LIVED` one: a missing test row.
-   The run did not execute only when there is no summary line, or when every count
-   (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0. In a
+   The run did not execute only when there is no summary line, when every count
+   (`Killed:`, `Lived:`, `Timed out:`, `Not covered:`) is 0, or when the `Timed out:`
+   count stays above 0 after that second run. In a
    read-only review, where no tests may run, take the hand check instead: list the
    leaf's comparisons and boolean conditions, check the table for a row at each
    boundary value and on each side of each condition, and name the row that is

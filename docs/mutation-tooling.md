@@ -72,6 +72,16 @@ so the two findings above are reached by a reviewer who runs no tool. One adopti
 repository also reports that expressions inside a `switch` case come back NOT
 COVERED; that is recorded here as reported, not reproduced on the fixture.
 
+## The timeout on a fast host
+
+gremlins 0.6.0 gives each mutant a timeout of three times the duration of its first
+coverage run. On an 18-core Mac with Go 1.27, that run takes about 0.5 seconds for a
+small package, and the mutant's own `go test` compile takes longer. Mutants then time
+out at random: up to 12 of 12 in one go-mini package, with counts that change from run
+to run. With `--timeout-coefficient 50`, six runs per leaf package gave the same result,
+and that result matched the eval manifest. The Go mechanics run gremlins with that flag,
+and they read a `Timed out:` count above 0 as an inconclusive run, not as killed mutants.
+
 ## What would reopen the decision
 
 Any one of these in a mewt release is reason to re-run the comparison above:

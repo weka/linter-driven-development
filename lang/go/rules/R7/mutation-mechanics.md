@@ -1,4 +1,4 @@
-- **Mutation mechanics**: `gremlins unleash ./path/to/leaf` (go-gremlins, a Go mutation
+- **Mutation mechanics**: `gremlins unleash --timeout-coefficient 50 ./path/to/leaf` (go-gremlins, a Go mutation
   tester that swaps comparison operators, negates conditions, flips arithmetic and
   removes statements) over the leaf package, after `go test` is green there and after
   each fix; its report's `LIVED` lines are the survivors to triage, `KILLED` the rows
@@ -6,10 +6,15 @@
   orchestrator packages are not mutated. When `gremlins` is not on `PATH`, propose a
   `mutate` target beside `test` and `lint` in the repository's Taskfile or Makefile
   that runs `go install github.com/go-gremlins/gremlins/cmd/gremlins@latest` and then
-  `gremlins unleash ./<leaf>`; with no task runner, propose that `go install` line for
+  `gremlins unleash --timeout-coefficient 50 ./<leaf>`; with no task runner, propose that `go install` line for
   the developer to run. Ask first, never install silently, and never substitute a
-  different invocation: a report whose mutants all timed out, with no `LIVED` and no
-  `KILLED` line, is a broken run, not a clean one. gremlins never mutates an equality
+  different invocation. The flag is necessary: gremlins gives each mutant a timeout of
+  three times its coverage run, and on a fast host a mutant's own compile takes longer.
+  When the repository runs gremlins without the flag, propose
+  `unleash: timeout-coefficient: 50` in `.gremlins.yaml` at the module root.
+  A timed-out mutant is not killed and did not live. A run with a `Timed out:` count
+  above 0 is inconclusive, not clean: run it again with a higher coefficient.
+  gremlins never mutates an equality
   (`==`, `!=`) or a literal constant, so it cannot ask for the row where an element
   sorts below the needle or the row on the far side of a limit; the hand check's row
   at each boundary and one past it covers those two on purpose, not by accident.

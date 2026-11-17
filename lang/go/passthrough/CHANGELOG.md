@@ -5,6 +5,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+### Fixed
+
+- **gremlins runs with `--timeout-coefficient 50`.** gremlins gives each mutant a
+  timeout of three times its coverage run. On a fast host a mutant's compile takes
+  longer, so mutants timed out at random. R7 now runs gremlins with the flag, or
+  proposes `unleash: timeout-coefficient: 50` in `.gremlins.yaml`. A `Timed out:`
+  count above 0 makes the run inconclusive, never a pass: R7 Q7 runs it again with a
+  higher coefficient, and a count that stays above 0 is a run that did not execute.
+
 ### Added
 
 - **The gap linter's findings are detection rows.** R5 Q6 (file length) and Q7

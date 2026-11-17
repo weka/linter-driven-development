@@ -315,7 +315,8 @@ func TestParsePort_Error(t *testing.T) {
 > fields. No `time.Sleep`: synchronize on a channel or a `sync.WaitGroup`.
 > Orchestrators are tested by wiring their real collaborators over `httptest`, an
 > embedded database or a temp directory. Leaf packages, and only they, also run
-> under `gremlins unleash`: a `LIVED` mutant is a missing row or dead logic.
+> under `gremlins unleash --timeout-coefficient 50`: a `LIVED` mutant is a missing row
+> or dead logic, and a `TIMED OUT` mutant makes the run inconclusive.
 
 **Moves:** Move the behavior down a rung · Split Success and Error Tables · Kill the surviving mutant · Replace doubles with real collaborators · Replace sleep with synchronization · Delete private-function tests
 
