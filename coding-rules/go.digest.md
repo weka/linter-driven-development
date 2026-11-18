@@ -47,14 +47,14 @@ Write each top-level function as a short list of named steps at one level of abs
 
 ### R4 — Helper Placement
 
-Test a helper through the public API that calls it, and never make it public for a test.
+Test a private function through its public caller, and give a juicy helper type its own package with direct tests.
 
 - **Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Split the pure leaf out of an I/O package · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
 - **Ask:** Is a symbol exported only so tests can reach it? · Did feature policy leak into a shared package? · Does a changed function envy another type's data?
 
 ### R5 — Vertical Slice
 
-Put new code in the package of its feature, with role names on its files, never in a layer package.
+Put new code in its feature's package, but in a layered repository follow the architecture doc or the nearby code.
 
 - **Moves:** Slice out a feature · Rename layer files by role during the move · Split a generic package by owner
 - **Ask:** Is one feature's code spread across ≥2 layer directories? · Does the diff add a new file into a layer directory instead of a slice? · Do both shapes coexist for one feature?

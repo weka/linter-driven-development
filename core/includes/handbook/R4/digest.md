@@ -1,1 +1,1 @@
-Test a helper through the public API that calls it, and never make it public for a test.
+Test a private function through its public caller, and give a juicy helper type its own package with direct tests.
