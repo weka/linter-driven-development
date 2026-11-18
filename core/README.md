@@ -16,13 +16,14 @@ instructions, and it adds a file only where detection differs from knowledge
 (`docs/language-residue.md`, "The generic binding").
 
 `tools/ldd-gen` renders `core/` plus a binding into the plugin directory the
-marketplace serves, and, for a binding whose profile names one, the standalone
-coding-rules handbook outside it (`coding-rules/go.md`, `coding-rules/python.md`,
-`coding-rules/ts-react.md`, `coding-rules/generic.md`; "The handbook" below). Edit
+marketplace serves, and, for a binding whose profile names them, the standalone
+coding-rules handbook and its implementer digest outside it (`coding-rules/go.md`
+and `coding-rules/go.digest.md`, and the same pair for `python`, `ts-react` and
+`generic`; "The handbook" below). Edit
 sources here or under `lang/`, run `task generate` (and `task generate
 BINDING=python`, `task generate BINDING=ts-react`, `task generate BINDING=generic`),
-and commit all of them; `task check` fails when a plugin directory or a handbook
-differs from its rendering.
+and commit all of them; `task check` fails when a plugin directory, a handbook or a
+digest differs from its rendering.
 
 ## Templating
 
@@ -107,6 +108,17 @@ core sentence that wants a neutral rewrite.
 | `{{questions "rules/R1/falsifying-questions.md" 1 4}}` | the bold headlines of the numbered questions in that include — the binding's file, else the core default — for the numbers given, or all of them with none; a number the file lacks is an error |
 | `{{maxim "Tell, don't ask"}}` | `**Tell, don't ask.**` followed by that maxim's `**Ask:**` paragraph from `maxims.md` |
 | `{{reviews "handbook/house-rules.md"}}` | the `**Review:**` lines of that include, joined with ` · ` |
+| `{{maximName "Tell, don't ask"}}` | digest only: `**Tell, don't ask.**`, after a check that `maxims.md` has that heading with an `**Ask:**` paragraph |
+| `{{handbookPath}}` | digest only: the path of the binding's handbook relative to the directory of its digest, for the link from one to the other |
+
+`handbook/coding-rules.digest.md` is the template of the implementer digest, rendered
+for every binding whose profile names a `digest:` path beside its `handbook:` path
+(such as `coding-rules/go.digest.md`). It may use the five constructs above and the
+two digest-only ones. It renders no examples: per rule it reads one line from
+`handbook/Rn/digest.md`, which has a core default under `core/includes/handbook/Rn/`
+and a binding file only where a language needs other words. The digest has the same
+marker, the same refusal to overwrite, the same drift check and the same residue gate
+as the handbook. It also has a ceiling: a rendering over 8,000 bytes fails.
 
 What the binding supplies, under `lang/<lang>/handbook/`: `R1/example.md` to
 `R12/example.md`, one short before-and-after per rule with an optional aside on the
@@ -267,11 +279,11 @@ Hard residue: none. No plugin-name or command-prefix literal, golangci
 reference, source-file glob, nolint directive, scalar word or retired Go idiom is
 left in core/.
 
-Soft residue by token (136 lines):
+Soft residue by token (137 lines):
 
 | Token | Lines | Files |
 |---|---:|---:|
-| interface | 86 | 25 |
+| interface | 87 | 26 |
 | Go (the word) | 15 | 9 |
 | Go code fence | 12 | 1 |
 | Go stdlib | 9 | 5 |
@@ -282,7 +294,7 @@ Soft residue by token (136 lines):
 | race detector | 2 | 2 |
 | sync. | 1 | 1 |
 
-Soft residue by file (136 lines):
+Soft residue by file (137 lines):
 
 | File | Lines | Tokens |
 |---|---:|---:|
@@ -309,6 +321,7 @@ Soft residue by file (136 lines):
 | `agents/overabstraction-skeptic.md` | 1 | 1 |
 | `examples/storify-leaf-type.md` | 1 | 1 |
 | `includes/agents/lint-fixer/routing-table.md` | 1 | 1 |
+| `includes/handbook/R6/digest.md` | 1 | 1 |
 | `includes/rules/R1/canonical-example.md` | 1 | 1 |
 | `includes/rules/R10/canonical-example.md` | 1 | 1 |
 | `includes/rules/R11/canonical-example.md` | 1 | 1 |

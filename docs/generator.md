@@ -31,13 +31,14 @@ second language is decided in [language-residue.md](language-residue.md).
    its binding over its plugin directory: every file the generator owns is
    rewritten, and files it no longer produces are removed. A binding whose profile
    names a `handbook:` path also renders the standalone coding-rules document to
-   that path, outside the plugin directory ([handbook.md](handbook.md)).
+   that path, and a `digest:` path its implementer digest, both outside the plugin
+   directory ([handbook.md](handbook.md)).
 3. Commit the sources and the generated directories together. A binding without its
    rendered directory turns CI red for everyone, because `task check` renders every
    directory under `lang/`.
 
 `task check` renders every binding to memory and compares it with the plugin
-directory on disk, and the handbook with the file at its path; any missing, extra or
+directory on disk, and the handbook and the digest with the files at their paths; any missing, extra or
 changed file, or a changed executable bit, fails, and changed files print a unified
 diff. CI runs it on every pull request,
 together with `task lint-core` (no hard residue in `core/`, the Residue section of

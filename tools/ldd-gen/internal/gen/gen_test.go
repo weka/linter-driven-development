@@ -376,9 +376,9 @@ func TestHandbook_PathConflicts(t *testing.T) {
 	}{
 		{name: "inside a plugin directory", lang: "q", handbook: "out-plugin/RULES.md", want: "inside a directory the generator owns"},
 		{name: "inside core", lang: "q", handbook: "core/RULES.md", want: "inside a directory the generator owns"},
-		{name: "same path as another binding", lang: "q", handbook: "coding-rules/p.md", want: "both render handbook"},
-		{name: "below a handbook claimed earlier", lang: "q", handbook: "coding-rules/p.md/q.md", want: "both render handbook"},
-		{name: "above a handbook claimed earlier", lang: "a", handbook: "coding-rules/p.md/a.md", want: "both render handbook"},
+		{name: "same path as another binding", lang: "q", handbook: "coding-rules/p.md", want: "both render"},
+		{name: "below a handbook claimed earlier", lang: "q", handbook: "coding-rules/p.md/q.md", want: "both render"},
+		{name: "above a handbook claimed earlier", lang: "a", handbook: "coding-rules/p.md/a.md", want: "both render"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

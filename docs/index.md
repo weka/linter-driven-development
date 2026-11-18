@@ -7,7 +7,7 @@ okf_version: "0.2"
 - [quick-start.md](quick-start.md) — how to start working with a linter-driven-development plugin — from setting up the linter and the one-line prompt that runs the whole workflow, through reviewing and fixing code you already wrote, to feeding it a plan, running it from a subagent, and sharing a repository between two language plugins
 - [generator.md](generator.md) — how the plugin directories are generated from core/ and one binding under lang/, and the checks that keep them honest
 - [language-residue.md](language-residue.md) — how Go idioms left in core prose are rendered per language binding — the five outcomes (rewrite, scalar, include, aside, override), the seam rules, the generic binding's instruction-with-examples shape, the Python binding's eight positions, the ts-react binding's nine, and the Claude Code names a second plugin must not collide on
-- [handbook.md](handbook.md) — the coding-rules handbook — the standalone document a team reads without the plugin, how it is generated from the same rules, what a binding writes for it, and how to consume and measure it
+- [handbook.md](handbook.md) — the coding-rules handbook and its implementer digest — the standalone documents a team reads without the plugin, how they are generated from the same rules, what a binding writes for them, and how to consume and measure them
 - [mutation-tooling.md](mutation-tooling.md) — why the Go binding's R7 runs gremlins and not mewt — the four requirements the rule puts on a mutation tool, both tools measured on the same leaf packages, the blind spots the hand check covers, the timeout coefficient a fast host needs, and the three changes in mewt that would reopen the decision
 
 **Behavioral evals of the plugins**

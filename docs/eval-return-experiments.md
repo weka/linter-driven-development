@@ -235,6 +235,7 @@ apart. Deliver the twelve rules as the coding-rules handbook, the standalone doc
 | No rules (control) | ~$3 / run | ~$8 | ~$15 |
 | Handbook | ~$4 | ~$10 | ~$20 |
 | Handbook + lint gates | ~$4 | ~$10 | ~$20 |
+| Digest + lint gates (optional) | ~$4 | not planned | not planned |
 | Full plugin | $11 (measured) | ~$28 | ~$55 |
 
 Costs are review-full per run, scaled from the measured Sonnet runs by list price;
@@ -248,6 +249,14 @@ the gap that the machinery closes for Sonnet. The no-rules row is experiment 1's
 control. And the cheapest cell that matches the plugin's Sonnet recall is the price
 of the review in model terms; experiment 3 asks the same of the refactor skill,
 against its oracles.
+
+The digest row is optional and runs last. It replaces the handbook with its
+implementer digest, `coding-rules/python.digest.md`, about 1,800 tokens, with the
+same lint gates ([handbook.md](handbook.md), "The implementer's digest"). Run it only
+when the handbook rows show that the rules change the result with the rules in the
+implementer's context. Then it asks whether the shape decisions alone keep that
+result at about a fifth of the fixed context. The handbook rows keep the full handbook as
+generated.
 
 Two cautions. Use the handbook as generated, not edited for the experiment: it comes from the rule sources, not from the fixture or the graders, so it cannot be a cheat sheet, and editing it would measure something nobody ships. And hold the report format
 loose in the two lighter arms: the recall graders match filenames and the judge

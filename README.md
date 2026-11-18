@@ -50,7 +50,7 @@ Plus the coding rules as a single document, for a project that does not use the 
 - [`coding-rules/ts-react.md`](coding-rules/ts-react.md) — the same twelve rules with TypeScript and React examples and the ts-react binding's positions, the shared house rules and the TypeScript house rules T1–T5, a self-review checklist and the mechanics.
 - [`coding-rules/generic.md`](coding-rules/generic.md) — the same twelve rules for any other language: pseudocode examples, each with a note on how the language spells it, the shared house rules and the two any-language house rules A1–A2, a self-review checklist and the mechanics.
 
-All four are generated from the same sources as the plugins, so they never drift from them; import one from your `CLAUDE.md` or `AGENTS.md`, or read it before your first PR. How they are built: [docs/handbook.md](docs/handbook.md).
+Each has a digest beside it, `coding-rules/<lang>.digest.md`: the shape decisions of the same rules without the examples, about 2,000 tokens, for a coding agent. All eight files are generated from the same sources as the plugins, so they never drift from them. For an agent, import the digest from your `CLAUDE.md` or `AGENTS.md` and link the full handbook. For a person or a reviewer, read the full handbook before your first PR. How they are built: [docs/handbook.md](docs/handbook.md).
 
 
 ### Go plugin
@@ -121,7 +121,7 @@ Use the key of the plugin for your language in `enabledPlugins`.
 
 ## Developing the Plugins
 
-1. Clone the repo. All four plugin directories are generated, and so are `coding-rules/go.md`, `coding-rules/python.md`, `coding-rules/ts-react.md` and `coding-rules/generic.md`: edit the sources under `core/` (language-neutral text, with the neutral defaults under `core/includes/`) and `lang/go/`, `lang/python/`, `lang/ts-react/` or `lang/generic/` (the bindings), then run `task generate`, `task generate BINDING=python`, `task generate BINDING=ts-react` and `task generate BINDING=generic` and commit all of them. `task check` fails when a plugin directory or a handbook drifts from its sources. How the pieces fit: [core/README.md](core/README.md), [docs/generator.md](docs/generator.md) and [docs/handbook.md](docs/handbook.md).
+1. Clone the repo. All four plugin directories are generated, and so are `coding-rules/go.md`, `coding-rules/python.md`, `coding-rules/ts-react.md` and `coding-rules/generic.md` and their `.digest.md` digests: edit the sources under `core/` (language-neutral text, with the neutral defaults under `core/includes/`) and `lang/go/`, `lang/python/`, `lang/ts-react/` or `lang/generic/` (the bindings), then run `task generate`, `task generate BINDING=python`, `task generate BINDING=ts-react` and `task generate BINDING=generic` and commit all of them. `task check` fails when a plugin directory, a handbook or a digest drifts from its sources. How the pieces fit: [core/README.md](core/README.md), [docs/generator.md](docs/generator.md) and [docs/handbook.md](docs/handbook.md).
 2. Test a change on the spot: start a session that loads the plugin straight from your checkout.
    ```
    claude --plugin-dir ./linter-driven-development/go-linter-driven-development

@@ -65,16 +65,41 @@ type Profile struct {
 	// document rendered from core/handbook/ for this binding, outside the
 	// plugin directory. Empty means the binding ships no handbook.
 	Handbook string `yaml:"handbook"`
+	// Digest is the repository-relative path of the implementer's digest of
+	// that handbook, rendered from the same rules without the examples. Empty
+	// means no digest; a digest needs a handbook to point at.
+	Digest string `yaml:"digest"`
 }
 
 // HasHandbook reports whether the binding renders a coding-rules handbook.
 func (p Profile) HasHandbook() bool { return p.Handbook != "" }
 
-// validateHandbook accepts a clean relative markdown path under the repository
-// root: no leading slash, no "..", not hidden, not the root itself. The
-// generator overwrites this file, so a value that could reach outside the
+// HasDigest reports whether the binding renders a digest of its handbook.
+func (p Profile) HasDigest() bool { return p.Digest != "" }
+
+// validateDocuments checks the handbook and digest paths: each is a clean
+// relative markdown path, and a digest sits beside a handbook it is not.
+func validateDocuments(p Profile) error {
+	if err := validateDocumentPath("handbook", p.Handbook); err != nil {
+		return err
+	}
+	if err := validateDocumentPath("digest", p.Digest); err != nil {
+		return err
+	}
+	switch {
+	case p.HasDigest() && !p.HasHandbook():
+		return fmt.Errorf("profile: digest %q needs a handbook to point at", p.Digest)
+	case p.HasDigest() && p.Digest == p.Handbook:
+		return fmt.Errorf("profile: digest and handbook name the same file %q", p.Digest)
+	}
+	return nil
+}
+
+// validateDocumentPath accepts a clean relative markdown path under the
+// repository root: no leading slash, no "..", not hidden, not the root itself.
+// The generator overwrites this file, so a value that could reach outside the
 // checkout must not load.
-func validateHandbook(rel string) error {
+func validateDocumentPath(key, rel string) error {
 	if rel == "" {
 		return nil
 	}
@@ -82,9 +107,9 @@ func validateHandbook(rel string) error {
 	switch {
 	case clean != rel, path.IsAbs(rel), clean == ".", strings.HasPrefix(rel, "../"), strings.HasPrefix(rel, "."),
 		strings.ContainsAny(rel, `\:`): // a backslash or a volume is a separator on Windows that path.Clean cannot see
-		return fmt.Errorf("profile: handbook %q must be a clean relative path inside the repository", rel)
+		return fmt.Errorf("profile: %s %q must be a clean relative path inside the repository", key, rel)
 	case !strings.HasSuffix(rel, ".md"):
-		return fmt.Errorf("profile: handbook %q must be a markdown file", rel)
+		return fmt.Errorf("profile: %s %q must be a markdown file", key, rel)
 	}
 	return nil
 }
@@ -144,7 +169,7 @@ func (p Profile) validate() error {
 	if err := p.IncludeFallback.validate(); err != nil {
 		return err
 	}
-	if err := validateHandbook(p.Handbook); err != nil {
+	if err := validateDocuments(p); err != nil {
 		return err
 	}
 	for _, pattern := range p.Ignore {

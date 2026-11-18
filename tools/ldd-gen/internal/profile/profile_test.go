@@ -70,6 +70,32 @@ func TestParse_Handbook(t *testing.T) {
 	}
 }
 
+func TestParse_Digest(t *testing.T) {
+	t.Parallel()
+	p, err := profile.Parse([]byte(full + "handbook: coding-rules/go.md\ndigest: coding-rules/go.digest.md\n"))
+	require.NoError(t, err)
+	assert.True(t, p.HasDigest())
+	assert.Equal(t, "coding-rules/go.digest.md", p.Digest)
+
+	cases := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{name: "digest without handbook", input: "digest: coding-rules/go.digest.md\n", want: "needs a handbook"},
+		{name: "digest is the handbook", input: "handbook: coding-rules/go.md\ndigest: coding-rules/go.md\n", want: "name the same file"},
+		{name: "digest escapes", input: "handbook: coding-rules/go.md\ndigest: ../go.digest.md\n", want: "digest"},
+		{name: "digest not markdown", input: "handbook: coding-rules/go.md\ndigest: coding-rules/go.txt\n", want: "digest"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			_, err := profile.Parse([]byte(full + tc.input))
+			require.ErrorContains(t, err, tc.want)
+		})
+	}
+}
+
 func TestParse_IncludeFallback(t *testing.T) {
 	t.Parallel()
 	p, err := profile.Parse([]byte(full + "include_fallback:\n  from: go\n  under: examples/\n"))
