@@ -36,7 +36,7 @@ questions to answer before review.
 {{include "handbook/R2/digest.md"}}
 
 - **Moves:** {{moves "rules/R2-self-validating-types.md"}}
-- **Ask:** {{questions "rules/R2/falsifying-questions.md" 1 3 5}}
+- **Ask:** {{questions "rules/R2/falsifying-questions.md" 1 3 4}}
 
 ### R3 — Storifying
 
@@ -71,7 +71,7 @@ questions to answer before review.
 {{include "handbook/R7/digest.md"}}
 
 - **Moves:** {{moves "rules/R7-test-placement.md"}}
-- **Ask:** {{questions "rules/R7/falsifying-questions.md" 3 4}}
+- **Ask:** {{questions "rules/R7/falsifying-questions.md" 3 5}}
 
 ### R8 — No Globals
 

@@ -36,7 +36,7 @@ Give a domain value its own type only when the type owns validation, behavior or
 Validate in the constructor, the only way to get a value, so that no method checks it again.
 
 - **Moves:** Add validating constructor · Hoist method checks into the constructor · Introduce Null Object · Delete re-validation of composed types · Separate Failure from Absence
-- **Ask:** Can the type exist in an invalid state? · Does a constructor re-validate a composed self-validating type? · Does anything return or accept nil as a value?
+- **Ask:** Can the type exist in an invalid state? · Does a constructor re-validate a composed self-validating type? · Does the type rely on upstream validation?
 
 ### R3 — Storifying
 
@@ -71,7 +71,7 @@ Depend on the concrete type, and add an interface only for a second production i
 Test each behavior at the lowest rung that holds it, with real collaborators, and fake only the external boundary.
 
 - **Moves:** Move the behavior down a rung · Split Success and Error Tables · Kill the surviving mutant · Replace doubles with real collaborators · Replace sleep with synchronization · Delete private-function tests
-- **Ask:** Does a test construct a big object to exercise a leaf behavior? · Does a private leaf or a new public behavior have no direct test?
+- **Ask:** Does a test construct a big object to exercise a leaf behavior? · Does a test assert on a fake's internals rather than observable behavior?
 
 ### R8 — No Globals
 
