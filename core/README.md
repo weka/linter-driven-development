@@ -109,7 +109,7 @@ core sentence that wants a neutral rewrite.
 | `{{maxim "Tell, don't ask"}}` | `**Tell, don't ask.**` followed by that maxim's `**Ask:**` paragraph from `maxims.md` |
 | `{{reviews "handbook/house-rules.md"}}` | the `**Review:**` lines of that include, joined with ` · ` |
 | `{{maximName "Tell, don't ask"}}` | digest only: `**Tell, don't ask.**`, after a check that `maxims.md` has that heading with an `**Ask:**` paragraph |
-| `{{handbookPath}}` | digest only: the path of the binding's handbook relative to the directory of its digest, for the link from one to the other |
+| `{{handbookPath}}` | digest only: the path of the binding's handbook relative to the directory of its digest, each segment percent-encoded, as the destination of the link from one to the other |
 
 `handbook/coding-rules.digest.md` is the template of the implementer digest, rendered
 for every binding whose profile names a `digest:` path beside its `handbook:` path

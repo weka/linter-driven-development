@@ -5,7 +5,7 @@
 
 The decisions of the Python coding rules that set the shape of code as you write it.
 Import this file from `CLAUDE.md` or `AGENTS.md`. For the examples and the detail of
-each rule, read the full handbook, [python.md](python.md).
+each rule, read [the full handbook](python.md).
 
 ## Mindset
 

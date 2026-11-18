@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net/url"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -204,7 +205,9 @@ func (r *renderer) maximName(title string) (string, error) {
 
 // handbookPath returns the path of the binding's full handbook relative to
 // the directory of its digest, so a link from one to the other resolves
-// wherever the two files sit.
+// wherever the two files sit. Each segment is percent-encoded: the result is a
+// Markdown link destination, where a '#' or a space in a file name would
+// otherwise end the path.
 func (r *renderer) handbookPath() (string, error) {
 	p := r.binding.Profile()
 	if !p.HasHandbook() || !p.HasDigest() {
@@ -214,7 +217,11 @@ func (r *renderer) handbookPath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("handbookPath: %w", err)
 	}
-	return filepath.ToSlash(rel), nil
+	segments := strings.Split(filepath.ToSlash(rel), "/")
+	for i, s := range segments {
+		segments[i] = url.PathEscape(s)
+	}
+	return strings.Join(segments, "/"), nil
 }
 
 func capitalize(s string) string {

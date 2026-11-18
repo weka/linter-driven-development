@@ -5,7 +5,7 @@
 
 The decisions of the any-language coding rules that set the shape of code as you write it.
 Import this file from `CLAUDE.md` or `AGENTS.md`. For the examples and the detail of
-each rule, read the full handbook, [generic.md](generic.md).
+each rule, read [the full handbook](generic.md).
 
 ## Mindset
 
