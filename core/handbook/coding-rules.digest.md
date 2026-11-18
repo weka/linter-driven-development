@@ -22,7 +22,7 @@ each rule, read the full handbook, [{{handbookPath}}]({{handbookPath}}).
 ## Rules
 
 Each rule: what to do as you write, the moves that repair a violation, and the
-questions a linter cannot answer for you.
+questions to answer before review.
 
 ### R1 — Primitive Obsession
 
@@ -57,14 +57,14 @@ questions a linter cannot answer for you.
 {{include "handbook/R5/digest.md"}}
 
 - **Moves:** {{moves "rules/R5-vertical-slice.md"}}
-- **Ask:** {{questions "rules/R5/falsifying-questions.md" 2 3}}
+- **Ask:** {{questions "rules/R5/falsifying-questions.md" 2 3 4}}
 
 ### R6 — Test-Only Interfaces
 
 {{include "handbook/R6/digest.md"}}
 
 - **Moves:** {{moves "rules/R6-test-only-interfaces.md"}}
-- **Ask:** {{questions "rules/R6/falsifying-questions.md" 2 3}}
+- **Ask:** {{questions "rules/R6/falsifying-questions.md" 3 4}}
 
 ### R7 — Test Placement
 

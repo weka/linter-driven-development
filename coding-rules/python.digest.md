@@ -22,18 +22,18 @@ each rule, read the full handbook, [python.md](python.md).
 ## Rules
 
 Each rule: what to do as you write, the moves that repair a violation, and the
-questions a linter cannot answer for you.
+questions to answer before review.
 
 ### R1 — Primitive Obsession
 
-Give a domain value its own type when the type owns validation, behavior or an invariant; otherwise keep the primitive.
+Give a domain value its own type only when the type owns validation, behavior or an invariant.
 
 - **Moves:** Replace Primitive with Domain Type · Extract Collection Type · Replace Sentinel with Declared Absence · Name enum strings · Introduce Parameter Object · Name the Container
 - **Ask:** Is the same predicate enforced in more than one place? · Inverse — is a NEW type in the diff mere ceremony? · Does a flat container of primitives cross a function boundary?
 
 ### R2 — Self-Validating Types
 
-Validate in the constructor, the only way to get a value, so that no method checks its own type again.
+Validate in the constructor, the only way to get a value, so that no method checks it again.
 
 - **Moves:** Add validating constructor · Hoist method checks into the constructor · Introduce Null Object · Delete re-validation of composed types · Separate Failure from Absence
 - **Ask:** Can the type exist in an invalid state? · Does a constructor re-validate a composed self-validating type? · Does anything return or accept `None` as a value?
@@ -47,7 +47,7 @@ Write each top-level function as a short list of named steps at one level of abs
 
 ### R4 — Helper Placement
 
-Keep a helper private beside its caller and test it through the public API; never make it public for a test.
+Test a helper through the public API that calls it, and never make it public for a test.
 
 - **Moves:** Demote (rung 1) · Promote to feature sub-package (rung 2) · Split the pure leaf out of an I/O package · Promote to domain package (rung 3) · Split policy from vocabulary during promotion · Move Method to the Envied Type
 - **Ask:** Is a symbol public only so tests can reach it? · Did feature policy leak into a shared package? · Does a changed function envy another type's data?
@@ -57,14 +57,14 @@ Keep a helper private beside its caller and test it through the public API; neve
 Put new code in the package of its feature, with role names on its files, never in a layer package.
 
 - **Moves:** Slice out a feature · Rename layer files by role during the move · Split a generic package by owner
-- **Ask:** Is one feature's code spread across ≥2 layer directories? · Does the diff add a new file into a layer directory instead of a slice?
+- **Ask:** Is one feature's code spread across ≥2 layer directories? · Does the diff add a new file into a layer directory instead of a slice? · Do both shapes coexist for one feature?
 
 ### R6 — Test-Only Interfaces
 
-Depend on the concrete type; add an interface only for a second production implementation or a real import cycle.
+Depend on the concrete type, and add an interface only for a second production implementation or a real import cycle.
 
 - **Moves:** Delete the Test Seam · Rewrite the test around real collaborators · Delete the double
-- **Ask:** Is the only other implementer a test double? · Would depending on the concrete type cause a REAL import cycle?
+- **Ask:** Would depending on the concrete type cause a REAL import cycle? · Does a consumer take an interface while every production call site passes the same concrete type?
 
 ### R7 — Test Placement
 
@@ -75,7 +75,7 @@ Test each behavior at the lowest rung that holds it, with real collaborators, an
 
 ### R8 — No Globals
 
-Pass each dependency in from the caller; read configuration and global state only at the entry point.
+Pass each dependency in from the caller, and read configuration only at the entry point.
 
 - **Moves:** Extract Clean Island · Push the Global Up One Level · Replace Import-Time Initialization with a Constructor · Pass Cancellation Down
 - **Ask:** Does library code manufacture its own cancellation root? · Does deep code read a global config?
@@ -89,14 +89,14 @@ Write a docstring that says why, and change the feature doc in the same change a
 
 ### R10 — Concurrency Safety
 
-Give each concurrent task an owner that stops it and waits for it, and keep each shared state in one type that guards it.
+Give each concurrent task an owner that stops it and waits for it, and guard shared state where it lives.
 
 - **Moves:** Inject the Exit Path · Make Concurrent Work Joinable · Extract Synchronized Owner · Replace Sleep with Cancellable Wait · Delete Unearned Guards
 - **Ask:** Can the code that starts a thread or task also stop it and wait for it? · Is shared mutable state written from a thread without a guard? · Inverse — is a guard, thread or task ceremony?
 
 ### R11 — Conditional Dispatch (Anti-IF)
 
-Decide the kind of a value once, at the boundary, and then call its methods; never inspect the same kind twice.
+Decide the kind of a value once, at the boundary, and never inspect the same kind again.
 
 - **Moves:** Replace Duplicated Switch with Interface Dispatch · Replace If-Chain with Strategy Map · Introduce Null Object · Split Flag Argument · Keep the Single Exhaustive Switch
 - **Ask:** Is the same discriminator inspected in more than one place? · Does a `case _:` (or trailing `else`) handle "unknown kind" away from the boundary? · Inverse — is a NEW dispatch abstraction in the diff unearned?

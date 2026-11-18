@@ -272,7 +272,7 @@ twelve rules are mostly what a strong model already knows. So run the plugin
 column on Sonnet only, the lighter rows on Sonnet first, then the handbook on Opus as the one cell that could rewrite the plan. Skip Fable unless Opus lands
 within a few plants of the plugin.
 
-Budget: about $110 for the Sonnet row, about $50 for the Opus cell, about $940 for the whole grid.
+Budget: about $110 for the Sonnet row, about $50 for the Opus cell, about $940 for the whole grid, and about $20 more for the optional digest cell.
 
 ## Part two: does the code LDD refactored pay off for the next agent?
 

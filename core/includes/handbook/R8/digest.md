@@ -1,1 +1,1 @@
-Pass each dependency in from the caller; read configuration and global state only at the entry point.
+Pass each dependency in from the caller, and read configuration only at the entry point.

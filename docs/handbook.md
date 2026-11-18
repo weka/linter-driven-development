@@ -47,9 +47,9 @@ went back into the Python R5 aside.
 handbook for an agent that writes code. The full handbook suits a reader who reads
 it once, a person or a reviewer. An `@` import puts a file into the fixed context,
 and the fixed context is billed again on every call of a session
-([token-budget.md](token-budget.md)). Two thirds of each handbook are the
-before-and-after examples, which an implementer does not need in front of it at
-each call. The digest keeps the decisions that set the shape of code and drops the
+([token-budget.md](token-budget.md)). The before-and-after examples and their
+asides are a third to a half of each handbook, and an implementer does not need them
+in front of it at each call. The digest keeps the decisions that set the shape of code and drops the
 examples and the mechanics table.
 
 | Section | Source |
@@ -60,13 +60,14 @@ examples and the mechanics table.
 | Pointer | a link to the full handbook, relative to the digest |
 
 The template is `core/handbook/coding-rules.digest.md`. It weights each rule by what
-a linter cannot hold. A question whose detection is `Detect: judgment` has no grep,
-and no linter of the recommended setup answers it, so the template picks those
-first. R4, R10 and R12 have the most of them and get three questions. R1, R2 and R11
+a linter cannot hold. It picks first the questions whose detection is
+`Detect: judgment`: no search finds them, and the linters of the recommended setup
+hold few of them. R4, R5, R10 and R12 have three or more in Go and Python, and get
+three questions. R6 gets the two that every binding marks as judgment. R1, R2 and R11
 also get three, because they decide a type's shape as you write it, and that shape
-costs the most to change in review. Where a linter of the setup already holds a
-judgment question (R3's size limits) or a rule has none (R8), the template picks
-questions that the review's searches find.
+costs the most to change in review. R3's one judgment question is the size limit,
+which the linters hold, and R8 has none, so each gets two questions that the
+review's searches find.
 
 **The ceiling.** A rendered digest is at most 8,000 bytes, about 2,000 tokens. The
 render fails above that, so `task generate` and `task check` both stop a digest that
