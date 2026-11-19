@@ -1,6 +1,6 @@
 ---
 type: feature
-description: the coding-rules handbook — the standalone document a team reads without the plugin, how it is generated from the same rules, what a binding writes for it, and how to consume and measure it
+description: the coding-rules handbook and its implementer digest — the standalone documents a team reads without the plugin, how they are generated from the same rules, what a binding writes for them, and how to consume and measure them
 ---
 # The Coding-Rules Handbook
 
@@ -41,12 +41,45 @@ numbered rule with detection commands. Suppressions (H1) and errors (H2) took th
 first step; the Python bucket-module rule (the old P3) was already R5's Principle and
 went back into the Python R5 aside.
 
+## The implementer's digest
+
+`coding-rules/<lang>.digest.md` is the second document a binding renders: the
+handbook for an agent that writes code. The full handbook suits a reader who reads
+it once, a person or a reviewer. An `@` import puts a file into the fixed context,
+and the fixed context is billed again on every call of a session
+([token-budget.md](token-budget.md)). The before-and-after examples and their
+asides are a third to a half of each handbook, and an implementer does not need them
+in front of it at each call. The digest keeps the decisions that set the shape of code and drops the
+examples and the mechanics table.
+
+| Section | Source |
+|---|---|
+| Mindset | the names of the same nine maxims, each checked against a heading of `core/maxims.md`, without the Ask paragraph |
+| Rules | per rule: one line that says what to do as you write, from `core/includes/handbook/Rn/digest.md` (a binding replaces it under `lang/<lang>/handbook/Rn/digest.md` only where its language needs other words); the move names from the rule's Fix pattern; two or three question headlines, chosen by number in the template |
+| House rules | the `**Review:**` line of each shared and binding house rule |
+| Pointer | a link to the full handbook, relative to the digest |
+
+The template is `core/handbook/coding-rules.digest.md`. It weights each rule by what
+a linter cannot hold. It picks first the questions whose detection is
+`Detect: judgment`: no search finds them, and the linters of the recommended setup
+hold few of them. R4, R5, R10 and R12 have three or more in Go and Python, and get
+three questions. R6 gets the two that every binding marks as judgment. R1, R2 and R11
+also get three, because they decide a type's shape as you write it, and that shape
+costs the most to change in review. R3's one judgment question is the size limit,
+which the linters hold, and R8 has none, so each gets two questions that the
+review's searches find.
+
+**The ceiling.** A rendered digest is at most 8,000 bytes, about 2,000 tokens. The
+render fails above that, so `task generate` and `task check` both stop a digest that
+grows. To add text, remove text of the same size.
+
 ## The residue gate
 
 A rendered handbook shows each Principle without the same-language example that
 sits beside it in the plugin, which is where a sentence still reasoning from Go
 shows: R1 once listed Go's type names, R8 said `main`, R12 said slices and maps.
-So the generator treats every handbook for a binding other than Go as a gate: the
+So the generator treats every handbook and every digest for a binding other than Go
+as a gate: the
 render fails on any hit of the residue scanner's hard or soft tokens in the
 rendered text, naming the line, except for the asides `docs/language-residue.md`
 keeps as the general term in every language (`interface`, `struct`). The fix is
@@ -56,17 +89,23 @@ scanner's tokens name Go.
 
 ## Consuming it
 
-Copy `coding-rules/go.md`, `coding-rules/python.md` or, for a language without a
-binding, `coding-rules/generic.md` into the project, or reference it from a pinned release
-tag, and import it from `CLAUDE.md` or `AGENTS.md` with an `@` line. It stands alone:
-no plugin, no agents, no detection commands. The file opens with a marker comment
-saying it is generated; the generator refuses to overwrite a file at the handbook
-path that lacks that marker, so a hand-edited copy in a consuming repository is safe
-from a stray `task generate` and simply falls behind.
+Copy the digest and the full handbook of the language into the project side by side:
+`coding-rules/go.digest.md` and `coding-rules/go.md`, the Python or ts-react pair,
+or, for a language without a binding, `coding-rules/generic.digest.md` and
+`coding-rules/generic.md`. You can also reference them from a pinned release tag.
+Import the digest from `CLAUDE.md` or `AGENTS.md` with an `@` line, and link the full
+handbook without an `@`. An agent then has the shape decisions in every call, and
+reads the examples only when it needs them. A team that reads the rules once, or a
+reviewer, imports the full handbook instead. Both files stand alone: no plugin, no
+agents, no detection commands. Each opens with a marker comment saying it is
+generated; the generator refuses to overwrite a file at either path that lacks that
+marker, so a hand-edited copy in a consuming repository is safe from a stray
+`task generate` and simply falls behind.
 
 ## Adding a handbook to a binding
 
-Set `handbook: coding-rules/<lang>.md` in the binding's `profile.yaml` and write
+Set `handbook: coding-rules/<lang>.md` and `digest: coding-rules/<lang>.digest.md`
+in the binding's `profile.yaml` (a digest needs a handbook to point at) and write
 `handbook/R1/example.md` to `handbook/R12/example.md`, `handbook/house-rules.md` and
 `handbook/mechanics.md` under `lang/<lang>/`. The examples have a core default, the
 pseudocode under `core/includes/handbook/`, so a language binding that leaves one out renders

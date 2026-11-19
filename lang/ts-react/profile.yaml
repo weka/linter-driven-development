@@ -54,8 +54,10 @@ file_max_lines: "450"
 package_warn_files: "8"
 package_max_files: "13"
 # The standalone coding-rules document rendered from core/handbook/ with this
-# binding's files under handbook/, written outside the plugin directory.
+# binding's files under handbook/, and its implementer digest, both written
+# outside the plugin directory.
 handbook: coding-rules/ts-react.md
+digest: coding-rules/ts-react.digest.md
 # Paths in the plugin directory the generator does not own. An eval run copies its
 # cases under evals/ at run time.
 ignore:

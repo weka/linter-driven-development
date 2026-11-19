@@ -35,8 +35,10 @@ package_warn_files: "8"
 package_max_files: "13"
 # The standalone coding-rules document rendered from core/handbook/: the twelve
 # rules with the core pseudocode examples and this binding's house rules and
-# mechanics under handbook/, written outside the plugin directory.
+# mechanics under handbook/, and its implementer digest, both written outside
+# the plugin directory.
 handbook: coding-rules/generic.md
+digest: coding-rules/generic.digest.md
 # Paths in the plugin directory the generator does not own. An eval run copies
 # its cases under evals/ at run time.
 ignore:
