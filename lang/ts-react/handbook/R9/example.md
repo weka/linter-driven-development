@@ -31,12 +31,12 @@ export function parsePolicy(raw: string): Policy { /* … */ }
 export class Policy { /* … */ }
 ```
 
-> **In TypeScript:** an exported symbol gets a JSDoc when the WHY budget has
-> something to say; the type system carries the WHAT, so `/** The cluster id */` on
+> **In TypeScript:** an exported symbol gets a JSDoc when the WHY budget has something
+> to say; the type system carries the WHAT, so `/** The cluster id */` on
 > `clusterId: string`, `@param` and `@returns` tags that restate types, and `@type`
 > tags are noise and are deleted. The summary line is the contract and never a
 > restatement finding. A non-exported symbol gets no comment by default. A component's
-> props doc the prop whose meaning its type does not carry: units, ownership, who
-> calls it. Where the repository's `jsdoc/require-jsdoc` demands one, a WHAT-comment
-> is rewritten, never deleted. The doc points down with greppable symbols
+> props doc covers only the props whose type does not carry their meaning: units,
+> ownership, who calls it. Where the repository's `jsdoc/require-jsdoc` demands one, a
+> WHAT-comment is rewritten, never deleted. The doc points down with greppable symbols
 > (`Policy.do`, `parsePolicy`), never a path and a line number.

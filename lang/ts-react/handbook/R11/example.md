@@ -45,4 +45,4 @@ function channelIcon(channel: Channel): ReactNode {
 > render switch is the finding. Prefer a `Record<Kind, …>` of handlers or components
 > first, a strategy object second, a class hierarchy last. Boolean props:
 > `isLoading`/`isError`/`isEmpty` triplets become a status union, and three or more
-> boolean props on one component is a Split Flag Argument candidate (T3).
+> boolean props on one component is a Split Flag Argument candidate.
