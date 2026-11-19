@@ -1,1 +1,1 @@
-Give a domain value its own type only when the type owns validation, behavior or an invariant.
+Give a domain value its own type only when it owns an invariant or named operations, and give each nested container a name.

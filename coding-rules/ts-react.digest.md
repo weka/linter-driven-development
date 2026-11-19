@@ -26,7 +26,7 @@ questions to answer before review.
 
 ### R1 — Primitive Obsession
 
-Give a domain value its own type only when the type owns validation, behavior or an invariant.
+Give a domain value its own type only when it owns an invariant or named operations, and give each nested container a name.
 
 - **Moves:** Replace Primitive with Domain Type · Extract Collection Type · Replace Sentinel with Declared Absence · Name enum strings · Introduce Parameter Object · Name the Container
 - **Ask:** Is the same predicate enforced in more than one place? · Inverse — is a NEW type in the diff mere ceremony? · Does a flat container of primitives cross a function boundary?
@@ -61,7 +61,7 @@ Put new code in its feature's package, but in a layered repository follow the ar
 
 ### R6 — Test-Only Interfaces
 
-Depend on the concrete type, and add an interface only for a second production implementation or a real import cycle.
+Depend on the concrete type, add an interface only for a second production implementation, and fix an import cycle in the layering.
 
 - **Moves:** Delete the Test Seam · Rewrite the test around real collaborators · Delete the double
 - **Ask:** Would depending on the concrete type cause a REAL import cycle? · Does a consumer take an interface while every production call site passes the same concrete type?
