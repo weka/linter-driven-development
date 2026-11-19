@@ -103,7 +103,7 @@ Decide the kind of a value once, at the boundary, and never inspect the same kin
 
 ### R12 — Mutation Discipline
 
-Copy collections into and out of a validated type, and change it only through methods that keep its invariants.
+Copy collections into a validated type, return copies or iterators, and change it only through methods that keep its invariants.
 
 - **Moves:** Copy on the Way In · Copy on the Way Out / Encapsulate Collection · Separate Query from Modifier · Remove Setting Method · Split Variable
 - **Ask:** Does a constructor store a caller-provided list or dict without copying? · Does one method both return domain data and mutate the receiver? · Is one variable reassigned to mean something different?
