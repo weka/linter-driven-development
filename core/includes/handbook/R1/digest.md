@@ -1,1 +1,1 @@
-Give a domain value its own type only when it owns an invariant or named operations, and give each nested container a name.
+Make a primitive a type when it carries validation, behavior or an invariant, and name each nested container; a wrapper with none of these is over-abstraction.

@@ -26,7 +26,7 @@ questions to answer before review.
 
 ### R1 — Primitive Obsession
 
-Give a domain value its own type only when it owns an invariant or named operations, and give each nested container a name.
+Make a primitive a type when it carries validation, behavior or an invariant, and name each nested container; a wrapper with none of these is over-abstraction.
 
 - **Moves:** Replace Primitive with Domain Type · Extract Collection Type · Replace Sentinel with Declared Absence · Name enum strings · Introduce Parameter Object · Name the Container
 - **Ask:** Is the same predicate enforced in more than one place? · Inverse — is a NEW type in the diff mere ceremony? · Does a flat container of primitives cross a function boundary?
@@ -96,7 +96,7 @@ Give each concurrent task an owner that stops it and waits for it, and guard sha
 
 ### R11 — Conditional Dispatch (Anti-IF)
 
-Decide the kind of a value once, at the boundary, and never inspect the same kind again.
+Switch on a value's kind at most once, exhaustively; a second switch on the same kind wants a polymorphic type chosen at the boundary.
 
 - **Moves:** Replace Duplicated Switch with Interface Dispatch · Replace If-Chain with Strategy Map · Introduce Null Object · Split Flag Argument · Keep the Single Exhaustive Switch
 - **Ask:** Is the same discriminator inspected in more than one place? · Does a default branch (or trailing `else`) handle "unknown kind" away from the boundary? · Inverse — is a NEW dispatch abstraction in the diff unearned?
