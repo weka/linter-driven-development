@@ -1,6 +1,6 @@
 ---
 name: go-ldd-setup
-description: Compare the linter setup with the LDD recommended setup, agree a tighter setup per rule, and edit only after you agree to the plan
+description: Compare the linter setup and the mutation testing tool with the LDD recommended setup, agree a tighter setup per rule, and edit only after you agree to the plan
 argument-hint: "[project dir …]"
 allowed-tools:
   # residue-exempt: the check commands of the linters that the plugins ship recommended configs for.
@@ -27,5 +27,5 @@ Load `Skill(go-linter-driven-development:lint-setup)` and follow it.
 the skill picks the projects from context.
 
 The skill shows, per rule, the recommended value, the project's value and the finding
-count at each. You decide per rule. The skill changes no file before you agree to its
-edit plan.
+count at each. It also shows when the mutation testing tool or its task is missing.
+You decide per rule. The skill changes no file before you agree to its edit plan.

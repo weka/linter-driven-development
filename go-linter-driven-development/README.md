@@ -131,7 +131,7 @@ Isolated contexts matter: the `lint-fixer` loop's token noise stays out of your 
 | [`/go-ldd-analyze [files | --all]`](commands/go-ldd-analyze.md) | 🔍 Tests + lint + review, combined report | ❌ No | ✅ Optional |
 | [`/go-ldd-review [files | --all]`](commands/go-ldd-review.md) | 🔍 Commit-readiness check | ❌ No | ✅ Optional |
 | [`/go-ldd-status`](commands/go-ldd-status.md) | Show current phase + progress | N/A | — |
-| [`/go-ldd-setup [project dir …]`](commands/go-ldd-setup.md) | Compare the linter setup with the recommended one, agree per rule, edit only after you agree to the plan | ✅ After your yes | ✅ Optional |
+| [`/go-ldd-setup [project dir …]`](commands/go-ldd-setup.md) | Compare the linter setup and the mutation testing tool with the recommended one, agree per rule, edit only after you agree to the plan | ✅ After your yes | ✅ Optional |
 | [`/wire-repo-brain [path]`](commands/wire-repo-brain.md) | Wire the documentation network in one pass: frontmatter → upward edges → docs → index.md → CLAUDE.md/AGENTS.md + conventions.md + conformance script (@documentation BOOTSTRAP) | ✅ Wiring only | ✅ Optional |
 
 ## How Auto-Detection Works

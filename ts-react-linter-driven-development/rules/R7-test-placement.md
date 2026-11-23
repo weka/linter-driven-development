@@ -10,7 +10,9 @@ integration-style tests that cover the seams between their real collaborators �
 overlap with leaf coverage is fine; leaf behavior tested *only* from above is not. On
 a leaf type, coverage is the floor and the mutation score is the claim: a leaf's
 tests must fail when its logic is changed, and a mutant that survives them is a
-missing row or dead logic.
+missing row or dead logic. An I/O type reads or writes a data source: a database, a
+file, a server. It gets 100% coverage at the rung that adds its layer, error paths
+included, and no mutation run.
 
 ## Why
 
@@ -31,7 +33,11 @@ a mutant the suite lets live marks logic no test pins down. It is worth its
 runtime exactly where the logic is: rung 0, where the tests are literal tables and
 the suite is fast. Orchestrators are not mutated; their seams are covered by wiring,
 and a mutation run over them pays the harness cost per mutant for findings that
-belong to a leaf anyway. The full
+belong to a leaf anyway. I/O types are not mutated either. Each mutant reruns a
+suite that starts a real database or server, so one run takes seconds per mutant
+and times out more often. Most of their mutants sit on error branches, and the tools
+do not mutate query text or config strings. Coverage of each error path is the check
+there. The full
 composition ladder and harness patterns live in @testing; this rule is the placement
 and review contract.
 
@@ -148,13 +154,15 @@ throw, and neither case body branches.
   killed. Each mutant runs in a sandbox copy under `.stryker-tmp/`, never in the
   checkout (`inPlace` stays at its default, `false`). The `clear-text` reporter's
   `Survived` lines carry the file, the line and the replacement — that is the row to
-  write. When Stryker is not installed, propose adding it with the repository's
-  package manager (`yarn add -D`, `pnpm add -D`, `npm i -D` or `bun add -d`
-  `@stryker-mutator/core @stryker-mutator/vitest-runner
-  @stryker-mutator/typescript-checker`) and a `mutate` script beside `test` and
-  `lint` in `package.json` that runs `stryker run`; check the runner's supported
-  Vitest major against the repository's before proposing it. Ask first, never
-  install silently, and never read a run that did not execute as a clean one.
+  write. `/tsr-ldd-setup` recommends the install: the repository's package
+  manager (`yarn add -D`, `pnpm add -D`, `npm i -D` or `bun add -d`)
+  adds `@stryker-mutator/core @stryker-mutator/vitest-runner
+  @stryker-mutator/typescript-checker`, and a `mutate` script beside `test` and
+  `lint` in `package.json` runs `stryker run`; check the runner's supported
+  Vitest major against the repository's before recommending it. When Stryker is not
+  installed at the time of a check, do not install it and do not propose it: do the
+  hand check, and write the `mutation-not-run` row with the cause `not installed;
+  run /tsr-ldd-setup`. Never read a run that did not execute as a clean one.
   Stryker mutates equality, relational and logical operators, literals and optional
   chaining, so the hand check's boundary rows mostly confirm its report rather than
   cover a blind spot.
@@ -173,6 +181,15 @@ bash <this rule file's directory>/../scripts/ldd-ledger.sh add mutation-not-run 
 ROW
 ```
 
+- **I/O types**: a type that reads or writes a data source (a database, a file, a
+  server) gets 100% coverage at the rung that adds its layer, through its public API,
+  against the real layer in-process: an embedded database, a temp directory, an
+  in-process server. Each error path that the type handles gets its own case, and the
+  real fake makes the fault: a server that returns 500, a closed connection, a file
+  that is missing. A branch that no real fake can reach (a failed row scan, a failed
+  commit) stays uncovered, with a one-line comment at the branch that says why. Never
+  add a test-only interface to reach it (`R6-test-only-interfaces.md`). No mutation
+  run: put the logic that needs one in a leaf.
 - **Orchestrating types**: integration-style tests wiring real collaborators — real
   store over an embedded DB, real client against an in-process HTTP server — never
   interface-injected doubles (`R6-test-only-interfaces.md`). They cover the seams;
@@ -315,9 +332,9 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    kill. Skip orchestrators, the top rung and any module that does I/O. Judge a private type
    inside such a module with Q4. Do not skip it. A private function there gets no run and no finding. Code that does I/O gets no
    mutation run, no `did not execute` line and no finding. Stryker
-   not installed (`@stryker-mutator/core` absent from `devDependencies`): propose
-   the install the mechanics bullet describes before hunting; no survivors from a
-   run that did not execute is not a pass. In a read-only review, where no tests
+   not installed (`@stryker-mutator/core` absent from `devDependencies`): the run
+   did not execute; take the hand check below, and name `/tsr-ldd-setup` for
+   the install. No survivors from a run that did not execute is not a pass. In a read-only review, where no tests
    may run, take the hand check instead: list the leaf's comparisons and boolean
    conditions, check the `it.each` table for a row at each boundary value and on
    each side of each condition, and name the row that is missing. Open the leaf's

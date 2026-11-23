@@ -89,9 +89,9 @@
    kill. Skip orchestrators, the top rung and any module that does I/O. Judge a private type
    inside such a module with Q4. Do not skip it. A private function there gets no run and no finding. Code that does I/O gets no
    mutation run, no `did not execute` line and no finding. Stryker
-   not installed (`@stryker-mutator/core` absent from `devDependencies`): propose
-   the install the mechanics bullet describes before hunting; no survivors from a
-   run that did not execute is not a pass. In a read-only review, where no tests
+   not installed (`@stryker-mutator/core` absent from `devDependencies`): the run
+   did not execute; take the hand check below, and name `/{{.CmdPrefix}}-setup` for
+   the install. No survivors from a run that did not execute is not a pass. In a read-only review, where no tests
    may run, take the hand check instead: list the leaf's comparisons and boolean
    conditions, check the `it.each` table for a row at each boundary value and on
    each side of each condition, and name the row that is missing. Open the leaf's

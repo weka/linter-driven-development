@@ -2,13 +2,15 @@
   the leaf packages under `paths_to_mutate` — never the whole `src/` tree — after the
   leaf's tests are green there and after each fix; `mutmut results` lists the
   survivors to triage and `mutmut show <id>` prints one mutant's diff. Mutation runs
-  reuse the repository's pytest, never a second runner. When `mutmut` is not
-  installed, propose adding it to the dev dependency group `pyproject.toml` already
-  uses (`uv add --dev mutmut`, or the project's equivalent) and a `mutate` target
-  beside `test` and `lint` in the repository's Taskfile or Makefile that runs
-  `mutmut run && mutmut results`; with no task runner and no dev group, propose
-  `pipx install mutmut` for the developer to run. Ask first, never install silently,
-  and never read a run that did not execute as a clean one.
+  reuse the repository's pytest, never a second runner. `/{{.CmdPrefix}}-setup`
+  recommends the install: `mutmut` in the dev dependency group `pyproject.toml`
+  already uses (`uv add --dev mutmut`, or the project's equivalent) and a `mutate`
+  target beside `test` and `lint` in the repository's Taskfile or Makefile that runs
+  `mutmut run && mutmut results`; with no task runner and no dev group,
+  `pipx install mutmut` for the developer to run. When `mutmut` is not installed at
+  the time of a check, do not install it and do not propose it: do the hand check,
+  and write the `mutation-not-run` row with the cause `not installed; run
+  /{{.CmdPrefix}}-setup`. Never read a run that did not execute as a clean one.
   A mutation run targets only a pure logic leaf. A pure logic leaf does no I/O
   (network, files, environment variables, clock), and its tests call it with literal
   inputs. Never run the tool over a package or module that does I/O. When a package

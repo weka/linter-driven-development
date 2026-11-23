@@ -5,6 +5,7 @@ Testing is complete when ALL of the following are true:
 - [ ] No `expectError` column - success and error cases in separate `it`s
 - [ ] Cyclomatic complexity = 1 inside every test body (no if/else, no switch, no ternary)
 - [ ] Leaf types have 100% coverage
+- [ ] I/O types have 100% coverage, each handled error path included; a branch that no real fake can reach has a comment that says why
 - [ ] Integration tests cover the page → hook → `apiClient` seams against MSW handlers
 - [ ] System tests in `e2e/` or `tests/` with appropriate dependency level, run only when asked
 - [ ] No `setTimeout` waits (`findBy*`, `waitFor`, fake timers advanced explicitly)
