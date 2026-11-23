@@ -96,7 +96,7 @@ Give each goroutine an owner that stops it and waits for it, and guard shared st
 
 ### R11 — Conditional Dispatch (Anti-IF)
 
-Switch on a value's kind at most once, exhaustively; a second switch on the same kind wants a polymorphic type chosen at the boundary.
+Switch on a value's kind at most once, exhaustively. A second switch on the same kind wants a polymorphic type, unless a consumer owns the output: then keep the switch as pure dispatch.
 
 - **Moves:** Replace Duplicated Switch with Interface Dispatch · Replace If-Chain with Strategy Map · Introduce Null Object · Split Flag Argument · Keep the Single Exhaustive Switch
 - **Ask:** Is the same discriminator inspected in more than one place? · Does a `default:` (or trailing `else`) handle "unknown kind" away from the boundary? · Inverse — is a NEW dispatch abstraction in the diff unearned?
