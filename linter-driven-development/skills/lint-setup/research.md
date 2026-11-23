@@ -43,6 +43,9 @@ globals, mutation and exhaustive dispatch. For each rule, find:
 - the command that checks a config, and the command that counts the findings;
 - the "new issues only" forms of that linter, if any.
 
+For a mutation tool (step 3.6 of the skill), find the maintained tool for the
+language, its install command, and the command that runs it over one module.
+
 For a CI caller, find: the config it reads, how it sets the version, and whether it
 filters to new issues only.
 

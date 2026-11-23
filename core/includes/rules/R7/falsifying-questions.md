@@ -72,8 +72,8 @@ Test files are the ones the repository's test runner picks up (`*{{.TestGlob}}`,
    rung and any package that does I/O. Judge a private type inside such a package
    with Q4. Do not skip it. A private function there gets no run and no finding. Code that does I/O gets no
    mutation run, no `did not execute` line and no finding. A tool the language has but the machine
-   lacks is proposed for install as the mechanics bullet says, never skipped and
-   never counted as a pass. Without any tool, list the leaf's comparisons
+   lacks is not installed and not proposed: the run did not execute, the hand check
+   below applies, and the finding names `/{{.CmdPrefix}}-setup` for the install. Without any tool, list the leaf's comparisons
    and boolean conditions, check the table for a row at each boundary value and on
    each side of each condition, and hand-flip any operator whose rows are missing
    (`<` to `<=`, `>` to `>=`, a condition negated), run the leaf's tests, revert.

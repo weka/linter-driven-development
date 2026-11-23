@@ -355,7 +355,9 @@ integration-style tests that cover the seams between their real collaborators ‚Ä
 overlap with leaf coverage is fine; leaf behavior tested *only* from above is not. On
 a leaf type, coverage is the floor and the mutation score is the claim: a leaf's
 tests must fail when its logic is changed, and a mutant that survives them is a
-missing row or dead logic.
+missing row or dead logic. An I/O type reads or writes a data source: a database, a
+file, a server. It gets 100% coverage at the rung that adds its layer, error paths
+included, and no mutation run.
 
 ```typescript
 // ‚ùå success and error fused into one table, with a branch inside the case

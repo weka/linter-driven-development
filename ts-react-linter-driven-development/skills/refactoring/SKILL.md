@@ -113,8 +113,10 @@ mode is the one invoked, before any move: `sed -n '/^## Preparatory mode/,/^## S
 2. Missing tests for any of them → STOP and invoke @testing. Before a move,
    characterization tests through the public API (`renderWithProviders` + MSW,
    never a `vi.mock` of the module being moved); `npx vitest run <dir>` after each step.
-3. Coverage: `npx vitest run --coverage` (or the repository's coverage command) —
-   leaf types must show 100% (R7).
+3. Coverage: `npx vitest run --coverage` (or the repository's coverage command) — leaf
+   types must show 100% (R7). I/O types must show 100% in the run that includes their
+   integration tests, except a branch that no real fake can reach and that has a
+   comment that says why.
 </testing_integration>
 
 <nolint_prohibition>

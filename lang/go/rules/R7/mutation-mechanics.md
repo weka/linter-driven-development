@@ -3,12 +3,14 @@
   removes statements) over the leaf package, after `go test` is green there and after
   each fix; its report's `LIVED` lines are the survivors to triage, `KILLED` the rows
   that hold. In CI, `--threshold-efficacy` with the same `--timeout-coefficient` on that package only, never on `./...`, so
-  orchestrator packages are not mutated. When `gremlins` is not on `PATH`, propose a
-  `mutate` target beside `test` and `lint` in the repository's Taskfile or Makefile
+  orchestrator packages are not mutated. `/{{.CmdPrefix}}-setup` recommends the install:
+  a `mutate` target beside `test` and `lint` in the repository's Taskfile or Makefile
   that runs `go install github.com/go-gremlins/gremlins/cmd/gremlins@latest` and then
-  `gremlins unleash --timeout-coefficient 50 ./<leaf>`; with no task runner, propose that `go install` line for
-  the developer to run. Ask first, never install silently, and never substitute a
-  different invocation. The flag is necessary: gremlins gives each mutant a timeout of
+  `gremlins unleash --timeout-coefficient 50 ./<leaf>`; with no task runner, that `go install` line for
+  the developer to run. Never substitute a different invocation. When `gremlins` is
+  not on `PATH` at the time of a check, do not install it and do not propose it: do
+  the hand check, and write the `mutation-not-run` row with the cause `not installed;
+  run /{{.CmdPrefix}}-setup`. The flag is necessary: gremlins gives each mutant a timeout of
   three times the duration of the coverage run, and on a fast host a mutant's own
   compile takes longer. When the repository runs gremlins without the flag, propose
   this `.gremlins.yaml` at the module root, two lines: `unleash:`, then

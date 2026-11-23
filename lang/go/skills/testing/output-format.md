@@ -29,6 +29,7 @@ $ go test ./tests/...              # System tests (may need containers)
 
 All tests pass
 100% coverage on leaf types
+100% coverage on I/O types, except a branch that no real fake can reach (it has a comment)
 
 Next Steps:
 1. Run linter: task lintwithfix

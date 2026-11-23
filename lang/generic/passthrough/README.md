@@ -168,7 +168,7 @@ is the meta-orchestrator:
 | `/ldd-analyze [files \| --all]` | Tests + lint + review, combined report | ❌ No |
 | `/ldd-review [files \| --all]` | Commit-readiness check | ❌ No |
 | `/ldd-status` | Show current phase + progress | N/A |
-| `/ldd-setup [project dir …]` | Compare the linter setup with the recommended one, agree per rule, edit only after you agree to the plan | ✅ After your yes |
+| `/ldd-setup [project dir …]` | Compare the linter setup and the mutation testing tool with the recommended one, agree per rule, edit only after you agree to the plan | ✅ After your yes |
 | `/wire-repo-brain [path]` | Wire the documentation network in one pass | ✅ Wiring only |
 
 `/wire-repo-brain` carries no prefix: the documentation network it wires is a

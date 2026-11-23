@@ -10,7 +10,9 @@ integration-style tests that cover the seams between their real collaborators �
 overlap with leaf coverage is fine; leaf behavior tested *only* from above is not. On
 a leaf type, coverage is the floor and the mutation score is the claim: a leaf's
 tests must fail when its logic is changed, and a mutant that survives them is a
-missing row or dead logic.
+missing row or dead logic. An I/O type reads or writes a data source: a database, a
+file, a server. It gets 100% coverage at the rung that adds its layer, error paths
+included, and no mutation run.
 
 ## Why
 
@@ -31,7 +33,11 @@ a mutant the suite lets live marks logic no test pins down. It is worth its
 runtime exactly where the logic is: rung 0, where the tests are literal tables and
 the suite is fast. Orchestrators are not mutated; their seams are covered by wiring,
 and a mutation run over them pays the harness cost per mutant for findings that
-belong to a leaf anyway. The full
+belong to a leaf anyway. I/O types are not mutated either. Each mutant reruns a
+suite that starts a real database or server, so one run takes seconds per mutant
+and times out more often. Most of their mutants sit on error branches, and the tools
+do not mutate query text or config strings. Coverage of each error path is the check
+there. The full
 composition ladder and harness patterns live in @testing; this rule is the placement
 and review contract.
 
@@ -54,6 +60,15 @@ and review contract.
   is left untriaged; scope the run to the leaf packages the change touched so it
   stays as fast as the tables it checks.
 {{include "rules/R7/mutation-mechanics.md"}}
+- **I/O types**: a type that reads or writes a data source (a database, a file, a
+  server) gets 100% coverage at the rung that adds its layer, through its public API,
+  against the real layer in-process: an embedded database, a temp directory, an
+  in-process server. Each error path that the type handles gets its own case, and the
+  real fake makes the fault: a server that returns 500, a closed connection, a file
+  that is missing. A branch that no real fake can reach (a failed row scan, a failed
+  commit) stays uncovered, with a one-line comment at the branch that says why. Never
+  add a test-only interface to reach it (`R6-test-only-interfaces.md`). No mutation
+  run: put the logic that needs one in a leaf.
 - **Orchestrating types**: integration-style tests wiring real collaborators — real
   store over an embedded DB, real client against an in-process HTTP server — never
   interface-injected doubles (`R6-test-only-interfaces.md`). They cover the seams;

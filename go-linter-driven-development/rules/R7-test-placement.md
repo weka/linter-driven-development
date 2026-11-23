@@ -10,7 +10,9 @@ integration-style tests that cover the seams between their real collaborators �
 overlap with leaf coverage is fine; leaf behavior tested *only* from above is not. On
 a leaf type, coverage is the floor and the mutation score is the claim: a leaf's
 tests must fail when its logic is changed, and a mutant that survives them is a
-missing row or dead logic.
+missing row or dead logic. An I/O type reads or writes a data source: a database, a
+file, a server. It gets 100% coverage at the rung that adds its layer, error paths
+included, and no mutation run.
 
 ## Why
 
@@ -31,7 +33,11 @@ a mutant the suite lets live marks logic no test pins down. It is worth its
 runtime exactly where the logic is: rung 0, where the tests are literal tables and
 the suite is fast. Orchestrators are not mutated; their seams are covered by wiring,
 and a mutation run over them pays the harness cost per mutant for findings that
-belong to a leaf anyway. The full
+belong to a leaf anyway. I/O types are not mutated either. Each mutant reruns a
+suite that starts a real database or server, so one run takes seconds per mutant
+and times out more often. Most of their mutants sit on error branches, and the tools
+do not mutate query text or config strings. Coverage of each error path is the check
+there. The full
 composition ladder and harness patterns live in @testing; this rule is the placement
 and review contract.
 
@@ -118,12 +124,14 @@ private-function test.
   removes statements) over the leaf package, after `go test` is green there and after
   each fix; its report's `LIVED` lines are the survivors to triage, `KILLED` the rows
   that hold. In CI, `--threshold-efficacy` with the same `--timeout-coefficient` on that package only, never on `./...`, so
-  orchestrator packages are not mutated. When `gremlins` is not on `PATH`, propose a
-  `mutate` target beside `test` and `lint` in the repository's Taskfile or Makefile
+  orchestrator packages are not mutated. `/go-ldd-setup` recommends the install:
+  a `mutate` target beside `test` and `lint` in the repository's Taskfile or Makefile
   that runs `go install github.com/go-gremlins/gremlins/cmd/gremlins@latest` and then
-  `gremlins unleash --timeout-coefficient 50 ./<leaf>`; with no task runner, propose that `go install` line for
-  the developer to run. Ask first, never install silently, and never substitute a
-  different invocation. The flag is necessary: gremlins gives each mutant a timeout of
+  `gremlins unleash --timeout-coefficient 50 ./<leaf>`; with no task runner, that `go install` line for
+  the developer to run. Never substitute a different invocation. When `gremlins` is
+  not on `PATH` at the time of a check, do not install it and do not propose it: do
+  the hand check, and write the `mutation-not-run` row with the cause `not installed;
+  run /go-ldd-setup`. The flag is necessary: gremlins gives each mutant a timeout of
   three times the duration of the coverage run, and on a fast host a mutant's own
   compile takes longer. When the repository runs gremlins without the flag, propose
   this `.gremlins.yaml` at the module root, two lines: `unleash:`, then
@@ -163,6 +171,15 @@ bash <this rule file's directory>/../scripts/ldd-ledger.sh add mutation-not-run 
 ROW
 ```
 
+- **I/O types**: a type that reads or writes a data source (a database, a file, a
+  server) gets 100% coverage at the rung that adds its layer, through its public API,
+  against the real layer in-process: an embedded database, a temp directory, an
+  in-process server. Each error path that the type handles gets its own case, and the
+  real fake makes the fault: a server that returns 500, a closed connection, a file
+  that is missing. A branch that no real fake can reach (a failed row scan, a failed
+  commit) stays uncovered, with a one-line comment at the branch that says why. Never
+  add a test-only interface to reach it (`R6-test-only-interfaces.md`). No mutation
+  run: put the logic that needs one in a leaf.
 - **Orchestrating types**: integration-style tests wiring real collaborators — real
   store over an embedded DB, real client against an in-process HTTP server — never
   interface-injected doubles (`R6-test-only-interfaces.md`). They cover the seams;
@@ -276,9 +293,9 @@ Answer each with evidence (`file:line`, command output) — never a bare verdict
    `gremlins unleash --timeout-coefficient 50 ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|NOT COVERED|TIMED OUT)|Killed:|Not covered:|Timed out:'`;
    skip orchestrators, the top rung and any package that does I/O. Judge a private type
    inside such a package with Q4. Do not skip it. A private function there gets no run and no finding. Code that does I/O gets no
-   mutation run, no `did not execute` line and no finding. `gremlins` not on `PATH`: propose
-   the install the mechanics bullet describes before hunting; an empty `LIVED` list from
-   a run that did not execute is not a pass. A `Timed out:` count above 0 makes the run
+   mutation run, no `did not execute` line and no finding. `gremlins` not on `PATH`: the run
+   did not execute; take the hand check below, and name `/go-ldd-setup` for the
+   install. An empty `LIVED` list from a run that did not execute is not a pass. A `Timed out:` count above 0 makes the run
    inconclusive: run the leaf once more as the mechanics bullet says, and read each
    `TIMED OUT` mutant from the two runs as it says. A
    `NOT COVERED` mutant is a finding, the same as a `LIVED` one: a missing test row.
