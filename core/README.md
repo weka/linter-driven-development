@@ -267,11 +267,11 @@ Hard residue: none. No plugin-name or command-prefix literal, golangci
 reference, source-file glob, nolint directive, scalar word or retired Go idiom is
 left in core/.
 
-Soft residue by token (136 lines):
+Soft residue by token (137 lines):
 
 | Token | Lines | Files |
 |---|---:|---:|
-| interface | 86 | 25 |
+| interface | 87 | 25 |
 | Go (the word) | 15 | 9 |
 | Go code fence | 12 | 1 |
 | Go stdlib | 9 | 5 |
@@ -282,7 +282,7 @@ Soft residue by token (136 lines):
 | race detector | 2 | 2 |
 | sync. | 1 | 1 |
 
-Soft residue by file (136 lines):
+Soft residue by file (137 lines):
 
 | File | Lines | Tokens |
 |---|---:|---:|
@@ -304,6 +304,7 @@ Soft residue by file (136 lines):
 | `includes/handbook/R11/example.md` | 2 | 1 |
 | `includes/rules/R10/falsifying-questions.md` | 2 | 2 |
 | `includes/scripts/ldd-doctor-skip-cases.sh` | 2 | 1 |
+| `rules/R7-test-placement.md` | 2 | 1 |
 | `skills/pre-commit-review/SKILL.md` | 2 | 1 |
 | `skills/pre-commit-review/reference.md` | 2 | 1 |
 | `agents/overabstraction-skeptic.md` | 1 | 1 |
@@ -321,7 +322,6 @@ Soft residue by file (136 lines):
 | `includes/skills/refactoring/testing-integration.md` | 1 | 1 |
 | `rules/R10-concurrency-safety.md` | 1 | 1 |
 | `rules/R2-self-validating-types.md` | 1 | 1 |
-| `rules/R7-test-placement.md` | 1 | 1 |
 | `scripts/ldd-scope_test.sh` | 1 | 1 |
 | `setup/golangci.yaml` | 1 | 1 |
 | `skills/linter-driven-development/SKILL.md` | 1 | 1 |

@@ -37,9 +37,12 @@ Run `/go-ldd-setup` on a project before its first workflow run, or when you want
 tighter linter. The recommended linter configuration makes the design triggers
 fire. The command does this:
 
-1. It compares the linter setup of the project with the recommended one.
+1. It compares the linter setup of the project with the recommended one. It also
+   checks the mutation testing tool that runs over each pure leaf type (gremlins for
+   Go, mutmut for Python, StrykerJS for TypeScript).
 2. It shows each rule that needs a decision, with the recommended value, the
-   project's value and the finding count at each.
+   project's value and the finding count at each. When the mutation tool or its
+   task is missing, a row recommends a `mutate` task that installs and runs it.
 3. You agree per rule: take the recommended value, keep your own, give another
    value, turn the rule off, or leave the value to your organization.
 4. It shows the edit plan as one diff per file, and the hooks that change for each
@@ -47,7 +50,8 @@ fire. The command does this:
 5. It edits only after you say yes to the plan. Then it records the agreement in
    `.ldd-lint.yaml`.
 
-An agreed rule is not asked about again. `/go-ldd-status` shows a "Lint setup" line
+An agreed rule is not asked about again. The mutation tool row has no record, so
+the command asks again while the tool is missing. `/go-ldd-status` shows a "Lint setup" line
 only after a setup ran and the linter no longer matches what you agreed. Run
 `/go-ldd-setup` again to agree the change or to restore the agreed value. A repository
 with more than one project takes a directory per project: `/go-ldd-setup web/ api/`.

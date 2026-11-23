@@ -7,6 +7,21 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ### Added
 
+- **The setup command checks the mutation testing tool.** `/tsr-ldd-setup` finds the
+  mutation testing tool (StrykerJS), its task and its config. When one of them is
+  missing, the table shows a row that recommends a `mutate` task, and the edit plan
+  holds the install. After the edits, the setup runs the task over one pure leaf.
+  The row gets no record line.
+- **I/O types get 100% coverage.** R7 and the testing skill require 100% coverage on
+  a type that reads or writes a database, a file or a server. Each error path that
+  the type handles gets a case, and the real fake makes the fault. A branch that no
+  real fake can reach stays uncovered, with a comment that says why. I/O types get no
+  mutation run: each mutant reruns a slow suite, and most of their mutants sit on
+  error branches.
+- **A missing mutation tool is not proposed at check time.** When the tool is not
+  installed, R7 does the hand check and writes a `mutation-not-run` ledger row that
+  names the setup command. The setup command is the one place that recommends the
+  install.
 - **The gap linter's findings are detection rows.** R5 Q6 (file length) and Q7
   (package size) carry `Detect-script: ldd-lint …` lines, a fifth detect kind: the
   detection pass runs the gap linter over the scope and writes its findings as

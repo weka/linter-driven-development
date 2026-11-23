@@ -4,4 +4,5 @@
    characterization tests through the public API (`renderWithProviders` + MSW,
    never a `vi.mock` of the module being moved); `npx vitest run <dir>` after each step.
 3. Coverage: `npx vitest run --coverage` (or the repository's coverage command) —
-   leaf types must show 100% (R7).
+   leaf types must show 100% (R7). I/O types must show 100% in the run that includes
+   their integration tests.

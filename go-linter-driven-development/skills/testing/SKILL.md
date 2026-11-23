@@ -73,6 +73,10 @@ bash <this skill dir>/../../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
 ROW
 ```
 
+- I/O types (a type that reads or writes a database, a file or a server): 100% coverage
+  at the rung that adds their layer, each handled error path made by the real fake. A
+  branch that no real fake can reach stays uncovered, with a comment that says why. No
+  mutation run (`../../rules/R7-test-placement.md`, I/O types).
 - Higher rungs (orchestrating types): cover the delta each rung adds — its seams and emergent behaviors
 - Critical workflows: top-rung (system) tests
 
@@ -281,6 +285,7 @@ $ go test ./tests/...              # System tests (may need containers)
 
 All tests pass
 100% coverage on leaf types
+100% coverage on I/O types
 
 Next Steps:
 1. Run linter: task lintwithfix
@@ -298,6 +303,7 @@ Next Steps:
 - [ ] Using in-memory implementations from testutils
 - [ ] No time.Sleep (using channels/waitgroups)
 - [ ] Leaf types have 100% coverage
+- [ ] I/O types have 100% coverage, each handled error path included
 </unit_tests_checklist>
 
 <integration_tests_checklist>
@@ -335,6 +341,7 @@ Testing is complete when ALL of the following are true:
 - [ ] No wantErr bool - success and error cases in separate test functions
 - [ ] Cyclomatic complexity = 1 inside t.Run() (no if/else, no switch)
 - [ ] Leaf types have 100% coverage
+- [ ] I/O types have 100% coverage, each handled error path included
 - [ ] Integration tests cover component seams
 - [ ] System tests in tests/ folder with appropriate dependency level
 - [ ] No time.Sleep (using channels/waitgroups)

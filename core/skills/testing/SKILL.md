@@ -67,6 +67,10 @@ bash <this skill dir>/../../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
 ROW
 ```
 
+- I/O types (a type that reads or writes a database, a file or a server): 100% coverage
+  at the rung that adds their layer, each handled error path made by the real fake. A
+  branch that no real fake can reach stays uncovered, with a comment that says why. No
+  mutation run (`../../rules/R7-test-placement.md`, I/O types).
 - Higher rungs (orchestrating types): cover the delta each rung adds — its seams and emergent behaviors
 - Critical workflows: top-rung (system) tests
 

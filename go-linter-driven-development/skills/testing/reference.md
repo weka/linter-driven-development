@@ -59,6 +59,7 @@ keeps agreeing with the client no matter how wrong both are. Mitigate it:
 The composition ladder is defined in SKILL.md; coverage follows it:
 
 - **Rung 0 (leaf types)**: 100% unit test coverage — core logic must be bulletproof, and rung-0 tables are the cheapest tests you will ever write. Coverage is the floor; the claim is that the tests fail when the logic changes, and `gremlins unleash --timeout-coefficient 50 ./path/to/leaf` checks it: every `LIVED` mutant on a leaf package is a missing row, dead logic, or an equivalent mutant noted beside the tests. A `TIMED OUT` mutant makes the run inconclusive until the second run that the R7 mutation mechanics name. Leaf packages only — never `./...`, never an orchestrator.
+- **I/O types (a type that reads or writes a database, a file or a server)**: 100% coverage in the run that includes their integration tests, each handled error path made by the real fake (a server that returns 500, a closed connection, a missing file). A branch that no real fake can reach (a failed `rows.Scan`, a failed `Commit`) stays uncovered, with a one-line comment that says why; never a test-only interface (R6). No gremlins run: each mutant reruns a slow suite, and most of their mutants sit on error branches.
 - **Higher rungs (orchestrators, composed layers)**: cover the delta each rung adds — the seams/wiring and behaviors that only exist through composition — not a re-test of lower-rung logic. Some overlap with leaf coverage is acceptable for orchestrators.
 - **Goal**: most logic in leaf types, so most coverage lives at rung 0.
 
@@ -390,6 +391,7 @@ func Example_UserID_validation() {
 
 **Coverage:**
 - [ ] Rung 0 (leaf types): 100% unit test coverage
+- [ ] I/O types: 100% coverage with the integration tests, each handled error path included
 - [ ] Rung 0 (leaf types): no untriaged `LIVED` or `NOT COVERED` mutant from `gremlins unleash --timeout-coefficient 50` over the leaf package, and no `TIMED OUT` mutant left unread
 - [ ] Higher rungs: each rung's delta covered (seams, emergent behaviors)
 - [ ] Happy path, edge cases, error cases covered
@@ -408,6 +410,7 @@ func Example_UserID_validation() {
 - Test only public API (`pkg_test` package)
 - Use real implementations, not mocks
 - Rung 0 (leaf types): 100% coverage, and no surviving mutant (gremlins, leaf packages only)
+- I/O types: 100% coverage with the integration tests, and no mutation run
 - Higher rungs: cover each rung's delta (seams, emergent behaviors)
 
 **Common Pitfalls to Avoid:**

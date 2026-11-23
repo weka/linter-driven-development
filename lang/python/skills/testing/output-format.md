@@ -29,6 +29,7 @@ $ pytest tests/                       # system tests (may need containers)
 
 All tests pass
 100% coverage on leaf types
+100% coverage on I/O types
 
 Next Steps:
 1. Run linter: ruff check --fix . && ruff format . && ty check   # or mypy, whichever the repository configures

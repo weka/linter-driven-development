@@ -1,8 +1,8 @@
 ---
 name: lint-setup
 description: |
-  Compares the TypeScript + React linter setup of this repository with the LDD recommended setup, and agrees a tighter setup with the user before any edit.
-  WHEN: the user asks to compare, align or set up the TypeScript + React linter config with the LDD recommended setup, or runs /tsr-ldd-setup.
+  Compares the TypeScript + React linter setup and the mutation testing tool of this repository with the LDD recommended setup, and agrees a tighter setup with the user before any edit.
+  WHEN: the user asks to compare, align or set up the TypeScript + React linter config or the mutation testing tool with the LDD recommended setup, or runs /tsr-ldd-setup.
   Shows, per rule, the recommended value, the project's value and the finding count at each; the user decides per rule; files change only after the user agrees to the edit plan. Not for fixing lint findings.
 allowed-tools:
   # residue-exempt: the check commands of the linters that the plugins ship recommended configs for.
@@ -24,7 +24,8 @@ allowed-tools:
 
 <objective>
 Compare the linter setup of each project with the recommended setup of this plugin.
-Agree a tighter setup with the user. Then make only the agreed edits. This skill is a
+Check also that the mutation testing tool of R7 is installed and has a task. Agree a
+tighter setup with the user. Then make only the agreed edits. This skill is a
 conversation with the user, not a report. The user may not know linter internals:
 say each finding in plain words.
 
@@ -164,6 +165,19 @@ the review keeps the limits of the rules.
 5. Find each CI step and each hook that runs the linter. Compare it with the known
    callers in the linter reference. For a caller that is not in that list, read the
    research reference, and do the research for that caller.
+6. **Find the mutation tool.** R7 runs a mutation tool over each pure leaf. The run
+   proves that the leaf's tests fail when its logic changes. Read the "Mutation
+   mechanics" bullet of `<this skill dir>/../../rules/R7-test-placement.md`: it names the tool,
+   its task and its config for this language. Then find:
+   - the tool: in the dev dependencies, the tool list or the lock file of the
+     project, or on `PATH`;
+   - the task that runs it: find it by the command, as in item 2;
+   - its config, and whether the bullet proposes a change to it for this project.
+
+   When the bullet names no tool, look for a mutation tool that the project already
+   uses. If there is none, read the research reference, and find the maintained tool
+   for the language. When the language has no maintained tool, tell the user that R7
+   uses a check by hand, and add no row in step 5.
 
 ## 4. Count the findings
 
@@ -195,7 +209,13 @@ the review keeps the limits of the rules.
    - each agreed rule with drift (a drift row), whatever its state. A drift row also
      shows the value the team agreed and the value now;
    - a rule whose row cannot verify (step 2.4): it shows "the installed linter cannot
-     report this setting; upgrade it", and it gets no choice.
+     report this setting; upgrade it", and it gets no choice;
+   - the mutation tool (step 3.6), when the tool or its task is missing, or when the
+     mechanics bullet proposes a config change for this project. For example:
+     "Mutation testing — <tool>: not installed, no task; recommended: a `mutate` task
+     that installs it and runs it over one leaf". Its choices
+     are `recommended` and `off`, and the default is `recommended`. This row gets no
+     record line, so the next setup asks again while the tool is missing.
 
    Say each row in plain words: what the rule limits, the project's value, the
    recommended value, and the finding count at each. For example: "Function
@@ -239,8 +259,8 @@ the review keeps the limits of the rules.
 ## 6. Show the edit plan, then edit
 
 1. **Show the full plan as one diff per file**: the linter configs, the tasks, the CI
-   and hook edits, the installs, and the record. Change no file that is not in the
-   plan.
+   and hook edits, the installs, the mutation task and its config, and the record.
+   Change no file that is not in the plan.
 2. Tasks: **never rename a task, and never change what an existing task does.** Add a
    task only where no task runs the linter in the agreed way. Give it a name that fits
    the names in the file. A task that you add accepts a scope: a Taskfile through
@@ -345,7 +365,11 @@ agreed:
 2. Each row of an agreed rule must show `runs` or `agreed`, and stderr must have no
    `changed since the setup was agreed` line. Else name the row that does not, and
    why.
-3. With a strict file, do the superset check of the linter reference. Say that it
+3. When the plan added the mutation tool, run its task over one pure leaf of the
+   project, and read the exit code. When the project has no pure leaf, run the
+   version command of the tool. A run that did not execute is not a pass: name the
+   cause.
+4. With a strict file, do the superset check of the linter reference. Say that it
    checks the current tree only, and does not prove the superset for all code.
-4. Tell the user what changed, file by file, and the findings that remain at the
+5. Tell the user what changed, file by file, and the findings that remain at the
    agreed values. To fix them, the user can run `/tsr-ldd-quickfix`.

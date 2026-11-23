@@ -65,9 +65,9 @@
    `gremlins unleash --timeout-coefficient 50 ./path/to/leaf | grep -E '^[[:space:]]*(LIVED|NOT COVERED|TIMED OUT)|Killed:|Not covered:|Timed out:'`;
    skip orchestrators, the top rung and any package that does I/O. Judge a private type
    inside such a package with Q4. Do not skip it. A private function there gets no run and no finding. Code that does I/O gets no
-   mutation run, no `did not execute` line and no finding. `gremlins` not on `PATH`: propose
-   the install the mechanics bullet describes before hunting; an empty `LIVED` list from
-   a run that did not execute is not a pass. A `Timed out:` count above 0 makes the run
+   mutation run, no `did not execute` line and no finding. `gremlins` not on `PATH`: the run
+   did not execute; take the hand check below, and name `/{{.CmdPrefix}}-setup` for the
+   install. An empty `LIVED` list from a run that did not execute is not a pass. A `Timed out:` count above 0 makes the run
    inconclusive: run the leaf once more as the mechanics bullet says, and read each
    `TIMED OUT` mutant from the two runs as it says. A
    `NOT COVERED` mutant is a finding, the same as a `LIVED` one: a missing test row.

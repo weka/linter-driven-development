@@ -6,6 +6,7 @@
 - [ ] Using in-memory implementations from `src/test-utils/`
 - [ ] No `setTimeout` waits (`findBy*`, `waitFor`, fake timers advanced explicitly)
 - [ ] Leaf types have 100% coverage
+- [ ] I/O types have 100% coverage, each handled error path included
 </unit_tests_checklist>
 
 <integration_tests_checklist>

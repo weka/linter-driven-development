@@ -5,6 +5,7 @@ Testing is complete when ALL of the following are true:
 - [ ] No success-or-error flag - success and error cases in separate test functions
 - [ ] Cyclomatic complexity = 1 inside every case (no if/else, no switch)
 - [ ] Leaf types have 100% coverage
+- [ ] I/O types have 100% coverage, each handled error path included
 - [ ] Integration tests cover component seams
 - [ ] System tests in tests/ folder with appropriate dependency level
 - [ ] No sleeps (events, channels or futures with a timeout)

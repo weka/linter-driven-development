@@ -6,6 +6,7 @@
 - [ ] Using in-memory implementations from the repository's test utilities
 - [ ] No sleeps (events, channels or futures with a timeout)
 - [ ] Leaf types have 100% coverage
+- [ ] I/O types have 100% coverage, each handled error path included
 </unit_tests_checklist>
 
 <integration_tests_checklist>

@@ -177,4 +177,5 @@ the docstring menus in the documentation skill's reference.
 - [ ] No `mock.patch` of an internal collaborator
 - [ ] Every wait has a timeout; every thread and task is joined
 - [ ] `pytest --cov` shows 100% on leaf types
+- [ ] `pytest --cov` with the integration tests shows 100% on I/O types
 - [ ] `mutmut results` shows no untriaged survivor, with `paths_to_mutate` naming leaf packages only

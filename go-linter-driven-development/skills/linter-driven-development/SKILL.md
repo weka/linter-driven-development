@@ -77,8 +77,8 @@ Refactor-only request (no new behavior): 1.5 via @refactoring → 3 → 4 → 5
 2. **Discover commands** (README.md, CLAUDE.md, Makefile, Taskfile.yaml, in that
    order): test + lint commands, and the mutation target when one exists (`mutate`,
    `gremlins`). Fallbacks: `go test ./...`, `golangci-lint run --fix`; none for
-   mutation — a missing tool is proposed for install (`../../rules/R7-test-placement.md`,
-   Mutation mechanics), never installed silently.
+   mutation — a missing tool gets the hand check and a ledger row that names
+   `/go-ldd-setup` (`../../rules/R7-test-placement.md`, Mutation mechanics).
 3. **List the behaviors** this change delivers — each becomes one Phase 2 TDD cycle.
    No plan or unclear scope → Phase 1 produces the plan; unclear intent → ask.
 4. **A request that delivers no behavior is a refactor**, and this skill never

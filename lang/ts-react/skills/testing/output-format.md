@@ -29,6 +29,7 @@ $ npx playwright test                 # system tests (where the repository has t
 
 All tests pass
 100% coverage on leaf types
+100% coverage on I/O types
 
 Next Steps:
 1. Run linter: npx tsc --noEmit && npx eslint . --fix && npx prettier --write .

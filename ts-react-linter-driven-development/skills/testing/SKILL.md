@@ -73,6 +73,10 @@ bash <this skill dir>/../../scripts/ldd-ledger.sh add mutation-not-run <<'ROW'
 ROW
 ```
 
+- I/O types (a type that reads or writes a database, a file or a server): 100% coverage
+  at the rung that adds their layer, each handled error path made by the real fake. A
+  branch that no real fake can reach stays uncovered, with a comment that says why. No
+  mutation run (`../../rules/R7-test-placement.md`, I/O types).
 - Higher rungs (orchestrating types): cover the delta each rung adds — its seams and emergent behaviors
 - Critical workflows: top-rung (system) tests
 
@@ -285,6 +289,7 @@ $ npx playwright test                 # system tests (where the repository has t
 
 All tests pass
 100% coverage on leaf types
+100% coverage on I/O types
 
 Next Steps:
 1. Run linter: npx tsc --noEmit && npx eslint . --fix && npx prettier --write .
@@ -302,6 +307,7 @@ Next Steps:
 - [ ] Using in-memory implementations from `src/test-utils/`
 - [ ] No `setTimeout` waits (`findBy*`, `waitFor`, fake timers advanced explicitly)
 - [ ] Leaf types have 100% coverage
+- [ ] I/O types have 100% coverage, each handled error path included
 </unit_tests_checklist>
 
 <integration_tests_checklist>
@@ -339,6 +345,7 @@ Testing is complete when ALL of the following are true:
 - [ ] No `expectError` column - success and error cases in separate `it`s
 - [ ] Cyclomatic complexity = 1 inside every test body (no if/else, no switch, no ternary)
 - [ ] Leaf types have 100% coverage
+- [ ] I/O types have 100% coverage, each handled error path included
 - [ ] Integration tests cover the page → hook → `apiClient` seams against MSW handlers
 - [ ] System tests in `e2e/` or `tests/` with appropriate dependency level, run only when asked
 - [ ] No `setTimeout` waits (`findBy*`, `waitFor`, fake timers advanced explicitly)

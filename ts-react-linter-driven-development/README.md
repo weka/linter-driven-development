@@ -239,7 +239,7 @@ is the meta-orchestrator:
 | `/tsr-ldd-analyze [files \| --all]` | Tests + lint + review, combined report | ❌ No |
 | `/tsr-ldd-review [files \| --all]` | Commit-readiness check | ❌ No |
 | `/tsr-ldd-status` | Show current phase + progress | N/A |
-| `/tsr-ldd-setup [project dir …]` | Compare the linter setup with the recommended one, agree per rule, edit only after you agree to the plan | ✅ After your yes |
+| `/tsr-ldd-setup [project dir …]` | Compare the linter setup and the mutation testing tool with the recommended one, agree per rule, edit only after you agree to the plan | ✅ After your yes |
 | `/wire-repo-brain [path]` | Wire the documentation network in one pass | ✅ Wiring only |
 
 On a repository larger than a few dozen source files, `--all` reports `PARTIAL
