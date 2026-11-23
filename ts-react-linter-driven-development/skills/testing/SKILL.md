@@ -289,7 +289,7 @@ $ npx playwright test                 # system tests (where the repository has t
 
 All tests pass
 100% coverage on leaf types
-100% coverage on I/O types
+100% coverage on I/O types, except a branch that no real fake can reach (it has a comment)
 
 Next Steps:
 1. Run linter: npx tsc --noEmit && npx eslint . --fix && npx prettier --write .
@@ -307,7 +307,7 @@ Next Steps:
 - [ ] Using in-memory implementations from `src/test-utils/`
 - [ ] No `setTimeout` waits (`findBy*`, `waitFor`, fake timers advanced explicitly)
 - [ ] Leaf types have 100% coverage
-- [ ] I/O types have 100% coverage, each handled error path included
+- [ ] I/O types have 100% coverage, each handled error path included; a branch that no real fake can reach has a comment that says why
 </unit_tests_checklist>
 
 <integration_tests_checklist>
@@ -345,7 +345,7 @@ Testing is complete when ALL of the following are true:
 - [ ] No `expectError` column - success and error cases in separate `it`s
 - [ ] Cyclomatic complexity = 1 inside every test body (no if/else, no switch, no ternary)
 - [ ] Leaf types have 100% coverage
-- [ ] I/O types have 100% coverage, each handled error path included
+- [ ] I/O types have 100% coverage, each handled error path included; a branch that no real fake can reach has a comment that says why
 - [ ] Integration tests cover the page → hook → `apiClient` seams against MSW handlers
 - [ ] System tests in `e2e/` or `tests/` with appropriate dependency level, run only when asked
 - [ ] No `setTimeout` waits (`findBy*`, `waitFor`, fake timers advanced explicitly)

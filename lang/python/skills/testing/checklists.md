@@ -6,7 +6,7 @@
 - [ ] Using in-memory implementations from the repository's test-support package
 - [ ] No time.sleep (Event.wait, Queue.get with a timeout, an awaited future)
 - [ ] Leaf types have 100% coverage
-- [ ] I/O types have 100% coverage, each handled error path included
+- [ ] I/O types have 100% coverage, each handled error path included; a branch that no real fake can reach has a comment that says why
 </unit_tests_checklist>
 
 <integration_tests_checklist>

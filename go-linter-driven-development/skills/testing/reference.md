@@ -391,7 +391,7 @@ func Example_UserID_validation() {
 
 **Coverage:**
 - [ ] Rung 0 (leaf types): 100% unit test coverage
-- [ ] I/O types: 100% coverage with the integration tests, each handled error path included
+- [ ] I/O types: 100% coverage with the integration tests, each handled error path included; a branch that no real fake can reach has a comment that says why
 - [ ] Rung 0 (leaf types): no untriaged `LIVED` or `NOT COVERED` mutant from `gremlins unleash --timeout-coefficient 50` over the leaf package, and no `TIMED OUT` mutant left unread
 - [ ] Higher rungs: each rung's delta covered (seams, emergent behaviors)
 - [ ] Happy path, edge cases, error cases covered
@@ -410,7 +410,7 @@ func Example_UserID_validation() {
 - Test only public API (`pkg_test` package)
 - Use real implementations, not mocks
 - Rung 0 (leaf types): 100% coverage, and no surviving mutant (gremlins, leaf packages only)
-- I/O types: 100% coverage with the integration tests, and no mutation run
+- I/O types: 100% coverage with the integration tests (except a branch that no real fake can reach, with a comment that says why), and no mutation run
 - Higher rungs: cover each rung's delta (seams, emergent behaviors)
 
 **Common Pitfalls to Avoid:**

@@ -2,5 +2,6 @@
 1. List created types: `grep -RnE "^class[[:space:]]+\w+" --include="*.py" .`
 2. Missing tests for any of them → STOP and invoke @testing.
 3. Coverage: `pytest --cov=<package> --cov-report=term-missing` (or the repository's
-   coverage command) — leaf types must show 100% (R7). I/O types must show 100% in
-   the run that includes their integration tests.
+   coverage command) — leaf types must show 100% (R7). I/O types must show 100% in the
+   run that includes their integration tests, except a branch that no real fake can
+   reach and that has a comment that says why.

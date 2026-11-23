@@ -5,7 +5,7 @@ Testing is complete when ALL of the following are true:
 - [ ] No `expect_err` column - success and error cases in separate test functions
 - [ ] Cyclomatic complexity = 1 inside every test body (no if/else, no match)
 - [ ] Leaf types have 100% coverage
-- [ ] I/O types have 100% coverage, each handled error path included
+- [ ] I/O types have 100% coverage, each handled error path included; a branch that no real fake can reach has a comment that says why
 - [ ] Integration tests cover component seams
 - [ ] System tests in tests/ folder with appropriate dependency level
 - [ ] No `time.sleep` (Event.wait, Queue.get with a timeout, an awaited future)

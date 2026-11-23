@@ -29,7 +29,7 @@ $ <the same command over tests/>                  # system tests (may need conta
 
 All tests pass
 100% coverage on leaf types
-100% coverage on I/O types
+100% coverage on I/O types, except a branch that no real fake can reach (it has a comment)
 
 Next Steps:
 1. Run the repository's lint command with its fix flag

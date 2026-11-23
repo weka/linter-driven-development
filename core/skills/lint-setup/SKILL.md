@@ -350,8 +350,8 @@ agreed:
 2. Each row of an agreed rule must show `runs` or `agreed`, and stderr must have no
    `changed since the setup was agreed` line. Else name the row that does not, and
    why.
-3. When the plan added the mutation tool, run its task over one pure leaf of the
-   project, and read the exit code. When the project has no pure leaf, run the
+3. When the plan adds or changes the mutation tool, its task or its config, run the
+   task over one pure leaf of the project, and read the exit code. When the project has no pure leaf, run the
    version command of the tool. A run that did not execute is not a pass: name the
    cause.
 4. With a strict file, do the superset check of the linter reference. Say that it

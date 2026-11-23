@@ -279,7 +279,7 @@ $ pytest tests/                       # system tests (may need containers)
 
 All tests pass
 100% coverage on leaf types
-100% coverage on I/O types
+100% coverage on I/O types, except a branch that no real fake can reach (it has a comment)
 
 Next Steps:
 1. Run linter: ruff check --fix . && ruff format . && ty check   # or mypy, whichever the repository configures
@@ -297,7 +297,7 @@ Next Steps:
 - [ ] Using in-memory implementations from the repository's test-support package
 - [ ] No time.sleep (Event.wait, Queue.get with a timeout, an awaited future)
 - [ ] Leaf types have 100% coverage
-- [ ] I/O types have 100% coverage, each handled error path included
+- [ ] I/O types have 100% coverage, each handled error path included; a branch that no real fake can reach has a comment that says why
 </unit_tests_checklist>
 
 <integration_tests_checklist>
@@ -335,7 +335,7 @@ Testing is complete when ALL of the following are true:
 - [ ] No `expect_err` column - success and error cases in separate test functions
 - [ ] Cyclomatic complexity = 1 inside every test body (no if/else, no match)
 - [ ] Leaf types have 100% coverage
-- [ ] I/O types have 100% coverage, each handled error path included
+- [ ] I/O types have 100% coverage, each handled error path included; a branch that no real fake can reach has a comment that says why
 - [ ] Integration tests cover component seams
 - [ ] System tests in tests/ folder with appropriate dependency level
 - [ ] No `time.sleep` (Event.wait, Queue.get with a timeout, an awaited future)
