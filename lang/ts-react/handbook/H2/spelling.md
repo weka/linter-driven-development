@@ -6,6 +6,7 @@
 > boundary or the query layer's `onError`. A promise is awaited or returned, never
 > dropped (`promise/catch-or-return`, `@typescript-eslint/no-floating-promises`);
 > `console.error` and a rethrow in the same `catch` is handling it twice. A `catch`
-> that returns `null` or `undefined` is R2 Q5: Separate Failure from Absence.
+> that returns `null` or `undefined` is an R2 finding, repaired by Separate Failure
+> from Absence.
 
 **Review:** Does any `catch` swallow the error, return `null` for a failure, both `console.error` and rethrow, inspect `message`, or throw without its `cause`?

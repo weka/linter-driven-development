@@ -130,14 +130,14 @@ class Reporter:
         self._sink.write(ev)    # no guard anywhere
 ```
 
-> **In Python:** the self-validating type is the frozen dataclass with `__post_init__`
-> shown under R1, or a `parse` classmethod that normalises then constructs. Public
+> **In Python:** the self-validating type is the frozen dataclass with
+> `__post_init__`, or a `parse` classmethod that normalises then constructs. Public
 > read-only fields are fine: a literal is not a hole because `__post_init__` runs on
 > every construction. The finding is a mutable dataclass carrying invariants with no
-> `__post_init__`. Where the repository already uses pydantic it is the boundary
-> form, and `model_construct` and `model_copy(update=)` are its bypasses; a refactor
-> never introduces pydantic. The fence above is the optional-collaborator case: a
-> Null Object bound once as a module constant, never a `None` the methods guard.
+> `__post_init__`. Where the repository already uses pydantic it is the boundary form,
+> and `model_construct` and `model_copy(update=)` are its bypasses; a refactor never
+> introduces pydantic. An optional collaborator is a Null Object, bound once as a
+> module constant, never a `None` that the methods guard.
 
 **Moves:** Add validating constructor · Hoist method checks into the constructor · Introduce Null Object · Delete re-validation of composed types · Separate Failure from Absence
 

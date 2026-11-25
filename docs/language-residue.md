@@ -511,7 +511,7 @@ enforced:
 - **A non-Go handbook is a residue gate.** The coding-rules handbook
   ([handbook.md](handbook.md)) renders each Principle and maxim without the
   same-language example that softens it in the plugin, so rendering the Python
-  handbook fails on any hard or soft token in the result, except the asides above
+  handbook or its digest fails on any hard or soft token in the result, except the asides above
   (`interface`, `struct`). This is how the R1, R8, R12 and maxim Rewrites were
   found, and the gate keeps the next one from shipping.
 - **Rendered-tree checks guard the seams the scanner cannot see.** After rendering,

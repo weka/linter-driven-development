@@ -159,16 +159,16 @@ class Reporter {
 ```
 
 > **In TypeScript:** the self-validating type is the `readonly` shape with the one
-> factory that builds it, shown under R1, or a class with a private constructor and a
-> static `parse`. Types are erased, so the invariant lives in that factory:
-> `readonly` closes assignment after construction, and the factory is the only
-> production site that spells the literal. The finding is a mutable `interface`
-> carrying invariants with no factory, `data as Device`, an `apiClient.get<T>()`
-> taken on faith at the boundary, or an `as unknown as`. Where the repository already
-> uses a schema library, `schema.parse` at the boundary is the constructor and the
-> inferred type its shape; a refactor never introduces one. The second fence is the
-> optional-collaborator case: a Null Object bound once as a module constant, the
-> parameter typed `Sink` and never `Sink | undefined`, supplied by a default.
+> factory that builds it, or a class with a private constructor and a static `parse`.
+> Types are erased, so the invariant lives in that factory: `readonly` closes
+> assignment after construction, and the factory is the only production site that
+> spells the literal. The finding is a mutable `interface` carrying invariants with
+> no factory, `data as Device`, an `apiClient.get<T>()` taken on faith at the
+> boundary, or an `as unknown as`. Where the repository already uses a schema
+> library, `schema.parse` at the boundary is the constructor and the inferred type
+> its shape; a refactor never introduces one. An optional collaborator is a Null
+> Object, bound once as a module constant: type the parameter `Sink`, never
+> `Sink | undefined`, and make the Null Object its default.
 
 **Moves:** Add validating constructor · Hoist method checks into the constructor · Introduce Null Object · Delete re-validation of composed types · Separate Failure from Absence
 
@@ -499,14 +499,14 @@ export function parsePolicy(raw: string): Policy { /* … */ }
 export class Policy { /* … */ }
 ```
 
-> **In TypeScript:** an exported symbol gets a JSDoc when the WHY budget has
-> something to say; the type system carries the WHAT, so `/** The cluster id */` on
+> **In TypeScript:** an exported symbol gets a JSDoc when the WHY budget has something
+> to say; the type system carries the WHAT, so `/** The cluster id */` on
 > `clusterId: string`, `@param` and `@returns` tags that restate types, and `@type`
 > tags are noise and are deleted. The summary line is the contract and never a
 > restatement finding. A non-exported symbol gets no comment by default. A component's
-> props doc the prop whose meaning its type does not carry: units, ownership, who
-> calls it. Where the repository's `jsdoc/require-jsdoc` demands one, a WHAT-comment
-> is rewritten, never deleted. The doc points down with greppable symbols
+> props doc covers only the props whose type does not carry their meaning: units,
+> ownership, who calls it. Where the repository's `jsdoc/require-jsdoc` demands one, a
+> WHAT-comment is rewritten, never deleted. The doc points down with greppable symbols
 > (`Policy.do`, `parsePolicy`), never a path and a line number.
 
 **Moves:** Push the fact down a rung · Convert WHAT to WHY or delete · Rewire orphan doc · Wire the root · Add missing frontmatter · Update the stale doc with the behavior change
@@ -615,7 +615,7 @@ function channelIcon(channel: Channel): ReactNode {
 > render switch is the finding. Prefer a `Record<Kind, …>` of handlers or components
 > first, a strategy object second, a class hierarchy last. Boolean props:
 > `isLoading`/`isError`/`isEmpty` triplets become a status union, and three or more
-> boolean props on one component is a Split Flag Argument candidate (T3).
+> boolean props on one component is a Split Flag Argument candidate.
 
 **Moves:** Replace Duplicated Switch with Interface Dispatch · Replace If-Chain with Strategy Map · Introduce Null Object · Split Flag Argument · Keep the Single Exhaustive Switch
 
@@ -711,7 +711,8 @@ decides on it.
 > boundary or the query layer's `onError`. A promise is awaited or returned, never
 > dropped (`promise/catch-or-return`, `@typescript-eslint/no-floating-promises`);
 > `console.error` and a rethrow in the same `catch` is handling it twice. A `catch`
-> that returns `null` or `undefined` is R2 Q5: Separate Failure from Absence.
+> that returns `null` or `undefined` is an R2 finding, repaired by Separate Failure
+> from Absence.
 
 **Review:** Does any `catch` swallow the error, return `null` for a failure, both `console.error` and rethrow, inspect `message`, or throw without its `cause`?
 
